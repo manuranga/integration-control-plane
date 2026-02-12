@@ -71,6 +71,21 @@ export function componentLogsUrl(orgHandler: string, projectId: string, componen
   return `/organizations/${orgHandler}/projects/${projectId}/components/${componentHandler}/observe/runtimelogs`;
 }
 
+export function projectRuntimeUrl(orgHandler: string, projectId: string): string {
+  return `/organizations/${orgHandler}/projects/${projectId}/admin/runtime`;
+}
+
+export function componentRuntimeUrl(orgHandler: string, projectId: string, componentHandler: string): string {
+  return `/organizations/${orgHandler}/projects/${projectId}/components/${componentHandler}/admin/runtime`;
+}
+
+export function orgAccessControlUrl(orgHandler: string, tab: 'users' | 'roles' | 'groups' = 'users'): string {
+  return `/organizations/${orgHandler}/settings/access-control/${tab}`;
+}
+
+export function projectAccessControlUrl(orgHandler: string, projectId: string, tab: 'roles' | 'groups' = 'groups'): string {
+  return `/organizations/${orgHandler}/projects/${projectId}/settings/access-control/${tab}`;
+}
 export function orgAnalyticsUrl(orgHandler: string): string {
   return `/organizations/${orgHandler}/analytics`;
 }
@@ -119,7 +134,7 @@ export const support = {
 
 export const observabilityLogsApiUrl = 'https://localhost:9448/icp/observability/logs?live=true';
 
-export const authApiBaseUrl = 'https://localhost:9445/auth';
+export const authApiBaseUrl = 'https://localhost:6445/auth';
 export const loginApiUrl = `${authApiBaseUrl}/login`;
 export const refreshTokenApiUrl = `${authApiBaseUrl}/refresh-token`;
 export const revokeTokenApiUrl = `${authApiBaseUrl}/revoke-token`;
