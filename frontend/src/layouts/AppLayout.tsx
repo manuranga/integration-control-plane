@@ -48,7 +48,6 @@ import Logo from '../components/Logo';
 import { BarChart3, Bell, Building, ChevronRight, Layers, LayoutDashboard, LogOut, ScrollText, Settings, Shield, User as UserIcon, X } from '@wso2/oxygen-ui-icons-react';
 import { useProject, useProjects, useComponents } from '../api/queries';
 import { mockNotifications } from '../mock-data/mockNotifications';
-import { orgUrl, projectUrl, componentUrl, projectLogsUrl, componentLogsUrl, environmentsUrl, loginUrl } from '../paths';
 import { orgUrl, projectUrl, componentUrl, projectLogsUrl, componentLogsUrl, environmentsUrl, loginUrl, projectRuntimeUrl, componentRuntimeUrl, orgAccessControlUrl, projectAccessControlUrl } from '../paths';
 import { useAuth } from '../auth/AuthContext';
 

@@ -13,8 +13,6 @@ import {
   oidcCallbackUrl,
   projectRuntimeUrl,
   componentRuntimeUrl,
-  orgAccessControlUrl,
-  projectAccessControlUrl,
 } from '../paths';
 import PublicLayout from '../layouts/PublicLayout';
 import Login from '../pages/Login';
@@ -50,8 +48,8 @@ const routes: AppRoute[] = [
       { path: orgUrl(':orgHandler'), element: <Projects /> },
       { path: environmentsUrl(':orgHandler'), element: <Environments /> },
       { path: newEnvironmentUrl(':orgHandler'), element: <CreateEnvironment /> },
-      { path: orgAccessControlUrl(':orgHandler', ':tab' as any), element: <AccessControl /> },
-      { path: projectAccessControlUrl(':orgHandler', ':projectId', ':tab' as any), element: <ProjectAccessControl /> },
+      { path: '/organizations/:orgHandler/settings/access-control/:tab', element: <AccessControl /> },
+      { path: '/organizations/:orgHandler/projects/:projectId/settings/access-control/:tab', element: <ProjectAccessControl /> },
       { path: newProjectUrl(':orgHandler'), element: <CreateProject /> },
       { path: projectUrl(':orgHandler', ':projectId'), element: <Project /> },
       { path: componentUrl(':orgHandler', ':projectId', ':componentHandler'), element: <Component /> },
