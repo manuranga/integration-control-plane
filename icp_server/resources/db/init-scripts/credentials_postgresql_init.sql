@@ -1,17 +1,20 @@
 -- ============================================================================
--- ICP Server H2 Credentials Database Schema
+-- ICP Server PostgreSQL Credentials Database Schema
 -- This database is separate from the main ICP database and is only accessed
 -- by the default authentication backend for user credential management.
 -- ============================================================================
 
--- Drop all database objects (tables, views, sequences, etc.)
-DROP ALL OBJECTS;
+-- ============================================================================
+-- CREDENTIALS SCHEMA (used by default auth backend)
+-- ============================================================================
+
+CREATE SCHEMA IF NOT EXISTS credentials;
 
 -- ============================================================================
 -- USER CREDENTIALS TABLE
 -- ============================================================================
 
-CREATE TABLE user_credentials (
+CREATE TABLE credentials.user_credentials (
     user_id CHAR(36) NOT NULL PRIMARY KEY,
     username VARCHAR(255) NOT NULL UNIQUE,
     display_name VARCHAR(200) NOT NULL,
@@ -20,7 +23,7 @@ CREATE TABLE user_credentials (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_user_credentials_username ON user_credentials (username);
+CREATE INDEX idx_user_credentials_username ON credentials.user_credentials (username);
 
 -- ============================================================================
 -- SAMPLE DATA FOR TESTING, MUST BE CHANGED FOR PRODUCTION
@@ -28,7 +31,7 @@ CREATE INDEX idx_user_credentials_username ON user_credentials (username);
 
 -- Insert credentials for admin user
 INSERT INTO
-    user_credentials (
+    credentials.user_credentials (
         user_id,
         username,
         display_name,

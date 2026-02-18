@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import icp_server.storage;
 import icp_server.types;
 import icp_server.utils;
 
@@ -23,20 +24,24 @@ import ballerina/log;
 import ballerina/sql;
 import ballerina/time;
 import ballerina/uuid;
-import ballerinax/h2.driver as _;
-import ballerinax/java.jdbc as jdbc;
 
 configurable int authServicePort = 9447;
 configurable string authServiceHost = "0.0.0.0";
 configurable string apiKey = "default-api-key";
 
-// Separate H2 database connection for user credentials (default auth backend only)
-// This is a separate database file from the main ICP database
-final sql:Client credentialsDbClient = check new jdbc:Client(
-    "jdbc:h2:file:./database/credentialsdb;MODE=MySQL;AUTO_SERVER=TRUE",
-    "icp_user",
-    "icp_password"
+// Credentials DB
+configurable string credentialsDbType = "h2";
+configurable string credentialsDbHost = "localhost";
+configurable int credentialsDbPort = 5432;
+configurable string credentialsDbName = "credentialsdb";
+configurable string credentialsDbUser = "icp_user";
+configurable string credentialsDbPassword = "icp_password";
+
+final storage:DatabaseConnectionManager credentialsDbManager = check new storage:DatabaseConnectionManager(
+    credentialsDbType, credentialsDbHost, credentialsDbPort,
+    credentialsDbName, credentialsDbUser, credentialsDbPassword
 );
+final sql:Client credentialsDbClient = credentialsDbManager.getClient();
 
 listener http:Listener defaultAuthServiceListener = new (authServicePort,
     config = {

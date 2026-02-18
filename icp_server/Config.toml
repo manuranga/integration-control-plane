@@ -41,6 +41,20 @@ authBackendApiKey = "default-api-key"
 # Authorization service settings
 defaultJwtHMACSecret = "default-secret-key-at-least-32-characters-long-for-hs256"
 
+# =============================================================================
+# CREDENTIALS DATABASE CONFIGURATION
+# =============================================================================
+# The default auth backend stores user credentials in a separate database/schema.
+# Set credentialsDbType to match your main database type.
+# For PostgreSQL, credentials are stored in a "credentials" schema within the same database.
+# For H2, credentials are stored in a separate file (./database/credentials).
+# credentialsDbType = "h2"         # Options: h2, postgresql, mysql, mssql
+# credentialsDbHost = "localhost"
+# credentialsDbPort = 5432
+# credentialsDbName = "credentialsdb"
+# credentialsDbUser = "icp_user"
+# credentialsDbPassword = "icp_password"
+
 # Token expiry settings
 # defaultTokenExpiryTime = 3600  # 1 hour - JWT access token expiry
 # refreshTokenExpiryTime = 604800  # 7 days - Refresh token expiry
