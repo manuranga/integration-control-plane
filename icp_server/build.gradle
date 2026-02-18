@@ -215,8 +215,8 @@ task initH2Database {
         ant.sql(
             driver: 'org.h2.Driver',
             url: "jdbc:h2:file:${h2DbFile.absolutePath};MODE=MySQL;DB_CLOSE_DELAY=-1",
-            userid: 'sa',
-            password: '',
+            userid: 'icp_user',
+            password: 'icp_password',
             src: h2InitScript.absolutePath,
             classpath: buildscript.configurations.classpath.asPath,
             print: true,
@@ -252,8 +252,8 @@ task initH2CredentialsDatabase {
         ant.sql(
             driver: 'org.h2.Driver',
             url: "jdbc:h2:file:${credentialsDbFile.absolutePath};MODE=MySQL;DB_CLOSE_DELAY=-1",
-            userid: 'sa',
-            password: '',
+            userid: 'icp_user',
+            password: 'icp_password',
             src: credentialsInitScript.absolutePath,
             classpath: buildscript.configurations.classpath.asPath,
             print: true,

@@ -34,8 +34,8 @@ configurable string apiKey = "default-api-key";
 // This is a separate database file from the main ICP database
 final sql:Client credentialsDbClient = check new jdbc:Client(
     "jdbc:h2:file:./database/credentialsdb;MODE=MySQL;AUTO_SERVER=TRUE",
-    "sa",
-    ""
+    "icp_user",
+    "icp_password"
 );
 
 listener http:Listener defaultAuthServiceListener = new (authServicePort,

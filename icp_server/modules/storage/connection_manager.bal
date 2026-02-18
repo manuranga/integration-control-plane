@@ -35,7 +35,7 @@ public client class DatabaseConnectionManager {
     private final sql:Client dbClient;
     private final string dbType;
 
-    public function init(string dbType) returns error? {
+    public function init(string dbType, string dbHost, int dbPort, string dbName, string dbUser, string dbPassword) returns error? {
         self.dbType = dbType;
         sql:ConnectionPool pool = {
             maxOpenConnections: maxOpenConnections,
@@ -59,7 +59,7 @@ public client class DatabaseConnectionManager {
             log:printInfo("PostgreSQL Database initialized successfully.");
         } else {
             log:printInfo("Initializing H2 Database...");
-            self.dbClient = check new jdbc:Client("jdbc:h2:file:./database/icpdb;MODE=MySQL;AUTO_SERVER=TRUE", "sa", "");
+            self.dbClient = check new jdbc:Client("jdbc:h2:file:./database/icpdb;MODE=MySQL;AUTO_SERVER=TRUE", dbUser, dbPassword);
             log:printInfo("H2 Database initialized successfully.");
         }
     }
