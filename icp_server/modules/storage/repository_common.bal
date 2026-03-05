@@ -15,6 +15,7 @@
 // under the License.
 
 import icp_server.types as types;
+import icp_server.utils;
 
 import ballerina/http;
 import ballerina/jwt;
@@ -178,29 +179,16 @@ isolated function getComponentTypeByRuntimeId(string runtimeId) returns string?|
 isolated function sendPendingBIControlCommands(string runtimeId) returns types:ControlCommand[]|error {
     types:ControlCommand[] pendingCommands = [];
 
-    // Retrieve pending control commands for this BI runtime with a row-level lock to prevent
-    // concurrent heartbeats from selecting the same commands within overlapping transactions.
-    // MSSQL uses WITH (UPDLOCK, ROWLOCK) table hints; other DBs use FOR UPDATE.
-    sql:ParameterizedQuery biCommandQuery;
-    if dbType == MSSQL {
-        biCommandQuery = `
-            SELECT command_id, runtime_id, target_artifact, action, payload, issued_at, status
-            FROM bi_runtime_control_commands WITH (UPDLOCK, ROWLOCK)
-            WHERE runtime_id = ${runtimeId}
-            AND status = 'pending'
-            ORDER BY issued_at ASC
-        `;
-    } else {
-        biCommandQuery = `
-            SELECT command_id, runtime_id, target_artifact, action, payload, issued_at, status
-            FROM bi_runtime_control_commands
-            WHERE runtime_id = ${runtimeId}
-            AND status = 'pending'
-            ORDER BY issued_at ASC
-            FOR UPDATE
-        `;
-    }
-    stream<types:ControlCommandDBRecord, sql:Error?> commandStream = dbClient->query(biCommandQuery);
+    // Retrieve pending control commands for this BI runtime (FOR UPDATE prevents concurrent heartbeats
+    // from selecting the same commands within overlapping transactions)
+    stream<types:ControlCommandDBRecord, sql:Error?> commandStream = dbClient->query(`
+        SELECT command_id, runtime_id, target_artifact, action, payload, issued_at, status
+        FROM bi_runtime_control_commands
+        WHERE runtime_id = ${runtimeId}
+        AND status = 'pending'
+        ORDER BY issued_at ASC
+        FOR UPDATE
+    `);
 
     check from types:ControlCommandDBRecord dbCommand in commandStream
         do {
@@ -245,29 +233,16 @@ isolated function sendPendingBIControlCommands(string runtimeId) returns types:C
 // MI commands are executed immediately via runtime management API calls (fire and forget)
 isolated function sendPendingMIControlCommands(string runtimeId) returns error? {
 
-    // Retrieve pending control commands for this MI runtime with a row-level lock to prevent
-    // concurrent heartbeats from selecting the same commands within overlapping transactions.
-    // MSSQL uses WITH (UPDLOCK, ROWLOCK) table hints; other DBs use FOR UPDATE.
-    sql:ParameterizedQuery miCommandQuery;
-    if dbType == MSSQL {
-        miCommandQuery = `
-            SELECT runtime_id, component_id, artifact_name, artifact_type, action, status, issued_at, sent_at, acknowledged_at, completed_at, error_message, issued_by
-            FROM mi_runtime_control_commands WITH (UPDLOCK, ROWLOCK)
-            WHERE runtime_id = ${runtimeId}
-            AND status = 'pending'
-            ORDER BY issued_at ASC
-        `;
-    } else {
-        miCommandQuery = `
-            SELECT runtime_id, component_id, artifact_name, artifact_type, action, status, issued_at, sent_at, acknowledged_at, completed_at, error_message, issued_by
-            FROM mi_runtime_control_commands
-            WHERE runtime_id = ${runtimeId}
-            AND status = 'pending'
-            ORDER BY issued_at ASC
-            FOR UPDATE
-        `;
-    }
-    stream<types:MIRuntimeControlCommandDBRecord, sql:Error?> commandStream = dbClient->query(miCommandQuery);
+    // Retrieve pending control commands for this MI runtime (FOR UPDATE prevents concurrent heartbeats
+    // from selecting the same commands within overlapping transactions)
+    stream<types:MIRuntimeControlCommandDBRecord, sql:Error?> commandStream = dbClient->query(`
+        SELECT runtime_id, component_id, artifact_name, artifact_type, action, status, issued_at, sent_at, acknowledged_at, completed_at, error_message, issued_by
+        FROM mi_runtime_control_commands
+        WHERE runtime_id = ${runtimeId}
+        AND status = 'pending'
+        ORDER BY issued_at ASC
+        FOR UPDATE
+    `);
 
     types:MIRuntimeControlCommandDBRecord[] pendingCommands = check from types:MIRuntimeControlCommandDBRecord cmd in commandStream
         select cmd;
