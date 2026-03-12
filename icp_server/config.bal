@@ -43,7 +43,7 @@ configurable string publicCertFile = "./resources/keys/public.cert";
 configurable decimal jwtClockSkewSeconds = 10;
 
 // Frontend auth configuration (frontend and server communication)
-configurable string frontendJwtHMACSecret = "default-secret-key-at-least-32-characters-long-for-hs256";
+configurable string defaultJwtHMACSecret = "default-secret-key-at-least-32-characters-long-for-hs256";
 configurable string frontendJwtIssuer = "icp-frontend-jwt-issuer";
 configurable string frontendJwtAudience = "icp-server";
 
@@ -54,6 +54,8 @@ configurable string userServiceJwtAudience = "icp-user-service-jwt-audience";
 configurable decimal userServiceJwtClockSkewSeconds = 0;
 
 configurable int defaultTokenExpiryTime = 3600; // 1 hour (in seconds)
+
+configurable string defaultRuntimeJwtHMACSecret = "default-secret-key-at-least-32-characters-long-for-hs256";
 
 //Backend URLs for the frontend to call
 configurable string backendGraphqlEndpoint = "https://localhost:9446/graphql";
@@ -86,7 +88,7 @@ configurable boolean enableAuditLogging = true;
 configurable boolean enableMetrics = true;
 
 configurable string observabilityBackendURL = "https://localhost:" + defaultOpensearchAdaptorPort.toString();
-configurable string observabilityJwtHMACSecret = "default-secret-key-at-least-32-characters-long-for-hs256";
+configurable string defaultobservabilityJwtHMACSecret = "default-secret-key-at-least-32-characters-long-for-hs256";
 
 // OpenSearch configuration
 configurable string opensearchUrl = "https://localhost:9200";
@@ -106,11 +108,12 @@ configurable map<string> secrets = {};
 // All code outside config.bal must use these resolved variables.
 final string resolvedKeystorePassword = check resolveSecret(keystorePassword);
 final string resolvedTruststorePassword = check resolveSecret(truststorePassword);
-final string resolvedFrontendJwtHMACSecret = check resolveSecret(frontendJwtHMACSecret);
+final string resolvedDefaultJwtHMACSecret = check resolveSecret(defaultJwtHMACSecret);
 final string resolvedUserServiceJwtHMACSecret = check resolveSecret(userServiceJwtHMACSecret);
+final string resolvedDefaultRuntimeJwtHMACSecret = check resolveSecret(defaultRuntimeJwtHMACSecret);
 final string resolvedSsoClientId = check resolveSecret(ssoClientId);
 final string resolvedSsoClientSecret = check resolveSecret(ssoClientSecret);
-final string resolvedObservabilityJwtHMACSecret = check resolveSecret(observabilityJwtHMACSecret);
+final string resolvedDefaultobservabilityJwtHMACSecret = check resolveSecret(defaultobservabilityJwtHMACSecret);
 final string resolvedOpensearchUsername = check resolveSecret(opensearchUsername);
 final string resolvedOpensearchPassword = check resolveSecret(opensearchPassword);
 final string resolvedCredDbUser = check resolveSecret(credentialsDbUser);

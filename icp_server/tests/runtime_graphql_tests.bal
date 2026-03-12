@@ -41,7 +41,7 @@ string integrationViewerToken = "";
 // JWT configuration for runtime tests
 final readonly & jwt:IssuerSignatureConfig runtimeTestJwtConfig = {
     algorithm: jwt:HS256,
-    config: resolvedFrontendJwtHMACSecret
+    config: defaultJwtHMACSecret
 };
 
 // =============================================================================

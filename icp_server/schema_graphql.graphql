@@ -185,12 +185,6 @@ type Mutation {
 
   # Logger Control Mutations
   updateLogLevel(input: UpdateLogLevelInput!): UpdateLogLevelResponse!
-
-  # Component-Environment JWT Secret Mutations
-  # Returns the existing secret when already provisioned; generates a new one on first call.
-  generateComponentEnvironmentJwtSecret(componentId: String!, environmentId: String!): String!
-  # Generates a brand-new secret, invalidating the previous one. All runtimes must be reconfigured.
-  rotateComponentEnvironmentJwtSecret(componentId: String!, environmentId: String!): String!
 }
 
 # ============================================

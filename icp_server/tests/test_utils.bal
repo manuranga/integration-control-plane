@@ -35,7 +35,7 @@ final http:Client testAuthClient = check new (AUTH_SERVICE_URL,
 // JWT configuration for test token generation
 final readonly & jwt:IssuerSignatureConfig testJwtConfig = {
     algorithm: jwt:HS256,
-    config: resolvedFrontendJwtHMACSecret
+    config: defaultJwtHMACSecret
 };
 
 // Shared test tokens - generated once in BeforeSuite and reused

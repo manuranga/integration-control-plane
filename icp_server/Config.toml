@@ -38,7 +38,7 @@ authBackendUrl = "https://localhost:9447"
 # AUTH SERVICE CONFIGURATION
 # =============================================================================
 # Authorization service settings
-frontendJwtHMACSecret = "default-secret-key-at-least-32-characters-long-for-hs256"
+defaultJwtHMACSecret = "default-secret-key-at-least-32-characters-long-for-hs256"
 
 # =============================================================================
 # CREDENTIALS DATABASE CONFIGURATION
@@ -66,7 +66,7 @@ frontendJwtHMACSecret = "default-secret-key-at-least-32-characters-long-for-hs25
 # =============================================================================
 # SECRETS ALIAS CONFIGURATION
 # =============================================================================
-# frontendJwtHMACSecret = "$secret{secretJWTsecret}"
+# defaultJwtHMACSecret = "$secret{secretJWTsecret}"
 # credentialsDbPassword = "$secret{secCredsDbPassword}"
 
 # =============================================================================

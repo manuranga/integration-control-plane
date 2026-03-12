@@ -21,7 +21,7 @@ string envNonProdToken = "";
 // JWT configuration
 final readonly & jwt:IssuerSignatureConfig envTestJwtConfig = {
     algorithm: jwt:HS256,
-    config: resolvedFrontendJwtHMACSecret
+    config: defaultJwtHMACSecret
 };
 
 @test:BeforeSuite

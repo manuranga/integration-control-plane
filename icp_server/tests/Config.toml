@@ -27,7 +27,7 @@ authBackendUrl = "https://localhost:9447"
 authBackendApiKey = "default-api-key"
 
 # JWT Configuration
-frontendJwtHMACSecret = "default-secret-key-at-least-32-characters-long-for-hs256"
+defaultJwtHMACSecret = "default-secret-key-at-least-32-characters-long-for-hs256"
 frontendJwtIssuer = "icp-frontend-jwt-issuer"
 frontendJwtAudience = "icp-server"
 defaultTokenExpiryTime = 3600

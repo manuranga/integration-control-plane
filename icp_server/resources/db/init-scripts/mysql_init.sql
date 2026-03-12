@@ -543,21 +543,8 @@ CREATE TABLE runtimes (
     INDEX idx_env (environment_id),
     INDEX idx_component (component_id),
     INDEX idx_project (project_id),
-    INDEX idx_last_heartbeat (last_heartbeat)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
-
--- Per-component-per-environment JWT HMAC secret
--- Generated when a component is first deployed to an environment; used to
--- validate incoming heartbeat JWTs from that specific component+environment pair.
-CREATE TABLE component_environment_secrets (
-    component_id CHAR(36) NOT NULL,
-    environment_id CHAR(36) NOT NULL,
-    jwt_hmac_secret VARCHAR(256) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (component_id, environment_id),
-    CONSTRAINT fk_ces_component FOREIGN KEY (component_id) REFERENCES components (component_id) ON DELETE CASCADE,
-    CONSTRAINT fk_ces_environment FOREIGN KEY (environment_id) REFERENCES environments (environment_id) ON DELETE CASCADE
+    INDEX idx_last_heartbeat (last_heartbeat),
+    INDEX idx_registration_time (registration_time)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- Services deployed on a runtime
