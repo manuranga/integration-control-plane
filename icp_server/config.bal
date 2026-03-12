@@ -55,6 +55,8 @@ configurable decimal userServiceJwtClockSkewSeconds = 0;
 
 configurable int defaultTokenExpiryTime = 3600; // 1 hour (in seconds)
 
+configurable string defaultRuntimeJwtHMACSecret = "default-secret-key-at-least-32-characters-long-for-hs256";
+
 //Backend URLs for the frontend to call
 configurable string backendGraphqlEndpoint = "https://localhost:9446/graphql";
 configurable string backendAuthBaseUrl = "https://localhost:9445/auth";
@@ -108,6 +110,7 @@ final string resolvedKeystorePassword = check resolveSecret(keystorePassword);
 final string resolvedTruststorePassword = check resolveSecret(truststorePassword);
 final string resolvedFrontendJwtHMACSecret = check resolveSecret(frontendJwtHMACSecret);
 final string resolvedUserServiceJwtHMACSecret = check resolveSecret(userServiceJwtHMACSecret);
+final string resolvedDefaultRuntimeJwtHMACSecret = check resolveSecret(defaultRuntimeJwtHMACSecret);
 final string resolvedSsoClientId = check resolveSecret(ssoClientId);
 final string resolvedSsoClientSecret = check resolveSecret(ssoClientSecret);
 final string resolvedObservabilityJwtHMACSecret = check resolveSecret(observabilityJwtHMACSecret);

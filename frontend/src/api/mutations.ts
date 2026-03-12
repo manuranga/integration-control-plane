@@ -261,38 +261,6 @@ export function useUpdateLogLevel() {
   });
 }
 
-// ── Component-Environment JWT Secrets ──
-
-const GET_OR_GENERATE_COMPONENT_ENV_JWT_SECRET = `
-  mutation GenerateComponentEnvironmentJwtSecret($componentId: String!, $environmentId: String!) {
-    generateComponentEnvironmentJwtSecret(componentId: $componentId, environmentId: $environmentId)
-  }`;
-
-const ROTATE_COMPONENT_ENV_JWT_SECRET = `
-  mutation RotateComponentEnvironmentJwtSecret($componentId: String!, $environmentId: String!) {
-    rotateComponentEnvironmentJwtSecret(componentId: $componentId, environmentId: $environmentId)
-  }`;
-
-export function useGenerateComponentEnvironmentJwtSecret() {
-  return useMutation({
-    mutationFn: ({ componentId, environmentId }: { componentId: string; environmentId: string }) =>
-      gql<{ generateComponentEnvironmentJwtSecret: string }>(GET_OR_GENERATE_COMPONENT_ENV_JWT_SECRET, {
-        componentId,
-        environmentId,
-      }).then((d) => d.generateComponentEnvironmentJwtSecret),
-  });
-}
-
-export function useRotateComponentEnvironmentJwtSecret() {
-  return useMutation({
-    mutationFn: ({ componentId, environmentId }: { componentId: string; environmentId: string }) =>
-      gql<{ rotateComponentEnvironmentJwtSecret: string }>(ROTATE_COMPONENT_ENV_JWT_SECRET, {
-        componentId,
-        environmentId,
-      }).then((d) => d.rotateComponentEnvironmentJwtSecret),
-  });
-}
-
 // ── Task trigger ──
 
 const TRIGGER_ARTIFACT = `
