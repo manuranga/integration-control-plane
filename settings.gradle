@@ -2,6 +2,7 @@ rootProject.name = 'integration-control-plane'
 
 // Include subprojects if needed in the future
 include 'icp_server'
+include 'e2e-tests'
 // include 'icp_frontend'
 // include 'icp_cli'
 

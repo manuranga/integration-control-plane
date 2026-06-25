@@ -390,6 +390,9 @@ task checkICP {
     dependsOn testICP
 }
 
+check.dependsOn checkICP
+check.dependsOn ':e2e-tests:test'
+
 // Help task
 task helpICP {
     description = 'Show build tasks'

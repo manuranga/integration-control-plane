@@ -96,3 +96,60 @@ jobs:
         run: |
           cd icp_server
           docker compose -f docker-compose.test.yml down -v
+
+  e2e:
+    name: Self-contained product E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
+      - name: Setup Ballerina
+        uses: ballerina-platform/setup-ballerina@v1.1.4
+        with:
+          version: 2201.13.2
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      # OpenSearch requires a higher mmap count than the runner default.
+      - name: Raise vm.max_map_count for OpenSearch
+        run: sudo sysctl -w vm.max_map_count=262144
+
+      - name: Install Playwright browser and OS dependencies
+        run: ./gradlew --no-daemon :e2e-tests:playwrightInstallDeps
+
+      - name: Run E2E tests
+        run: |
+          ./gradlew --no-daemon :e2e-tests:test \
+            -Dicp.e2e.headless=true \
+            -Dicp.e2e.observability=true
+
+      - name: Upload E2E reports
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: e2e-reports
+          path: |
+            e2e-tests/build/reports/
+            e2e-tests/build/test-results/
+          if-no-files-found: ignore
+          retention-days: 7

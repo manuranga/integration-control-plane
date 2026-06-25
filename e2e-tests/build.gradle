@@ -1,0 +1,97 @@
+plugins {
+    id 'java'
+}
+
+group = 'org.wso2.icp'
+version = '1.0.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    maven {
+        url 'https://maven.wso2.org/nexus/content/groups/wso2-public/'
+    }
+}
+
+configurations {
+    miDistribution
+}
+
+def resolvedMiVersion = providers.gradleProperty('miVersion').orElse('latest.release')
+
+dependencies {
+    testImplementation 'com.microsoft.playwright:playwright:1.49.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.3'
+
+    miDistribution "org.wso2.ei:wso2mi:${resolvedMiVersion.get()}@zip"
+}
+
+tasks.register('resolveMiDistribution') {
+    group = 'verification'
+    description = 'Resolve the MI distribution used by self-contained E2E tests.'
+    outputs.files(configurations.miDistribution)
+    doLast {
+        configurations.miDistribution.files.each { file ->
+            logger.lifecycle("Resolved MI distribution: ${file.name}")
+        }
+    }
+}
+
+tasks.register('buildBiE2eArtifact') {
+    group = 'verification'
+    description = 'Build the BI E2E artifact from source kept inside ./icp.'
+    inputs.dir('src/test/resources/bi/hello-world')
+    outputs.file(layout.buildDirectory.file('bi/hello-world/target/bin/icp_e2e_hello_world.jar'))
+
+    doLast {
+        def workDir = layout.buildDirectory.dir('bi/hello-world').get().asFile
+        delete workDir
+        copy {
+            from 'src/test/resources/bi/hello-world'
+            into workDir
+        }
+        exec {
+            workingDir workDir
+            commandLine 'bal', 'build'
+        }
+    }
+}
+
+test {
+    useJUnitPlatform()
+
+    dependsOn rootProject.tasks.named('packageICP')
+    dependsOn tasks.named('resolveMiDistribution')
+    dependsOn tasks.named('buildBiE2eArtifact')
+    dependsOn 'playwrightInstall'
+
+    systemProperties System.getProperties().findAll { key, _ -> key.toString().startsWith('icp.e2e.') }
+    systemProperty 'icp.e2e.selfContained', System.getProperty('icp.e2e.selfContained', 'true')
+    systemProperty 'icp.e2e.distributionZip', rootProject.layout.buildDirectory.file("distribution/wso2-integration-control-plane-${rootProject.version}.zip").get().asFile.absolutePath
+    systemProperty 'icp.e2e.workDir', layout.buildDirectory.dir('runtime').get().asFile.absolutePath
+    doFirst {
+        systemProperty 'icp.e2e.miZip', configurations.miDistribution.singleFile.absolutePath
+        systemProperty 'icp.e2e.biJar', layout.buildDirectory.file('bi/hello-world/target/bin/icp_e2e_hello_world.jar').get().asFile.absolutePath
+        systemProperty 'icp.e2e.reportDir', layout.buildDirectory.dir('reports/e2e').get().asFile.absolutePath
+    }
+
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+        exceptionFormat 'full'
+    }
+}
+
+tasks.register('playwrightInstall', JavaExec) {
+    group = 'verification'
+    description = 'Install Playwright browsers used by the Java E2E tests.'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.microsoft.playwright.CLI'
+    args 'install', 'chromium'
+}
+
+tasks.register('playwrightInstallDeps', JavaExec) {
+    group = 'verification'
+    description = 'Install Playwright browsers plus OS dependencies (Linux/CI).'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.microsoft.playwright.CLI'
+    args 'install', '--with-deps', 'chromium'
+}

@@ -1,0 +1,20 @@
+httpPort = {{HTTP_PORT}}
+e2eRuntimeId = "{{RUNTIME_ID}}"
+
+[wso2.icp.runtime.bridge]
+serverUrl = "{{SERVER_URL}}"
+secret = "{{SECRET}}"
+integration = "{{INTEGRATION}}"
+project = "{{PROJECT}}"
+environment = "{{ENVIRONMENT}}"
+heartbeatInterval = 2
+enableSSL = false
+runtimeIdFile = ".icp_runtime_id"
+
+[ballerina.log]
+format = "logfmt"
+[[ballerina.log.destinations]]
+path = "{{LOG_PATH}}"
+
+[ballerina.observe]
+metricsLogsEnabled = true

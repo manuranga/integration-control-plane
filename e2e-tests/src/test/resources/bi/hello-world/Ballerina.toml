@@ -1,0 +1,14 @@
+[package]
+org = "wso2_e2e"
+name = "icp_e2e_hello_world"
+version = "0.1.0"
+distribution = "2201.13.3"
+
+[build-options]
+observabilityIncluded = true
+remoteManagement = true
+
+[[dependency]]
+org = "wso2"
+name = "icp.runtime.bridge"
+version = "0.1.9"

@@ -1,0 +1,35 @@
+[server]
+hostname = "localhost"
+offset = 0
+
+[user_store]
+type = "read_only_ldap"
+
+[keystore.primary]
+file_name = "repository/resources/security/wso2carbon.jks"
+password = "wso2carbon"
+alias = "wso2carbon"
+key_password = "wso2carbon"
+
+[truststore]
+file_name = "repository/resources/security/client-truststore.jks"
+password = "wso2carbon"
+alias = "symmetric.key.value"
+algorithm = "AES"
+
+[transport.http]
+listener.port = {{HTTP_PORT}}
+listener.secured_port = {{HTTPS_PORT}}
+
+[analytics]
+enabled = true
+
+[icp_config]
+enabled = true
+icp_url = "{{ICP_URL}}"
+environment = "{{ENVIRONMENT}}"
+project = "{{PROJECT}}"
+integration = "{{INTEGRATION}}"
+secret = "{{SECRET}}"
+heartbeat_interval = 2
+ssl_verify = false

@@ -1,0 +1,35 @@
+serverPort = {{SERVER_PORT}}
+authServicePort = {{AUTH_PORT}}
+defaultOpensearchAdaptorPort = {{OPENSEARCH_ADAPTOR_PORT}}
+runtimeListenerPort = {{RUNTIME_LISTENER_PORT}}
+authBackendUrl = "https://localhost:{{AUTH_PORT}}"
+backendGraphqlEndpoint = "https://localhost:{{ICP_PORT}}/graphql"
+backendAuthBaseUrl = "https://localhost:{{ICP_PORT}}/auth"
+backendObservabilityEndpoint = "https://localhost:{{ICP_PORT}}/icp/observability"
+backendWsUrl = "wss://localhost:{{ICP_PORT}}/runtime-status"
+corsAllowedOrigins = ["https://localhost:{{ICP_PORT}}"]
+schedulerIntervalSeconds = 10
+refreshTokenCleanupIntervalSeconds = 3600
+logLevel = "INFO"
+enableAuditLogging = true
+auditLogFilePath = "../logs/audit.log"
+enableMetrics = true
+{{OPENSEARCH}}
+
+[icp_server.secrets]
+
+[icp_server.storage]
+dbType = "h2"
+dbName = "icp_db"
+dbUser = "icp_user"
+dbPassword = "icp_password"
+heartbeatTimeoutSeconds = 20
+
+[icp_server.storage.secrets]
+
+[[ballerina.log.modules]]
+name = "wso2/icp_server"
+level = "INFO"
+
+[ballerina.http.traceLogAdvancedConfig]
+console = false

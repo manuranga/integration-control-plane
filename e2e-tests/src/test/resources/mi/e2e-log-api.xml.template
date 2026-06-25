@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api xmlns="http://ws.apache.org/ns/synapse" name="E2ELogAPI" context="/e2e">
+    <resource methods="GET" uri-template="/log">
+        <inSequence>
+            <log level="custom">
+                <property name="message" value="{{MESSAGE}}"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>{"status":"ok"}</format>
+                <args/>
+            </payloadFactory>
+            <respond/>
+        </inSequence>
+    </resource>
+</api>
