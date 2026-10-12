@@ -28,7 +28,6 @@ const PrebuiltIntegrationConfigProvider = lazyPage(() => import('../contexts/Pre
 // shell (AppLayout) which must remain stable across route transitions.
 import PublicLayout from '../layouts/PublicLayout';
 import Login from '../pages/Login';
-import Signup from '../pages/Signup';
 import RouteErrorBoundary from '../components/RouteErrorBoundary';
 import AppLayout from '../layouts/AppLayout';
 
@@ -109,7 +108,8 @@ const routes: AppRoute[] = [
     element: <PublicLayout />,
     children: [
       { path: loginUrl(), element: <Login /> },
-      { path: signupUrl(), element: <Signup /> },
+      // Thunder hosts sign-up on the same page as sign-in.
+      { path: signupUrl(), element: <Navigate to={loginUrl()} replace /> },
     ],
   },
   {
