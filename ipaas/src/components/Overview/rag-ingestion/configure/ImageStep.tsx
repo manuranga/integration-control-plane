@@ -54,7 +54,7 @@ export default function ImageStep({ componentId, releaseId, currentImage, onNoti
       <Typography variant="body2" color="text.secondary">
         Update the container image this ingestion runs, then redeploy.
       </Typography>
-      <TextField label="Image URL" fullWidth size="small" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="registry/image:tag" />
+      <TextField label="Image URL" fullWidth size="small" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
       <Stack direction="row" justifyContent="flex-end">
         <Button variant="contained" onClick={submit} disabled={!imageUrl.trim() || deploy.isPending} startIcon={deploy.isPending ? <CircularProgress size={16} color="inherit" /> : undefined}>
           {deploy.isPending ? 'Deploying…' : changed ? 'Update & Deploy' : 'Redeploy'}

@@ -80,14 +80,13 @@ export default function AllowedIpsDialog({ serverId, variant = 'db-servers', cur
                 <TextField
                   size="small"
                   label="CIDR Block"
-                  placeholder="e.g. 10.0.0.0/24"
                   value={row.cidr}
                   onChange={(e) => patchRow(i, { cidr: e.target.value })}
                   error={row.cidr.trim() !== '' && !isValidCidr(row.cidr)}
                   helperText={row.cidr.trim() !== '' && !isValidCidr(row.cidr) ? 'Enter a valid CIDR (e.g. 10.0.0.0/24).' : ' '}
                   sx={{ flex: '0 0 40%' }}
                 />
-                <TextField size="small" label="Description" placeholder="Optional" value={row.description} onChange={(e) => patchRow(i, { description: e.target.value })} fullWidth />
+                <TextField size="small" label="Description" value={row.description} onChange={(e) => patchRow(i, { description: e.target.value })} fullWidth />
                 <Tooltip title="Remove">
                   <span>
                     <IconButton size="small" color="error" aria-label="Remove CIDR block" onClick={() => removeRow(i)} disabled={rows.length === 1} sx={{ mt: 0.5 }}>

@@ -54,18 +54,7 @@ export default function QueryRetrieveStep({ value, onChange, chunks, hasQueried 
         Query &amp; Retrieve
       </Typography>
       <Stack sx={fieldStackSx}>
-        <TextField
-          label="Query"
-          required
-          fullWidth
-          size="small"
-          multiline
-          minRows={2}
-          value={value.userQuery}
-          placeholder="Enter a question to retrieve relevant chunks"
-          onChange={(e) => onChange({ ...value, userQuery: e.target.value })}
-          sx={REQUIRED_FIELD_SX}
-        />
+        <TextField label="Query" required fullWidth size="small" multiline minRows={2} value={value.userQuery} onChange={(e) => onChange({ ...value, userQuery: e.target.value })} sx={REQUIRED_FIELD_SX} />
         <TextField
           label="Max chunks"
           fullWidth

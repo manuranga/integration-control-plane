@@ -50,30 +50,7 @@ import { useNavigate, Outlet, NavLink, useLocation } from 'react-router';
 import { useAppNavigate } from '../hooks/useAppNavigate';
 import Logo from '../components/Logo';
 import NotFound from '../components/NotFound';
-import {
-  BarChart3,
-  Boxes,
-  ChevronDown,
-  ChevronRight,
-  Cog,
-  Eye,
-  FlaskConical,
-  GitBranch,
-  Hammer,
-  HeartPulse,
-  KeyRound,
-  Layers,
-  LayoutDashboard,
-  LogOut,
-  Plus,
-  Rocket,
-  ScrollText,
-  Search,
-  Server,
-  Settings2,
-  SlidersHorizontal,
-  X,
-} from '@wso2/oxygen-ui-icons-react';
+import { Activity, Boxes, ChevronDown, ChevronRight, Cog, FileLock, FlaskConical, Gauge, Hammer, HeartPulse, Layers, LayoutDashboard, LogOut, Logs, Plus, Rocket, Search, Server, Settings2, SlidersHorizontal, Workflow, X } from '@wso2/oxygen-ui-icons-react';
 import { useProject, useProjectByHandler, useProjects } from '../hooks/useProjects';
 import { useComponents } from '../hooks/useComponents';
 import { useFreshDefaultProject } from '../hooks/useFreshDefaultProject';
@@ -790,18 +767,18 @@ export default function AppLayout(): JSX.Element {
 
                       <Sidebar.Item id="org-observability">
                         <Sidebar.ItemIcon>
-                          <Eye size={20} />
+                          <Activity size={20} />
                         </Sidebar.ItemIcon>
                         <Sidebar.ItemLabel>Observe</Sidebar.ItemLabel>
                         <Sidebar.Item id="org-logs">
                           <Sidebar.ItemIcon>
-                            <ScrollText size={20} />
+                            <Logs size={20} />
                           </Sidebar.ItemIcon>
                           <Sidebar.ItemLabel>Runtime Logs</Sidebar.ItemLabel>
                         </Sidebar.Item>
                         <Sidebar.Item id="org-metrics">
                           <Sidebar.ItemIcon>
-                            <BarChart3 size={20} />
+                            <Gauge size={20} />
                           </Sidebar.ItemIcon>
                           <Sidebar.ItemLabel>Metrics</Sidebar.ItemLabel>
                         </Sidebar.Item>
@@ -823,13 +800,13 @@ export default function AppLayout(): JSX.Element {
                         </Sidebar.Item>
                         <Sidebar.Item id="org-cd-pipelines">
                           <Sidebar.ItemIcon>
-                            <GitBranch size={20} />
+                            <Workflow size={20} />
                           </Sidebar.ItemIcon>
                           <Sidebar.ItemLabel>Pipelines</Sidebar.ItemLabel>
                         </Sidebar.Item>
                       </Sidebar.Item>
 
-                      {/* Settings carries Org Details and Package Registries. */}
+                      {/* Settings carries Package Registries. */}
                       <Sidebar.Item id="org-settings">
                         <Sidebar.ItemIcon>
                           <Cog size={20} />
@@ -898,18 +875,18 @@ export default function AppLayout(): JSX.Element {
 
                           <Sidebar.Item id="observability">
                             <Sidebar.ItemIcon>
-                              <Eye size={20} />
+                              <Activity size={20} />
                             </Sidebar.ItemIcon>
                             <Sidebar.ItemLabel>Observe</Sidebar.ItemLabel>
                             <Sidebar.Item id="logs">
                               <Sidebar.ItemIcon>
-                                <ScrollText size={20} />
+                                <Logs size={20} />
                               </Sidebar.ItemIcon>
                               <Sidebar.ItemLabel>Runtime Logs</Sidebar.ItemLabel>
                             </Sidebar.Item>
                             <Sidebar.Item id="metrics">
                               <Sidebar.ItemIcon>
-                                <BarChart3 size={20} />
+                                <Gauge size={20} />
                               </Sidebar.ItemIcon>
                               <Sidebar.ItemLabel>Metrics</Sidebar.ItemLabel>
                             </Sidebar.Item>
@@ -936,7 +913,7 @@ export default function AppLayout(): JSX.Element {
                             </Sidebar.Item>
                             <Sidebar.Item id="configs-secrets">
                               <Sidebar.ItemIcon>
-                                <KeyRound size={20} />
+                                <FileLock size={20} />
                               </Sidebar.ItemIcon>
                               <Sidebar.ItemLabel>Configs &amp; Secrets</Sidebar.ItemLabel>
                             </Sidebar.Item>
@@ -968,7 +945,7 @@ export default function AppLayout(): JSX.Element {
                             </Sidebar.Item>
                             <Sidebar.Item id="proj-cd-pipelines">
                               <Sidebar.ItemIcon>
-                                <GitBranch size={20} />
+                                <Workflow size={20} />
                               </Sidebar.ItemIcon>
                               <Sidebar.ItemLabel>Pipelines</Sidebar.ItemLabel>
                             </Sidebar.Item>
@@ -1011,18 +988,18 @@ export default function AppLayout(): JSX.Element {
 
                         <Sidebar.Item id="proj-observability">
                           <Sidebar.ItemIcon>
-                            <Eye size={20} />
+                            <Activity size={20} />
                           </Sidebar.ItemIcon>
                           <Sidebar.ItemLabel>Observe</Sidebar.ItemLabel>
                           <Sidebar.Item id="proj-logs">
                             <Sidebar.ItemIcon>
-                              <ScrollText size={20} />
+                              <Logs size={20} />
                             </Sidebar.ItemIcon>
                             <Sidebar.ItemLabel>Runtime Logs</Sidebar.ItemLabel>
                           </Sidebar.Item>
                           <Sidebar.Item id="proj-metrics">
                             <Sidebar.ItemIcon>
-                              <BarChart3 size={20} />
+                              <Gauge size={20} />
                             </Sidebar.ItemIcon>
                             <Sidebar.ItemLabel>Metrics</Sidebar.ItemLabel>
                           </Sidebar.Item>
@@ -1044,7 +1021,7 @@ export default function AppLayout(): JSX.Element {
                           </Sidebar.Item>
                           <Sidebar.Item id="proj-cd-pipelines">
                             <Sidebar.ItemIcon>
-                              <GitBranch size={20} />
+                              <Workflow size={20} />
                             </Sidebar.ItemIcon>
                             <Sidebar.ItemLabel>Pipelines</Sidebar.ItemLabel>
                           </Sidebar.Item>

@@ -63,9 +63,9 @@ export default function AutomationStep({ value, onChange, heading = 'Create Auto
             </MenuItem>
           ))}
         </TextField>
-        <TextField label="Display Name" required fullWidth size="small" value={value.displayName} onChange={(e) => onChange({ ...value, displayName: e.target.value, name: slugify(e.target.value) })} sx={REQUIRED_FIELD_SX} />
-        <TextField label="Name" required fullWidth size="small" value={value.name} onChange={(e) => onChange({ ...value, name: e.target.value })} error={!!nameError} helperText={nameError || undefined} sx={REQUIRED_FIELD_SX} />
-        <TextField label="Description (Optional)" fullWidth size="small" multiline minRows={2} value={value.description} placeholder="Enter description here" onChange={(e) => onChange({ ...value, description: e.target.value })} />
+        <TextField label="Integration Name" required fullWidth size="small" value={value.displayName} onChange={(e) => onChange({ ...value, displayName: e.target.value, name: slugify(e.target.value) })} sx={REQUIRED_FIELD_SX} />
+        <TextField label="Integration Id" required fullWidth size="small" value={value.name} onChange={(e) => onChange({ ...value, name: e.target.value })} error={!!nameError} helperText={nameError || undefined} sx={REQUIRED_FIELD_SX} />
+        <TextField label="Description (Optional)" fullWidth size="small" multiline minRows={2} value={value.description} onChange={(e) => onChange({ ...value, description: e.target.value })} />
       </Stack>
     </>
   );

@@ -358,7 +358,6 @@ export function BaseElement({
               onChange={(e) => handleSecretChange(e.target.value)}
               error={!isValidSecret && isEdited}
               helperText={secretError}
-              placeholder="Enter a value"
               inputProps={{ 'aria-required': Boolean(isRequired) }}
               InputProps={{
                 endAdornment: (
@@ -409,7 +408,6 @@ export function BaseElement({
               type={showContent ? 'text' : 'password'}
               value={String(valueMap.get(jsonPath) ?? '')}
               onChange={(e) => handleChange(e.target.value)}
-              placeholder="Enter a value"
               error={isEdited && !linked && validationMap.get(jsonPath) === false}
               helperText={isEdited && !linked && validationMap.get(jsonPath) === false ? error : undefined}
               inputProps={{ 'aria-required': Boolean(isRequired) }}

@@ -98,7 +98,6 @@ export default function CreateCiTokenDialog({ projectId, componentId, onClose }:
               autoFocus
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. github-actions"
               sx={requiredSx}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {

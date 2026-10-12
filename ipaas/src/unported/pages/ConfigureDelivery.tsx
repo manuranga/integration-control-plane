@@ -192,7 +192,7 @@ export default function ConfigureDelivery(scope: OrgScope | ProjectScope): JSX.E
                 options={[] as string[]}
                 value={incidentLabels}
                 onChange={(_, value) => setIncidentLabels(value as string[])}
-                renderInput={(params) => <TextField {...params} label="Incident Label" placeholder="e.g. Type/Incident" helperText="GitHub issue labels that mark an incident. Press Enter to add." />}
+                renderInput={(params) => <TextField {...params} label="Incident Label" helperText="GitHub issue labels that mark an incident. Press Enter to add." />}
               />
               <Autocomplete
                 multiple
@@ -200,7 +200,7 @@ export default function ConfigureDelivery(scope: OrgScope | ProjectScope): JSX.E
                 options={[] as string[]}
                 value={invalidLabels}
                 onChange={(_, value) => setInvalidLabels(value as string[])}
-                renderInput={(params) => <TextField {...params} label="Invalid Label (optional)" placeholder="e.g. Resolution/Invalid" helperText="Labels that mark an issue as not a real incident. Press Enter to add." />}
+                renderInput={(params) => <TextField {...params} label="Invalid Label (optional)" helperText="Labels that mark an issue as not a real incident. Press Enter to add." />}
               />
             </Stack>
           )}

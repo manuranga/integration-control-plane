@@ -135,13 +135,13 @@ export default function ThirdPartyServiceWizard({ orgHandle, submitting, submitE
               </Typography>
               <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
                 <Box sx={{ flex: 1 }}>
-                  <TextField label="Name" required fullWidth value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter service name" sx={requiredSx} />
+                  <TextField label="Name" required fullWidth value={name} onChange={(e) => setName(e.target.value)} sx={requiredSx} />
                 </Box>
                 <Box sx={{ flex: 1 }}>
-                  <TextField label="Version" fullWidth value={version} onChange={(e) => setVersion(e.target.value)} placeholder="v1" helperText="Optional" />
+                  <TextField label="Version" fullWidth value={version} onChange={(e) => setVersion(e.target.value)} helperText="Optional" />
                 </Box>
               </Stack>
-              <TextField label="Summary" fullWidth multiline rows={2} value={summary} onChange={(e) => setSummary(e.target.value)} placeholder="Enter service summary" helperText="Optional" />
+              <TextField label="Summary" fullWidth multiline rows={2} value={summary} onChange={(e) => setSummary(e.target.value)} helperText="Optional" />
 
               <Box>
                 <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
@@ -215,8 +215,8 @@ export default function ThirdPartyServiceWizard({ orgHandle, submitting, submitE
                     </Stack>
 
                     <Stack gap={2}>
-                      <TextField label="Name" required size="small" fullWidth value={ep.name} onChange={(e) => patch(ep.id, { name: e.target.value })} placeholder="ProdEndpoint" sx={requiredSx} />
-                      <TextField label="Endpoint URL" required size="small" fullWidth value={ep.serviceUrl} onChange={(e) => patch(ep.id, { serviceUrl: e.target.value })} placeholder="https://api.provider.com/v1" sx={requiredSx} />
+                      <TextField label="Name" required size="small" fullWidth value={ep.name} onChange={(e) => patch(ep.id, { name: e.target.value })} sx={requiredSx} />
+                      <TextField label="Endpoint URL" required size="small" fullWidth value={ep.serviceUrl} onChange={(e) => patch(ep.id, { serviceUrl: e.target.value })} sx={requiredSx} />
 
                       <Box>
                         <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>

@@ -45,7 +45,7 @@ const PROVIDER_CARDS: { key: LinkProvider; label: string; icon: JSX.Element }[] 
   { key: GitProvider.GITHUB, label: 'Authorize with GitHub', icon: <GitHub size={26} /> },
   { key: GitProvider.BITBUCKET_CLOUD, label: 'Authorize with Bitbucket', icon: <BitbucketIcon size={26} /> },
   { key: GitProvider.GITLAB_SELF_MANAGED, label: 'Authorize with GitLab', icon: <GitLabIcon size={26} /> },
-  { key: 'public', label: 'Use Public Git Repository', icon: <GitLogoIcon size={26} /> },
+  { key: 'public', label: 'Connect a Public Git Repository', icon: <GitLogoIcon size={26} /> },
 ];
 
 const CARD_SX = {
@@ -258,7 +258,6 @@ export default function LinkRepositoryDialog({ open, onClose, project, orgHandle
                         }}
                         fullWidth
                         size="small"
-                        placeholder="https://github.com/org/repo"
                         helperText="Public repository URL"
                       />
                     ) : (

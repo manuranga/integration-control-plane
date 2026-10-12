@@ -95,7 +95,7 @@ export default function AddProjectPipelineDialog({ projectId, currentPipelineIds
             getOptionLabel={(p) => p.name}
             isOptionEqualToValue={(a, b) => a.id === b.id}
             disabled={update.isPending}
-            renderInput={(params) => <TextField {...params} label={IS_CLOUD ? 'Pipeline' : 'Pipelines'} placeholder={IS_CLOUD ? 'Select a pipeline' : 'Select pipelines'} />}
+            renderInput={(params) => <TextField {...params} label={IS_CLOUD ? 'Pipeline' : 'Pipelines'} />}
           />
         )}
       </DialogContent>

@@ -71,7 +71,7 @@ function AssignGroupsDialog({ orgHandler, user, onClose, onAssigned }: { orgHand
         value={selected}
         onChange={(_, v) => setSelected(v)}
         isOptionEqualToValue={(a, b) => a.groupId === b.groupId}
-        renderInput={(params) => <TextField {...params} label="Groups" placeholder="Select groups" />}
+        renderInput={(params) => <TextField {...params} label="Groups" />}
       />
     </FormDialog>
   );

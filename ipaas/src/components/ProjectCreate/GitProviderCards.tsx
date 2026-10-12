@@ -26,6 +26,7 @@ import AzureDevOpsIcon from '../../assets/icons/AzureDevOpsIcon';
 import { GitProvider, type GitCredential } from '../../types/credentials';
 import { credentialsForProvider } from '../../utils/gitCredentials';
 import CredentialSelectCard from '../Import/CredentialSelectCard';
+import { providerCardSx, providerGridSx, providerIconSx, providerTitleSx } from './GitProviderCards.styles';
 import { IS_CLOUD } from '../../features';
 import { providerComingSoonLabel } from '../../constants/gitProviders';
 
@@ -40,32 +41,27 @@ interface GitProviderCardsProps {
   onCreateCredential?: (provider: GitProvider) => void;
 }
 
-const CARD_SX = { px: 3, py: 2, borderColor: 'primary', width: '100%' } as const;
+const ICON_SIZE = 24;
 
-/** A provider card with a static subtitle (GitHub / Public), styled like the credential card. */
-function InfoCard({ icon, title, subtitle, onClick, disabled = false }: { icon: ReactNode; title: string; subtitle?: ReactNode; onClick?: () => void; disabled?: boolean }): JSX.Element {
+/** A provider card: icon and title only; what it imports from is in the tooltip. */
+function InfoCard({ icon, title, tooltip, onClick, disabled = false }: { icon: ReactNode; title: string; tooltip: ReactNode; onClick?: () => void; disabled?: boolean }): JSX.Element {
   return (
-    <Paper
-      variant="outlined"
-      role={disabled ? undefined : 'button'}
-      tabIndex={disabled ? undefined : 0}
-      onClick={disabled ? undefined : onClick}
-      onKeyDown={disabled ? undefined : (e) => (e.key === 'Enter' || e.key === ' ') && onClick?.()}
-      sx={{ ...CARD_SX, height: '100%', cursor: disabled ? 'default' : 'pointer', opacity: disabled ? 0.5 : 1, transition: 'border-color 0.15s', '&:hover': disabled ? {} : { borderColor: 'primary.main' } }}>
-      <Stack direction="row" spacing={2} alignItems="center" sx={{ height: '100%' }}>
-        <Box sx={{ display: 'flex', flexShrink: 0, color: 'text.primary' }}>{icon}</Box>
-        <Box sx={{ minWidth: 0 }}>
-          <Typography variant="h6" fontWeight={500} sx={{ lineHeight: 1.3 }}>
+    <Tooltip title={tooltip} placement="top">
+      <Paper
+        variant="outlined"
+        role={disabled ? undefined : 'button'}
+        tabIndex={disabled ? undefined : 0}
+        onClick={disabled ? undefined : onClick}
+        onKeyDown={disabled ? undefined : (e) => (e.key === 'Enter' || e.key === ' ') && onClick?.()}
+        sx={providerCardSx(disabled)}>
+        <Stack direction="row" gap={1.5} alignItems="center">
+          <Box sx={providerIconSx}>{icon}</Box>
+          <Typography variant="body1" fontWeight={600} sx={providerTitleSx}>
             {title}
           </Typography>
-          {subtitle && (
-            <Typography variant="body1" color="grey.600" sx={{ mt: 0.5 }}>
-              {subtitle}
-            </Typography>
-          )}
-        </Box>
-      </Stack>
-    </Paper>
+        </Stack>
+      </Paper>
+    </Tooltip>
   );
 }
 
@@ -94,46 +90,42 @@ export default function GitProviderCards({ onGitHubSelect, onPublicSelect, crede
     />
   );
 
-  const comingSoonCard = (icon: ReactNode, title: string, subtitle: string, message: string) => (
-    <Tooltip title={message} placement="top">
-      <Box sx={{ flex: 1 }}>
-        <InfoCard icon={icon} title={title} subtitle={subtitle} disabled />
-      </Box>
-    </Tooltip>
+  // The tooltip says what the card would import from, then why it is not available yet.
+  const comingSoonCard = (icon: ReactNode, title: string, description: string, message: string) => (
+    <InfoCard
+      icon={icon}
+      title={title}
+      tooltip={
+        <>
+          {description}
+          <br />
+          {message}
+        </>
+      }
+      disabled
+    />
   );
 
   return (
-    <Stack direction="row" gap={2} alignItems="stretch">
+    <Box sx={providerGridSx}>
+      {/* Public Git Repository — first, since it needs no authorization */}
+      <InfoCard icon={<GitLogoIcon size={ICON_SIZE} />} title="Connect a Public GitHub Repository" tooltip="Import from a public GitHub repository" onClick={onPublicSelect} />
+
       {/* GitHub */}
       {gitHubEnabled ? (
-        <Box sx={{ flex: 1 }}>
-          <InfoCard icon={<GitHub size={30} />} title="Authorize With GitHub" subtitle="Private GitHub repository" onClick={onGitHubSelect} />
-        </Box>
+        <InfoCard icon={<GitHub size={ICON_SIZE} />} title="Authorize with GitHub" tooltip="Import from a private GitHub repository" onClick={onGitHubSelect} />
       ) : (
-        comingSoonCard(<GitHub size={30} />, 'Authorize With GitHub', 'Connect a private GitHub repository', 'Private GitHub repositories are not enabled in this environment')
+        comingSoonCard(<GitHub size={ICON_SIZE} />, 'Authorize with GitHub', 'Import from a private GitHub repository', 'Private GitHub repositories are not enabled in this environment')
       )}
 
       {/* Bitbucket */}
-      {credentialsEnabled ? (
-        <Box sx={{ flex: 1 }}>{credentialCard(GitProvider.BITBUCKET_CLOUD)}</Box>
-      ) : (
-        comingSoonCard(<BitbucketIcon size={30} />, 'Authorize With Bitbucket', 'Connect a Bitbucket repository', providerComingSoonLabel(GitProvider.BITBUCKET_CLOUD))
-      )}
+      {credentialsEnabled ? credentialCard(GitProvider.BITBUCKET_CLOUD) : comingSoonCard(<BitbucketIcon size={ICON_SIZE} />, 'Authorize with Bitbucket', 'Import from a Bitbucket repository', providerComingSoonLabel(GitProvider.BITBUCKET_CLOUD))}
 
       {/* GitLab */}
-      {credentialsEnabled ? (
-        <Box sx={{ flex: 1 }}>{credentialCard(GitProvider.GITLAB_SELF_MANAGED)}</Box>
-      ) : (
-        comingSoonCard(<GitLabIcon size={30} />, 'Authorize With GitLab', 'Connect a GitLab repository', providerComingSoonLabel(GitProvider.GITLAB_SELF_MANAGED))
-      )}
+      {credentialsEnabled ? credentialCard(GitProvider.GITLAB_SELF_MANAGED) : comingSoonCard(<GitLabIcon size={ICON_SIZE} />, 'Authorize with GitLab', 'Import from a GitLab repository', providerComingSoonLabel(GitProvider.GITLAB_SELF_MANAGED))}
 
       {/* Azure DevOps — no import path yet on any product */}
-      {comingSoonCard(<AzureDevOpsIcon size={30} />, 'Authorize With Azure DevOps', 'Connect an Azure DevOps repository', providerComingSoonLabel(GitProvider.AZURE_DEVOPS))}
-
-      {/* Public Git Repository */}
-      <Box sx={{ flex: 1 }}>
-        <InfoCard icon={<GitLogoIcon size={30} />} title="Use Public GitHub Repository" onClick={onPublicSelect} />
-      </Box>
-    </Stack>
+      {comingSoonCard(<AzureDevOpsIcon size={ICON_SIZE} />, 'Authorize with Azure DevOps', 'Import from an Azure DevOps repository', providerComingSoonLabel(GitProvider.AZURE_DEVOPS))}
+    </Box>
   );
 }

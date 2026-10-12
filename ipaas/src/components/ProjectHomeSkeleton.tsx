@@ -17,6 +17,7 @@
  */
 
 import { ListingTable, PageContent, Skeleton, Stack } from '@wso2/oxygen-ui';
+import { CARD_TABLE_SX } from '../constants/styles';
 import type { JSX } from 'react';
 
 /** Placeholder rows — enough to read as a list without implying a count. */
@@ -39,7 +40,7 @@ export default function ProjectHomeSkeleton(): JSX.Element {
       </Stack>
 
       <ListingTable.Container disablePaper>
-        <ListingTable variant="card" density="compact" sx={{ '& .MuiTableBody-root .MuiTableCell-root': { py: 2 } }}>
+        <ListingTable variant="card" density="compact" sx={CARD_TABLE_SX}>
           <ListingTable.Head>
             <ListingTable.Row>
               <ListingTable.Cell>Name</ListingTable.Cell>

@@ -64,15 +64,7 @@ export default function InviteUsersDialog({ orgHandler, onClose, onInvited }: { 
             options={[]}
             value={emails}
             onChange={(_, v) => setEmails((v as string[]).map((s) => s.trim()).filter(Boolean))}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Emails"
-                placeholder="Type an email and press Enter"
-                error={invalidEmails.length > 0}
-                helperText={invalidEmails.length > 0 ? `Invalid email(s): ${invalidEmails.join(', ')}` : 'Press Enter to add each email address.'}
-              />
-            )}
+            renderInput={(params) => <TextField {...params} label="Emails" error={invalidEmails.length > 0} helperText={invalidEmails.length > 0 ? `Invalid email(s): ${invalidEmails.join(', ')}` : 'Press Enter to add each email address.'} />}
           />
           <Autocomplete
             multiple
@@ -81,7 +73,7 @@ export default function InviteUsersDialog({ orgHandler, onClose, onInvited }: { 
             onChange={(_, v) => setSelectedGroups(v)}
             getOptionLabel={(g) => g.groupName}
             isOptionEqualToValue={(a, b) => a.groupId === b.groupId}
-            renderInput={(params) => <TextField {...params} label="Groups (optional)" placeholder="Assign groups" />}
+            renderInput={(params) => <TextField {...params} label="Groups (optional)" />}
           />
         </Stack>
       </DialogContent>

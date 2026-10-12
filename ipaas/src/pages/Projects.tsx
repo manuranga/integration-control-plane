@@ -17,6 +17,7 @@
  */
 
 import { Alert, Avatar, Box, Button, Card, CardContent, CircularProgress, Grid, IconButton, ListingTable, PageContent, PageTitle, Stack, TablePagination, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@wso2/oxygen-ui';
+import { CARD_TABLE_SX } from '../constants/styles';
 import { Clock, Folder, FolderInput, LayoutGrid, List, Plus, RefreshCw, Settings } from '@wso2/oxygen-ui-icons-react';
 import SearchField from '../components/SearchField';
 import { useLocation } from 'react-router';
@@ -121,7 +122,7 @@ export default function Projects(scope: OrgScope): JSX.Element {
   const projectsView =
     view === 'list' ? (
       <ListingTable.Container disablePaper>
-        <ListingTable variant="card" density="compact" sx={{ '& .MuiTableBody-root .MuiTableCell-root': { py: 2 } }}>
+        <ListingTable variant="card" density="compact" sx={CARD_TABLE_SX}>
           <ListingTable.Head>
             <ListingTable.Row>
               <ListingTable.Cell width={300}>Name</ListingTable.Cell>
@@ -229,11 +230,11 @@ export default function Projects(scope: OrgScope): JSX.Element {
       <Stack direction="row" gap={1} alignItems="center" sx={{ mb: 3, ml: 1 }}>
         <SearchField value={query} onChange={setQuery} placeholder="Search projects" fullWidth />
         <Authorized permissions={Permissions.PROJECT_MANAGE}>
-          <Button variant="contained" startIcon={<Plus size={20} />} onClick={() => navigate(newProjectUrl(scope))} sx={{ whiteSpace: 'nowrap' }}>
-            Create
+          <Button variant="contained" startIcon={<Plus size={16} />} onClick={() => navigate(newProjectUrl(scope))} sx={styles.projectActionSx}>
+            Create Project
           </Button>
-          <Button variant="outlined" startIcon={<FolderInput size={16} />} onClick={() => navigate(importProjectUrl(scope))} sx={{ whiteSpace: 'nowrap', pl: 3 }}>
-            Import
+          <Button variant="outlined" startIcon={<FolderInput size={16} />} onClick={() => navigate(importProjectUrl(scope))} sx={styles.projectActionSx}>
+            Import Project
           </Button>
         </Authorized>
       </Stack>

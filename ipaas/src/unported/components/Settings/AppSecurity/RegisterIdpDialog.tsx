@@ -146,15 +146,7 @@ export default function RegisterIdpDialog({ type, existing, onClose, onSaved, on
               helperText={`${description.length}/${DESC_MAX}`}
               FormHelperTextProps={{ sx: { textAlign: 'right', mr: 0 } }}
             />
-            <TextField
-              label="Well-Known URL"
-              value={wellKnownEndpoint}
-              onChange={(e) => setWellKnownEndpoint(e.target.value)}
-              fullWidth
-              placeholder="https://idp.example.com/.well-known/openid-configuration"
-              error={!!wellKnownError}
-              helperText={wellKnownError || undefined}
-            />
+            <TextField label="Well-Known URL" value={wellKnownEndpoint} onChange={(e) => setWellKnownEndpoint(e.target.value)} fullWidth error={!!wellKnownError} helperText={wellKnownError || undefined} />
             <FormControlLabel control={<Checkbox checked={applyAllEnvs} onChange={(e) => setApplyAllEnvs(e.target.checked)} />} label="Apply to all environments" />
             {!applyAllEnvs && (
               <Autocomplete
@@ -164,7 +156,7 @@ export default function RegisterIdpDialog({ type, existing, onClose, onSaved, on
                 onChange={(_, v) => setSelectedEnvs(v)}
                 getOptionLabel={(e) => e.name}
                 isOptionEqualToValue={(a, b) => a.id === b.id}
-                renderInput={(params) => <TextField {...params} label="Environments" placeholder="Environments" />}
+                renderInput={(params) => <TextField {...params} label="Environments" />}
               />
             )}
           </Stack>

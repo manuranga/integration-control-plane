@@ -66,3 +66,8 @@ export const PILL_SELECT_SX = {
   '& .MuiOutlinedInput-notchedOutline': { borderRadius: 5 },
   '& .MuiSelect-select': { py: 0.5, px: 1.5 },
 } as const;
+
+/** Row padding for the card-variant ListingTable, shared by the project, integration and environment lists. */
+export const CARD_TABLE_SX = {
+  '& .MuiTableBody-root .MuiTableCell-root': { py: 2 },
+} as const;

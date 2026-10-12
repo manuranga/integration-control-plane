@@ -17,6 +17,7 @@
  */
 
 import { Alert, Box, Button, CircularProgress, Grid, IconButton, InputAdornment, MenuItem, PageContent, Stack, Tooltip, Typography } from '@wso2/oxygen-ui';
+import { PUBLIC_REPO_URL_HELP, PUBLIC_REPO_URL_PLACEHOLDER } from '../constants/import';
 import TextField from '../components/common/TextField';
 import { ArrowLeft, Building2, Check, ChevronDown, ChevronUp, Edit, GitHub, GitBranch } from '@wso2/oxygen-ui-icons-react';
 import GitLogoIcon from '../assets/icons/GitLogoIcon';
@@ -145,7 +146,7 @@ export default function CreateProject(scope: OrgScope): JSX.Element {
 
   const nameError = displayName ? validateProjectName(displayName) : null;
   const handlerError = effectiveHandler ? validateProjectHandler(effectiveHandler) : null;
-  const handlerTaken = availability && !availability.handlerUnique ? 'This name is already taken.' : null;
+  const handlerTaken = availability && !availability.handlerUnique ? 'This project id is already taken.' : null;
 
   const gitReady = !attachGit || (showBranchAndSubPath && !!selectedBranch);
   // A failed availability check must not hard-block submit — the create call still validates uniqueness.
@@ -219,12 +220,11 @@ export default function CreateProject(scope: OrgScope): JSX.Element {
     // handlerError first: it is a fault in the value itself (reserved, malformed), which
     // stands regardless of what the availability call says about uniqueness.
     if (handlerError) return handlerError;
-    if (isCheckingAvailability) return 'Checking availability…';
     if (handlerTaken) {
       const alt = availability?.alternateHandlerCandidate;
-      return alt ? `This name is already taken. Try "${alt}" instead.` : handlerTaken;
+      return alt ? `This project id is already taken. Try "${alt}" instead.` : handlerTaken;
     }
-    return 'Auto-generated identifier';
+    return undefined;
   };
 
   const renderCredentialAuthArea = () => {
@@ -270,15 +270,8 @@ export default function CreateProject(scope: OrgScope): JSX.Element {
             onChange={(e) => setRepoUrl(e.target.value)}
             fullWidth
             error={!!urlError}
-            helperText={
-              urlError || (
-                <>
-                  Only public GitHub repositories are supported.
-                  <br />
-                  e.g. https://github.com/org/repo
-                </>
-              )
-            }
+            placeholder={PUBLIC_REPO_URL_PLACEHOLDER}
+            helperText={urlError || PUBLIC_REPO_URL_HELP}
             slotProps={{
               input: {
                 startAdornment: (
@@ -316,8 +309,7 @@ export default function CreateProject(scope: OrgScope): JSX.Element {
                 input: {
                   startAdornment: <InputAdornment position="start">{isCredentialMode ? gitProviderIcon(credProvider!, 18) : <Building2 size={18} />}</InputAdornment>,
                 },
-              }}
-              helperText={isCredentialMode ? `${providerLabel} organization` : 'GitHub organization'}>
+              }}>
               {orgOptions.map((org) => (
                 <MenuItem key={org} value={org}>
                   {org}
@@ -348,8 +340,7 @@ export default function CreateProject(scope: OrgScope): JSX.Element {
                     </InputAdornment>
                   ),
                 },
-              }}
-              helperText="Select repository">
+              }}>
               {reposForOrg.map((repo) => (
                 <MenuItem key={repo} value={repo}>
                   {repo}
@@ -378,8 +369,7 @@ export default function CreateProject(scope: OrgScope): JSX.Element {
                   </InputAdornment>
                 ),
               },
-            }}
-            helperText="Select branch">
+            }}>
             {(branches ?? []).map((b) => (
               <MenuItem key={b.name} value={b.name}>
                 {b.name}
@@ -416,16 +406,11 @@ export default function CreateProject(scope: OrgScope): JSX.Element {
 
       <BusyFields busy={isCreating}>
         {/* Project details */}
-        <Typography variant="h5" component="h2" sx={{ mb: 2 }}>
-          Project Details
-        </Typography>
-
-        <Grid container spacing={3} sx={{ mb: 5 }}>
+        <Grid container columnSpacing={3} rowSpacing={1} sx={{ mb: 1 }}>
           <Grid size={{ xs: 12, md: 4 }}>
             <TextField
-              label="Display Name"
+              label="Project Name"
               required
-              placeholder="Enter Project Name"
               value={displayName}
               onChange={(e) => {
                 setDisplayName(e.target.value);
@@ -433,13 +418,13 @@ export default function CreateProject(scope: OrgScope): JSX.Element {
               }}
               fullWidth
               error={!!nameError}
-              helperText={nameError ?? 'Name of the project'}
-              slotProps={{ htmlInput: { 'aria-label': 'Display Name' } }}
+              helperText={nameError}
+              slotProps={{ htmlInput: { 'aria-label': 'Project Name' } }}
             />
           </Grid>
           <Grid size={{ xs: 12, md: 4 }}>
             <TextField
-              label="Name"
+              label="Project Id"
               value={effectiveHandler}
               onChange={(e) => onHandlerChange(e.target.value)}
               fullWidth
@@ -447,15 +432,19 @@ export default function CreateProject(scope: OrgScope): JSX.Element {
               error={!!handlerError || !!handlerTaken}
               helperText={renderHandlerHelperText()}
               slotProps={{
-                htmlInput: { 'aria-label': 'Name' },
+                htmlInput: { 'aria-label': 'Project Id' },
                 input: {
                   endAdornment: (
                     <InputAdornment position="end">
                       {isCheckingAvailability ? (
                         <CircularProgress size={16} />
                       ) : (
-                        <Tooltip title={handlerEdited ? 'Done' : 'Edit name'} placement="top">
-                          <IconButton size="small" aria-label={handlerEdited ? 'Confirm name' : 'Edit name'} onClick={() => (handlerEdited ? stopEditing() : startEditing())} sx={handlerEdited ? { color: 'success.main' } : { color: 'primary.main' }}>
+                        <Tooltip title={handlerEdited ? 'Done' : 'Edit project id'} placement="top">
+                          <IconButton
+                            size="small"
+                            aria-label={handlerEdited ? 'Confirm project id' : 'Edit project id'}
+                            onClick={() => (handlerEdited ? stopEditing() : startEditing())}
+                            sx={handlerEdited ? { color: 'success.main' } : { color: 'primary.main' }}>
                             {handlerEdited ? <Check size={16} /> : <Edit size={16} />}
                           </IconButton>
                         </Tooltip>
@@ -467,7 +456,7 @@ export default function CreateProject(scope: OrgScope): JSX.Element {
             />
           </Grid>
           <Grid size={{ xs: 12, md: 4 }}>
-            <TextField label="Description (Optional)" placeholder="Enter description here" value={description} onChange={(e) => setDescription(e.target.value)} fullWidth multiline minRows={1} slotProps={{ htmlInput: { 'aria-label': 'Description' } }} />
+            <TextField label="Description (Optional)" value={description} onChange={(e) => setDescription(e.target.value)} fullWidth multiline minRows={1} slotProps={{ htmlInput: { 'aria-label': 'Description' } }} />
           </Grid>
         </Grid>
 
@@ -486,8 +475,8 @@ export default function CreateProject(scope: OrgScope): JSX.Element {
               handleGitSectionToggle();
             }
           }}
-          sx={{ cursor: 'pointer', mb: gitSectionOpen ? 3 : 6, userSelect: 'none' }}>
-          <Typography variant="h5" component="h2">
+          sx={{ cursor: 'pointer', mb: gitSectionOpen ? 3 : 4, userSelect: 'none' }}>
+          <Typography variant="body1" component="h2" sx={{ fontWeight: 600 }}>
             Connect Your Repository (Optional)
           </Typography>
           <Box sx={{ color: 'primary.main', display: 'flex' }}>{gitSectionOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}</Box>

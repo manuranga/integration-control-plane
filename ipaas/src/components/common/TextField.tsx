@@ -25,12 +25,14 @@ import { forwardRef, useId, useState, type JSX } from 'react';
  * With a label, `ref` points to the outer FormControl (label and field); without one, to oxygen's own root.
  */
 const TextField = forwardRef<HTMLDivElement, TextFieldProps>(function TextField(props, ref): JSX.Element {
-  const { label, id: idProp, sx, className, style, fullWidth, margin, required, error, disabled, slotProps, onFocus, onBlur, ...rest } = props;
+  const { label, id: idProp, sx, className, style, fullWidth, margin, required, error, disabled, slotProps, onFocus, onBlur, helperText: helperProp, ...rest } = props;
   const generatedId = useId();
   // The inner field tracks its own focus, so it is lifted to the outer FormControl for the label to colour on focus.
   const [focused, setFocused] = useState(false);
+  // A field that validates keeps its helper line even while empty, so an error appearing does not shift the form.
+  const helperText = error !== undefined && (helperProp == null || helperProp === '') ? ' ' : helperProp;
 
-  if (label == null || label === '') return <OxygenTextField ref={ref} {...props} />;
+  if (label == null || label === '') return <OxygenTextField ref={ref} {...props} helperText={helperText} />;
 
   const id = idProp ?? generatedId;
   const labelId = `${id}-label`;
@@ -50,6 +52,7 @@ const TextField = forwardRef<HTMLDivElement, TextFieldProps>(function TextField(
         required={required}
         error={error}
         disabled={disabled}
+        helperText={helperText}
         slotProps={{ ...slotProps, ...selectSlot }}
         onFocus={(e) => {
           setFocused(true);

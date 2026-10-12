@@ -66,11 +66,11 @@ test.describe('org overview @smoke', () => {
     await expect(page.getByRole('heading', { name: 'All Projects' })).toBeVisible();
   });
 
-  test('shows search input, Create and Import buttons', async ({ page }) => {
+  test('shows search input, Create Project and Import Project buttons', async ({ page }) => {
     await page.goto(`/organizations/${orgHandler}/home`, { waitUntil: 'domcontentloaded' });
     await expect(page.getByPlaceholder('Search projects')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Create', exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Import', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Create Project', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Import Project', exact: true })).toBeVisible();
   });
 
   test('at least one project card is visible', async ({ page }) => {

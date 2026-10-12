@@ -59,7 +59,6 @@ const OrgCdPipelines = lazyPage(() => import('../pages/OrgCdPipelines'));
 const ProjectCdPipelines = lazyPage(() => import('../pages/ProjectCdPipelines'));
 const OrgDataPlanes = lazyPage(() => import('../pages/OrgDataPlanes'));
 const OrgPackageRegistries = lazyPage(() => import('../pages/OrgPackageRegistries'));
-const OrgDetails = lazyPage(() => import('../pages/OrgDetails'));
 const ComponentRuntime = lazyPage(() => import('../pages/ComponentRuntime'));
 const ProjectSettings = lazyPage(() => import('../pages/ProjectSettings'));
 const ProjectOverview = lazyPage(() => import('../pages/ProjectOverview'));
@@ -142,7 +141,6 @@ const routes: AppRoute[] = [
               { path: 'organizations/:orgHandler/admin/data-planes', element: createElement(RouteErrorBoundary, null, createElement(withScope(OrgDataPlanes, ['organizations']))) },
               { path: 'organizations/:orgHandler/settings', element: createElement(withScope(OrgSettings, ['organizations'])) },
               { path: 'organizations/:orgHandler/settings/package-registries', element: createElement(RouteErrorBoundary, null, createElement(withScope(OrgPackageRegistries, ['organizations']))) },
-              { path: 'organizations/:orgHandler/settings/org-details', element: createElement(withScope(OrgDetails, ['organizations'])) },
               ...generateMatrixRoutes(MATRIX),
               { path: 'organizations/:orgHandler/projects/:projectHandler/deploy', element: createElement(withScope(ProjectDeploy, ['projects'])) },
               { path: 'organizations/:orgHandler/projects/:projectHandler/test', element: createElement(withScope(ProjectTest, ['projects'])) },

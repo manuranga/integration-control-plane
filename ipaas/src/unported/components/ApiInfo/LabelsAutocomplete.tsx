@@ -46,7 +46,7 @@ export default function LabelsAutocomplete({ value, onChange, disabled }: Labels
         </li>
       )}
       renderTags={(val, getTagProps) => val.map((option, index) => <Chip label={option} size="small" {...getTagProps({ index })} key={option} />)}
-      renderInput={(params) => <TextField {...params} label="Labels" size="small" placeholder="Type and press enter to add labels" />}
+      renderInput={(params) => <TextField {...params} label="Labels" size="small" />}
     />
   );
 }

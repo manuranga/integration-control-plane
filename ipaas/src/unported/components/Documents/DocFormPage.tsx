@@ -57,7 +57,7 @@ export default function DocFormPage({ view, initialName, initialType, initialOth
       </Typography>
 
       <Stack direction="row" gap={2} sx={{ mb: 2 }}>
-        <TextField label="Name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter document name here" required size="small" sx={{ width: 280, '& .MuiFormLabel-asterisk': { color: 'error.main' } }} />
+        <TextField label="Name" value={name} onChange={(e) => setName(e.target.value)} required size="small" sx={{ width: 280, '& .MuiFormLabel-asterisk': { color: 'error.main' } }} />
         <TextField select label="Document Type" size="small" sx={{ width: 220 }} value={type} onChange={(e) => setType(e.target.value as string)}>
           {DOC_TYPES.map((t) => (
             <MenuItem key={t.value} value={t.value}>
@@ -65,7 +65,7 @@ export default function DocFormPage({ view, initialName, initialType, initialOth
             </MenuItem>
           ))}
         </TextField>
-        {type === 'OTHER' && <TextField label="Custom Document Type" value={otherType} onChange={(e) => setOtherType(e.target.value)} placeholder="Enter custom document type here" required size="small" sx={{ width: 260 }} />}
+        {type === 'OTHER' && <TextField label="Custom Document Type" value={otherType} onChange={(e) => setOtherType(e.target.value)} required size="small" sx={{ width: 260 }} />}
       </Stack>
 
       <MarkdownEditorPane key={isCreate ? 'new' : initialName} value={content} onChange={setContent} height={500} theme="vs-dark" placeholderValue={PLACEHOLDER} />

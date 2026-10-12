@@ -112,7 +112,7 @@ export default function CreateEnvironment(scope: OrgScope): JSX.Element {
 
       <BusyFields busy={create.isPending}>
         <Stack gap={3} sx={{ maxWidth: 600, mb: 4 }}>
-          <TextField label="Name" required placeholder="e.g., staging" value={name} onChange={(e) => setName(e.target.value)} fullWidth />
+          <TextField label="Name" required value={name} onChange={(e) => setName(e.target.value)} fullWidth />
           {loadingDataPlanes ? (
             <CircularProgress size={20} />
           ) : dataPlanesError ? (
@@ -135,10 +135,10 @@ export default function CreateEnvironment(scope: OrgScope): JSX.Element {
             </TextField>
           ) : null}
           {IS_CLOUD ? (
-            <TextField label="Description" placeholder="What this environment is for" value={description} onChange={(e) => setDescription(e.target.value)} fullWidth multiline minRows={2} />
+            <TextField label="Description" value={description} onChange={(e) => setDescription(e.target.value)} fullWidth multiline minRows={2} />
           ) : (
             <Box>
-              <TextField label="DNS Prefix" required placeholder="e.g., staging" value={dnsPrefix} onChange={(e) => setDnsPrefix(e.target.value)} fullWidth />
+              <TextField label="DNS Prefix" required value={dnsPrefix} onChange={(e) => setDnsPrefix(e.target.value)} fullWidth />
               {vhostPreview && (
                 <Alert severity="info" sx={{ mt: 1.5 }}>
                   DNS for the environment will be created as {vhostPreview}. URL customization will be enabled for the new environment after provisioning, which can take about 5 minutes.

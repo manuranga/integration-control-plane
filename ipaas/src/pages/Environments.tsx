@@ -17,6 +17,7 @@
  */
 
 import { Alert, Avatar, Box, Button, CircularProgress, IconButton, ListingTable, PageContent, PageTitle, Stack, TablePagination, Tooltip, Typography } from '@wso2/oxygen-ui';
+import { CARD_TABLE_SX } from '../constants/styles';
 import TextField from '../components/common/TextField';
 import { Clock, Layers, Plus, Trash2, AlertTriangle } from '@wso2/oxygen-ui-icons-react';
 import { useState, useMemo, useEffect, type JSX } from 'react';
@@ -178,18 +179,17 @@ export default function Environments(scope: OrgScope | ProjectScope): JSX.Elemen
               {alert.message}
             </Alert>
           )}
-          <ListingTable.Container>
-            <ListingTable.Toolbar
-              searchSlot={<SearchField value={search} onChange={setSearch} />}
-              actions={
-                <Authorized permissions={Permissions.ENVIRONMENT_MANAGE}>
-                  <Button variant="contained" startIcon={<Plus size={20} />} onClick={() => navigate(newEnvironmentUrl(scope))}>
-                    Create Environment
-                  </Button>
-                </Authorized>
-              }
-            />
-            <ListingTable>
+          {/* Search and the create action sit above the table, as on the project's integrations list. */}
+          <Stack direction="row" alignItems="center" justifyContent="space-between" gap={2} sx={{ mb: 2 }}>
+            <SearchField value={search} onChange={setSearch} />
+            <Authorized permissions={Permissions.ENVIRONMENT_MANAGE}>
+              <Button variant="contained" startIcon={<Plus size={20} />} onClick={() => navigate(newEnvironmentUrl(scope))}>
+                Create Environment
+              </Button>
+            </Authorized>
+          </Stack>
+          <ListingTable.Container disablePaper>
+            <ListingTable variant="card" density="compact" sx={CARD_TABLE_SX}>
               <ListingTable.Head>
                 <ListingTable.Row>
                   <ListingTable.Cell>Name</ListingTable.Cell>
@@ -238,20 +238,19 @@ export default function Environments(scope: OrgScope | ProjectScope): JSX.Elemen
                 )}
               </ListingTable.Body>
             </ListingTable>
-            <TablePagination
-              sx={{ borderTop: '1px solid', borderColor: 'divider' }}
-              component="div"
-              count={filtered.length}
-              page={safePage}
-              onPageChange={(_, p) => setPage(p)}
-              rowsPerPage={rowsPerPage}
-              onRowsPerPageChange={(e) => {
-                setRowsPerPage(parseInt(e.target.value, 10));
-                setPage(0);
-              }}
-              rowsPerPageOptions={[5, 10, 25, 50]}
-            />
           </ListingTable.Container>
+          <TablePagination
+            component="div"
+            count={filtered.length}
+            page={safePage}
+            onPageChange={(_, p) => setPage(p)}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={(e) => {
+              setRowsPerPage(parseInt(e.target.value, 10));
+              setPage(0);
+            }}
+            rowsPerPageOptions={[5, 10, 25, 50]}
+          />
         </>
       )}
 

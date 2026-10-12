@@ -77,14 +77,13 @@ function ProviderFields({ value, onChange, managedServers }: { value: VectorStor
     case 'pinecone':
       return (
         <>
-          <SecretField label="API Key" required value={value.apiKey} placeholder="Enter your Pinecone API Key" onChange={(v) => onChange({ ...value, apiKey: v })} />
+          <SecretField label="API Key" required value={value.apiKey} onChange={(v) => onChange({ ...value, apiKey: v })} />
           <TextField
             label="Index Name"
             required
             fullWidth
             size="small"
             value={value.indexName}
-            placeholder="Enter your Pinecone Index Name"
             onChange={(e) => onChange({ ...value, indexName: e.target.value })}
             error={!!pineconeIndexNameError(value.indexName)}
             helperText={pineconeIndexNameError(value.indexName) || undefined}

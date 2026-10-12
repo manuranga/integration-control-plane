@@ -114,12 +114,12 @@ export default function ResourceAlertRuleForm(props: AlertRuleFormProps): JSX.El
               setMetric(v);
               setIsAlertRuleHalfConfigured(true);
             }}
-            renderInput={(params) => <TextField {...params} required label="Metric" placeholder="Select metric" size="small" />}
+            renderInput={(params) => <TextField {...params} required label="Metric" size="small" />}
             isOptionEqualToValue={(o, v) => o.value === v.value}
           />
         </Grid>
         <Grid size={{ xs: 12, md: 4 }}>
-          <TextField required label={`Threshold ${getResourceThresholdUnit(metric?.value)}`} placeholder="Enter threshold" size="small" fullWidth value={threshold ?? ''} onChange={handleThresholdChange} error={!!errorThreshold} helperText={errorThreshold} />
+          <TextField required label={`Threshold ${getResourceThresholdUnit(metric?.value)}`} size="small" fullWidth value={threshold ?? ''} onChange={handleThresholdChange} error={!!errorThreshold} helperText={errorThreshold} />
         </Grid>
       </Grid>
       <Grid container spacing={3} sx={{ mt: -1 }}>
@@ -159,7 +159,7 @@ export default function ResourceAlertRuleForm(props: AlertRuleFormProps): JSX.El
                     setIsAlertRuleHalfConfigured(true);
                   }
                 }}
-                renderInput={(params) => <TextField {...params} label="Period" placeholder="Select period" size="small" />}
+                renderInput={(params) => <TextField {...params} label="Period" size="small" />}
                 isOptionEqualToValue={(o, v) => o.value === v.value}
               />
             </Grid>

@@ -9,7 +9,7 @@ export class CreateProjectPage {
   }
 
   nameInput() {
-    return this.page.getByLabel('Display Name');
+    return this.page.getByLabel('Project Name');
   }
 
   descriptionInput() {

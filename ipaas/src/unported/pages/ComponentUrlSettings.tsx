@@ -71,7 +71,7 @@ function ConfigureDialog({ componentId, domains, onClose, onDone }: { componentI
           </Alert>
         )}
         <Stack gap={2} sx={{ mt: 1 }}>
-          <TextField label="Default URL" value={defaultUrl} onChange={(e) => setDefaultUrl(e.target.value)} fullWidth required placeholder="https://default-host/path" helperText="The endpoint URL to map a custom domain onto." />
+          <TextField label="Default URL" value={defaultUrl} onChange={(e) => setDefaultUrl(e.target.value)} fullWidth required helperText="The endpoint URL to map a custom domain onto." />
           <TextField select label="Custom Domain" value={domainId} onChange={(e) => setDomainId(e.target.value)} fullWidth required>
             {domains.length === 0 ? (
               <MenuItem value="" disabled>

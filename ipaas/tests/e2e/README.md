@@ -143,9 +143,9 @@ card, and waiting out two real builds would double the suite's runtime for no ex
 **Settings**
 
 - the organization settings page exists
-- it offers Org Details and Package Registries
+- it offers Package Registries, and no longer Org Details
 - it offers no section that belongs only to the WIP build
-- the Package Registries and Org Details pages each render
+- the Package Registries page renders
 - the project settings page exists
 
 **Top nav and footer**

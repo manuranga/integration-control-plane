@@ -106,7 +106,7 @@ export default function McpProxyFromApi(scope: ProjectScope): JSX.Element {
   // Base path the new MCP API is exposed on (read-only, devant-style).
   const basePath = `/${scope.project}/${name || '<identifier>'}/v${version || '1.0'}`;
 
-  const identifierHelper = name && !nameLengthValid ? 'Use 3–64 characters.' : checkingName ? 'Checking availability…' : nameTaken ? 'This identifier is already taken.' : undefined;
+  const identifierHelper = name && !nameLengthValid ? 'Use 3–64 characters.' : checkingName ? 'Checking availability…' : nameTaken ? 'This integration id is already taken.' : undefined;
 
   // Required fields: Display Name, Identifier, Version. The button enables once
   // they're all filled and valid, and the identifier isn't a known duplicate.
@@ -144,13 +144,13 @@ export default function McpProxyFromApi(scope: ProjectScope): JSX.Element {
         <Alert severity="info">No source API was provided. Open an Integration as API and use its Generate MCP Server action.</Alert>
       ) : (
         <Stack gap={ROW_GAP} sx={{ maxWidth: 760 }}>
-          {/* Identity — Display Name + Identifier, two columns */}
+          {/* Identity — Integration Name + Integration Id, two columns */}
           <Stack direction={{ xs: 'column', sm: 'row' }} gap={2} alignItems="flex-start">
-            <TextField required size="small" label="Display Name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} fullWidth sx={{ flex: 1, ...REQUIRED_SX, ...RESERVE_HELPER_SX }} placeholder="Enter a display name" helperText=" " />
+            <TextField required size="small" label="Integration Name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} fullWidth sx={{ flex: 1, ...REQUIRED_SX, ...RESERVE_HELPER_SX }} helperText=" " />
             <TextField
               required
               size="small"
-              label="Identifier"
+              label="Integration Id"
               value={name}
               onChange={(e) => {
                 setNameEdited(true);

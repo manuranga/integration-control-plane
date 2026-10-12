@@ -202,7 +202,7 @@ export default function DeveloperPortalTab({ apimId, apimInfo, onSave, onCancel,
 
           <TextField label="Display Name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} fullWidth size="small" />
 
-          <TextField label="Description (Optional)" value={description} onChange={(e) => setDescription(e.target.value)} fullWidth multiline rows={4} size="small" placeholder='e.g. "This API allows you to connect to Salesforce."' />
+          <TextField label="Description (Optional)" value={description} onChange={(e) => setDescription(e.target.value)} fullWidth multiline rows={4} size="small" />
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <TextField select label="Visibility" fullWidth size="small" value={visibility} onChange={(e) => setVisibility(e.target.value as string)}>
@@ -245,8 +245,8 @@ export default function DeveloperPortalTab({ apimId, apimInfo, onSave, onCancel,
               Business Owner
             </Typography>
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-              <TextField label="Name (Optional)" value={bizInfo.businessOwner} onChange={(e) => setBizInfo((prev) => ({ ...prev, businessOwner: e.target.value }))} size="small" fullWidth placeholder='e.g. "John Doe"' />
-              <TextField label="Email (Optional)" type="email" value={bizInfo.businessOwnerEmail} onChange={(e) => setBizInfo((prev) => ({ ...prev, businessOwnerEmail: e.target.value }))} size="small" fullWidth placeholder='e.g. "john@acme.com"' />
+              <TextField label="Name (Optional)" value={bizInfo.businessOwner} onChange={(e) => setBizInfo((prev) => ({ ...prev, businessOwner: e.target.value }))} size="small" fullWidth />
+              <TextField label="Email (Optional)" type="email" value={bizInfo.businessOwnerEmail} onChange={(e) => setBizInfo((prev) => ({ ...prev, businessOwnerEmail: e.target.value }))} size="small" fullWidth />
             </Box>
           </Box>
 
@@ -256,8 +256,8 @@ export default function DeveloperPortalTab({ apimId, apimInfo, onSave, onCancel,
               Technical Owner
             </Typography>
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-              <TextField label="Name (Optional)" value={bizInfo.technicalOwner} onChange={(e) => setBizInfo((prev) => ({ ...prev, technicalOwner: e.target.value }))} size="small" fullWidth placeholder='e.g. "Jane Doe"' />
-              <TextField label="Email (Optional)" type="email" value={bizInfo.technicalOwnerEmail} onChange={(e) => setBizInfo((prev) => ({ ...prev, technicalOwnerEmail: e.target.value }))} size="small" fullWidth placeholder='e.g. "jane@acme.com"' />
+              <TextField label="Name (Optional)" value={bizInfo.technicalOwner} onChange={(e) => setBizInfo((prev) => ({ ...prev, technicalOwner: e.target.value }))} size="small" fullWidth />
+              <TextField label="Email (Optional)" type="email" value={bizInfo.technicalOwnerEmail} onChange={(e) => setBizInfo((prev) => ({ ...prev, technicalOwnerEmail: e.target.value }))} size="small" fullWidth />
             </Box>
           </Box>
         </AccordionDetails>

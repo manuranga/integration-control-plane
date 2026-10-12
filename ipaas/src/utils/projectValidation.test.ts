@@ -22,8 +22,8 @@ import { validateProjectName, validateProjectHandler, normalizeProjectError } fr
 
 describe('validateProjectName', () => {
   it('returns error for empty string', () => {
-    expect(validateProjectName('')).toBe('Display name is required.');
-    expect(validateProjectName('   ')).toBe('Display name is required.');
+    expect(validateProjectName('')).toBe('Project name is required.');
+    expect(validateProjectName('   ')).toBe('Project name is required.');
   });
 
   it('returns error when shorter than minimum length', () => {
@@ -50,7 +50,7 @@ describe('validateProjectName', () => {
 
 describe('validateProjectHandler', () => {
   it('returns error for empty string', () => {
-    expect(validateProjectHandler('')).toBe('Name is required.');
+    expect(validateProjectHandler('')).toBe('Project id is required.');
   });
 
   it('returns error when longer than max length', () => {

@@ -86,8 +86,8 @@ export default function GeneralDetailsTab({ service, lockedTags = [] }: { servic
 
       <Stack gap={2}>
         <TextField label="Service Name" required fullWidth value={name} onChange={(e) => setName(e.target.value)} sx={requiredSx} />
-        <TextField label="Summary" fullWidth multiline rows={2} value={summary} onChange={(e) => setSummary(e.target.value)} placeholder="A short summary of this service" />
-        <TextField label="Overview" fullWidth multiline rows={4} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A detailed overview (Markdown supported)" />
+        <TextField label="Summary" fullWidth multiline rows={2} value={summary} onChange={(e) => setSummary(e.target.value)} />
+        <TextField label="Overview" fullWidth multiline rows={4} value={description} onChange={(e) => setDescription(e.target.value)} />
 
         <Box>
           <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>

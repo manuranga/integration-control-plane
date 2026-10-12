@@ -27,12 +27,11 @@ interface SecretFieldProps {
   value: string;
   onChange: (value: string) => void;
   required?: boolean;
-  placeholder?: string;
   error?: string;
 }
 
 /** A masked text field with a show/hide toggle — the shared secret-input pattern. */
-export default function SecretField({ label, value, onChange, required, placeholder, error }: SecretFieldProps): JSX.Element {
+export default function SecretField({ label, value, onChange, required, error }: SecretFieldProps): JSX.Element {
   const [show, setShow] = useState(false);
   return (
     <TextField
@@ -42,7 +41,6 @@ export default function SecretField({ label, value, onChange, required, placehol
       size="small"
       type={show ? 'text' : 'password'}
       value={value}
-      placeholder={placeholder}
       onChange={(e) => onChange(e.target.value)}
       error={!!error}
       helperText={error || undefined}

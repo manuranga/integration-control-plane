@@ -24,15 +24,16 @@ import { useEffect, useRef, useState, type JSX } from 'react';
 export interface InlineEditFieldProps {
   label: string;
   value: string;
-  placeholder?: string;
   multiline?: boolean;
   editable: boolean;
   validate?: (value: string) => string;
   onSave: (value: string) => Promise<void>;
+  /** Shown under the field when there is no validation error. */
+  helperText?: string;
 }
 
 /** An editable field: type straight into it, then save with the done icon, Enter, or by clicking away. */
-export default function InlineEditField({ label, value, placeholder, multiline, editable, validate, onSave }: InlineEditFieldProps): JSX.Element {
+export default function InlineEditField({ label, value, multiline, editable, validate, onSave, helperText }: InlineEditFieldProps): JSX.Element {
   const [focused, setFocused] = useState(false);
   const [draft, setDraft] = useState(value);
   const [saving, setSaving] = useState(false);
@@ -65,7 +66,6 @@ export default function InlineEditField({ label, value, placeholder, multiline, 
       inputRef={inputRef}
       label={label}
       value={draft}
-      placeholder={placeholder}
       onChange={(e) => setDraft(e.target.value)}
       onFocus={() => setFocused(true)}
       onBlur={async () => {
@@ -84,7 +84,7 @@ export default function InlineEditField({ label, value, placeholder, multiline, 
       multiline={multiline}
       minRows={multiline ? 2 : undefined}
       error={!!error}
-      helperText={error || ' '}
+      helperText={error || helperText || ' '}
       slotProps={{
         input: {
           readOnly: !editable,

@@ -17,6 +17,7 @@
  */
 
 import { Box, Divider, MenuItem, MenuList, Paper, Popover, Stack, Typography } from '@wso2/oxygen-ui';
+import { providerIconSx, providerTitleSx } from '../ProjectCreate/GitProviderCards.styles';
 import { Check, ChevronDown, Plus } from '@wso2/oxygen-ui-icons-react';
 import { useRef, useState, type JSX, type ReactNode } from 'react';
 import { GIT_PROVIDER_LABEL, gitProviderIcon } from '../../constants/gitProviders';
@@ -48,13 +49,16 @@ export default function CredentialSelectCard({ provider, credentials, selected, 
   const close = () => setOpen(false);
 
   return (
-    <Paper variant="outlined" sx={{ px: 4, py: 2, borderColor: 'primary', width: '100%', height: '100%' }}>
-      <Stack direction="row" spacing={4} alignItems="center">
-        <Box sx={{ display: 'flex', flexShrink: 0, color: 'text.primary' }}>{gitProviderIcon(provider, 30)}</Box>
-        <Box sx={{ minWidth: 0 }}>
-          <Typography variant="h6" fontWeight={500} sx={{ lineHeight: 1.3 }}>
+    <Paper variant="outlined" sx={{ px: 3, py: 2, borderColor: 'primary', width: '100%', height: '100%' }}>
+      {/* Same layout as the other provider cards: icon and title on one row, the credential picker beneath. */}
+      <Stack gap={1}>
+        <Stack direction="row" gap={1.5} alignItems="center">
+          <Box sx={providerIconSx}>{gitProviderIcon(provider, 24)}</Box>
+          <Typography variant="body1" fontWeight={600} sx={providerTitleSx}>
             Authorize with {label}
           </Typography>
+        </Stack>
+        <Box sx={{ minWidth: 0 }}>
           <Box
             ref={anchorRef}
             role="button"
@@ -63,8 +67,8 @@ export default function CredentialSelectCard({ provider, credentials, selected, 
             aria-expanded={open}
             onClick={() => setOpen(true)}
             onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setOpen(true)}
-            sx={{ mt: 0.5, display: 'inline-flex', alignItems: 'center', gap: 0.5, cursor: 'pointer' }}>
-            <Typography variant="body1" sx={{ userSelect: 'none' }} color="grey.600">
+            sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, cursor: 'pointer' }}>
+            <Typography variant="body2" sx={{ userSelect: 'none' }} color="text.secondary">
               {selected?.name ?? 'Select a Credential'}
             </Typography>
             <Box sx={{ display: 'flex', color: 'primary.main' }}>

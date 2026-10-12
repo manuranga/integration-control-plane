@@ -19,8 +19,8 @@
 /**
  * Settings at organization and project scope, and the sections the cloud build declares.
  *
- * Cloud's org settings carry exactly two sections — `src/constants/orgSettingsSections.ts`
- * gates on IS_CLOUD and lists Org Details and Package Registries, with the others noted as
+ * Cloud's org settings carry exactly one section — `src/constants/orgSettingsSections.ts`
+ * gates on IS_CLOUD and lists Package Registries, with the others noted as
  * not yet supported. Asserting the absent ones stay absent is what catches a WIP-only
  * section leaking into the cloud build.
  */
@@ -29,10 +29,9 @@ import { expect, test } from '@playwright/test';
 import { getAuthContext } from '../../helpers/auth-context.js';
 import { expectPageRendered } from '../../helpers/cloud-fixtures.js';
 
-const CLOUD_SECTIONS = ['Org Details', 'Package Registries'];
+const CLOUD_SECTIONS = ['Package Registries'];
 // Declared only in the non-cloud branch of SETTINGS_SECTIONS.
 const WIP_ONLY_SECTIONS = ['Access Control', 'Egress Control', 'Workflows', 'Credentials', 'On-Prem Keys', 'Application Security'];
-
 
 test.describe('settings @smoke', () => {
   let orgHandler: string;
@@ -60,7 +59,7 @@ test.describe('settings @smoke', () => {
   test('organization settings offers no WIP-only section', async ({ page }) => {
     await expectPageRendered(page, `/organizations/${orgHandler}/settings`);
     // Positive assertion first: these absences would pass on a blank page.
-    await expect(page.getByText('Org Details', { exact: true }).first()).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText('Package Registries', { exact: true }).first()).toBeVisible({ timeout: 30_000 });
 
     for (const section of WIP_ONLY_SECTIONS) {
       await expect(page.getByText(section, { exact: true })).not.toBeVisible();
@@ -74,9 +73,4 @@ test.describe('settings @smoke', () => {
   test('package registries page exists', async ({ page }) => {
     await expectPageRendered(page, `/organizations/${orgHandler}/settings/package-registries`);
   });
-
-  test('org details page exists', async ({ page }) => {
-    await expectPageRendered(page, `/organizations/${orgHandler}/settings/org-details`);
-  });
-
 });

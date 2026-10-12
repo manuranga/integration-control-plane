@@ -30,3 +30,10 @@ export const cardDeleting = {
   opacity: 0.38,
   cursor: 'default',
 } as const;
+
+/** Shared by Create Project and Import Project, so the pair matches: same padding, no wrapping, never squeezed by the search field. */
+export const projectActionSx = {
+  whiteSpace: 'nowrap',
+  flexShrink: 0,
+  px: 2.5,
+} as const;

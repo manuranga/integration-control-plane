@@ -56,11 +56,11 @@ function CreateProxyForm({ projectId, onCancel, onCreated }: { projectId: string
   };
 
   const { data: availability, isFetching: checkingHandle } = useComponentNameAvailability(projectId, handle);
-  const nameError = !displayName.trim() ? 'Name is required.' : '';
+  const nameError = !displayName.trim() ? 'Proxy name is required.' : '';
   const handleError = useMemo(() => {
-    if (!handle) return 'Handle is required.';
+    if (!handle) return 'Proxy id is required.';
     if (!/^[a-z][a-z0-9-]*$/.test(handle)) return 'Use lowercase letters, numbers, and hyphens; start with a letter.';
-    if (handle.length >= 3 && availability && !availability.componentNameUnique) return 'A component with this handle already exists.';
+    if (handle.length >= 3 && availability && !availability.componentNameUnique) return 'An integration with this id already exists.';
     return '';
   }, [handle, availability]);
 
@@ -92,15 +92,15 @@ function CreateProxyForm({ projectId, onCancel, onCreated }: { projectId: string
       )}
       <Stack gap={2}>
         <Stack direction="row" gap={2} alignItems="flex-start">
-          <TextField label="Name" value={displayName} onChange={(e) => onNameChange(e.target.value)} fullWidth required error={!!displayName && !!nameError} helperText={(!!displayName && nameError) || ' '} autoFocus sx={{ flex: 1 }} />
+          <TextField label="Proxy Name" value={displayName} onChange={(e) => onNameChange(e.target.value)} fullWidth required error={!!displayName && !!nameError} helperText={(!!displayName && nameError) || ' '} autoFocus sx={{ flex: 1 }} />
           <TextField
-            label="Handle"
+            label="Proxy Id"
             value={handle}
             onChange={(e) => onHandleChange(e.target.value)}
             fullWidth
             required
             error={(!!handle || handleTouched) && !!handleError}
-            helperText={((!!handle || handleTouched) && handleError) || 'Unique project handle for this proxy.'}
+            helperText={((!!handle || handleTouched) && handleError) || 'Unique id for this proxy.'}
             sx={{ flex: 1 }}
           />
         </Stack>

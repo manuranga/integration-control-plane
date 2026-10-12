@@ -225,17 +225,7 @@ function CertLinkForm({ availableCerts, onLink, onCancel }: CertLinkFormProps) {
       <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
         Link Certificate
       </Typography>
-      <TextField
-        size="small"
-        fullWidth
-        label="Mount Path"
-        placeholder="/certs"
-        value={mountPath}
-        onChange={(e) => setMountPath(e.target.value)}
-        error={!!mountPathError}
-        helperText={mountPathError || 'Directory where certificate files will be mounted'}
-        sx={{ mb: 1.5 }}
-      />
+      <TextField size="small" fullWidth label="Mount Path" value={mountPath} onChange={(e) => setMountPath(e.target.value)} error={!!mountPathError} helperText={mountPathError || 'Directory where certificate files will be mounted'} sx={{ mb: 1.5 }} />
       <MuiSelect size="small" fullWidth displayEmpty value={selectedGroupUuid} onChange={(e) => setSelectedGroupUuid(e.target.value as string)} sx={{ mb: 1.5 }}>
         <MenuItem value="" disabled>
           Select a Certificate

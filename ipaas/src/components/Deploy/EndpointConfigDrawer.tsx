@@ -177,7 +177,7 @@ function EndpointPanel({ ep, onSaved }: { ep: EnvEndpoint; onSaved: () => void }
               API Key
             </Typography>
             <Box sx={{ width: 240 }}>
-              <TextField size="small" fullWidth value={state.apiKeyHeader} onChange={(e) => update({ apiKeyHeader: e.target.value })} disabled={!apiKeyEnabled} placeholder="ApiKey" label="Key header" />
+              <TextField size="small" fullWidth value={state.apiKeyHeader} onChange={(e) => update({ apiKeyHeader: e.target.value })} disabled={!apiKeyEnabled} label="Key header" />
             </Box>
           </Stack>
 
@@ -189,7 +189,7 @@ function EndpointPanel({ ep, onSaved }: { ep: EnvEndpoint; onSaved: () => void }
               OAuth2
             </Typography>
             <Box sx={{ width: 240 }}>
-              <TextField size="small" fullWidth value={state.authorizationHeader} onChange={(e) => update({ authorizationHeader: e.target.value })} disabled={!oauth2Enabled} placeholder="Authorization" label="Authorization header" />
+              <TextField size="small" fullWidth value={state.authorizationHeader} onChange={(e) => update({ authorizationHeader: e.target.value })} disabled={!oauth2Enabled} label="Authorization header" />
             </Box>
           </Stack>
         </Box>

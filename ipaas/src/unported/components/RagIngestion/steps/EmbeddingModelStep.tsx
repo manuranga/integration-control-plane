@@ -79,12 +79,12 @@ export default function EmbeddingModelStep({ value, onChange }: EmbeddingModelSt
               ))}
             </Select>
           ) : (
-            <TextField label="Model Id" required fullWidth size="small" value={value.model} placeholder="Enter the deployment/model id" onChange={(e) => onChange({ ...value, model: e.target.value })} sx={REQUIRED_FIELD_SX} />
+            <TextField label="Model Id" required fullWidth size="small" value={value.model} onChange={(e) => onChange({ ...value, model: e.target.value })} sx={REQUIRED_FIELD_SX} />
           )}
 
           {value.provider === 'azure_openai' && (
             <>
-              <TextField label="Base URL" required fullWidth size="small" value={value.azureBaseUrl} placeholder="https://<resource>.openai.azure.com" onChange={(e) => onChange({ ...value, azureBaseUrl: e.target.value })} sx={REQUIRED_FIELD_SX} />
+              <TextField label="Base URL" required fullWidth size="small" value={value.azureBaseUrl} onChange={(e) => onChange({ ...value, azureBaseUrl: e.target.value })} sx={REQUIRED_FIELD_SX} />
               <TextField label="API Version" required fullWidth size="small" value={value.azureApiVersion} onChange={(e) => onChange({ ...value, azureApiVersion: e.target.value })} sx={REQUIRED_FIELD_SX} />
             </>
           )}

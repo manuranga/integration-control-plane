@@ -101,3 +101,7 @@ export const TECH_OPTIONS: { id: 'MI' | 'BI'; label: string; icon: ReactNode }[]
     icon: <IntegratorIcon width={20} height={20} />,
   },
 ];
+
+/** The public-repository URL field's example and its note, shared by the create and import flows. */
+export const PUBLIC_REPO_URL_PLACEHOLDER = 'e.g. https://github.com/org/repo';
+export const PUBLIC_REPO_URL_HELP = 'Only public GitHub repositories are supported.';

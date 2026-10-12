@@ -32,7 +32,10 @@ export function envCard(page: Page): Locator {
 
 /** The env card's deployment status, as StatusDot renders it. */
 export function deploymentStatus(page: Page): Locator {
-  return envCard(page).getByText(/^(In Progress|Active|Error|Suspended|Not Deployed)$/);
+  // first(): a consumer's own "Active" chip renders lower in the same card, and two matches make textContent() throw.
+  return envCard(page)
+    .getByText(/^(In Progress|Active|Error|Suspended|Not Deployed)$/)
+    .first();
 }
 
 /** The Latest Build header, so its status is read from the build and not the first match on the page. */

@@ -120,11 +120,11 @@ export default function ConfigGroupForm({ mode, orgHandle, initial, submitting, 
   const allEnvsAssigned = environments.length > 0 && environments.every((env) => valueSets.some((s) => s.environmentIds.includes(env.id)));
 
   const handleHelper = (() => {
-    if (isEdit) return 'The handle cannot be changed after creation.';
-    if (!handle) return 'A URL-safe handle is derived from the name.';
+    if (isEdit) return 'The id cannot be changed after creation.';
+    if (!handle) return 'A URL-safe id is derived from the name.';
     if (checking) return 'Checking availability…';
     if (taken) return `“${handle}” is taken.${nameCheck.data?.alternativeGroupName ? ` Try “${nameCheck.data.alternativeGroupName}”.` : ''}`;
-    if (available) return 'Handle is available.';
+    if (available) return 'Id is available.';
     return ' ';
   })();
 
@@ -148,16 +148,15 @@ export default function ConfigGroupForm({ mode, orgHandle, initial, submitting, 
       {step === 0 ? (
         <>
           <Stack direction={{ xs: 'column', sm: 'row' }} gap={2} sx={{ mb: 1, maxWidth: 720 }}>
-            <TextField label="Name" required fullWidth value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="E.g. Payment Service Config" sx={{ ...requiredSx, flex: 1 }} helperText=" " />
+            <TextField label="Config Group Name" required fullWidth value={displayName} onChange={(e) => setDisplayName(e.target.value)} sx={{ ...requiredSx, flex: 1 }} helperText=" " />
             <TextField
-              label="Handle"
+              label="Config Group Id"
               required
               fullWidth
               value={handle}
               onChange={(e) => setHandle(e.target.value)}
               disabled={isEdit}
               error={taken}
-              placeholder="payment-service-config"
               helperText={handleHelper}
               InputProps={{
                 readOnly: !isEdit && !handleUnlocked,
@@ -183,7 +182,7 @@ export default function ConfigGroupForm({ mode, orgHandle, initial, submitting, 
               FormHelperTextProps={{ sx: { color: taken ? 'error.main' : available ? 'success.main' : 'text.secondary' } }}
             />
           </Stack>
-          <TextField label="Description" fullWidth multiline rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What is this group for?" sx={{ maxWidth: 720, mb: 4 }} />
+          <TextField label="Description" fullWidth multiline rows={3} value={description} onChange={(e) => setDescription(e.target.value)} sx={{ maxWidth: 720, mb: 4 }} />
 
           <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.5 }}>
             Configuration Keys

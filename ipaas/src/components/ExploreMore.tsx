@@ -20,7 +20,7 @@ import { Box, Card, CardContent, Link, Stack, Typography } from '@wso2/oxygen-ui
 import { ArrowRight, BookOpen, FileText, LifeBuoy } from '@wso2/oxygen-ui-icons-react';
 import type { JSX } from 'react';
 import { EXPLORE_GROUPS } from '../constants/exploreLinks';
-import { cardContentSx, cardSx, gridSx, groupIconSx, groupSx, groupTitleSx, headingSx, linkArrowSx, linkSx, sectionSx } from './ExploreMore.styles';
+import { cardContentSx, cardSx, gridSx, groupHeaderSx, groupIconSx, groupSx, groupTitleSx, headingSx, linkArrowSx, linkSx, sectionSx } from './ExploreMore.styles';
 
 const GROUP_ICONS: Record<string, JSX.Element> = {
   Tutorials: <BookOpen size={22} />,
@@ -39,31 +39,25 @@ export default function ExploreMore(): JSX.Element {
         <CardContent sx={cardContentSx}>
           <Box sx={gridSx}>
             {EXPLORE_GROUPS.map((group) => (
-              <Stack key={group.title} direction="row" gap={1.5} sx={groupSx}>
-                <Box sx={groupIconSx}>{GROUP_ICONS[group.title]}</Box>
-                <Box sx={groupSx}>
+              // Links start at the icon's left edge, so each arrow lines up under the group icon.
+              <Box key={group.title} sx={groupSx}>
+                <Stack direction="row" gap={1.5} alignItems="center" sx={groupHeaderSx}>
+                  <Box sx={groupIconSx}>{GROUP_ICONS[group.title]}</Box>
                   <Typography variant="body1" sx={groupTitleSx}>
                     {group.title}
                   </Typography>
-                  <Stack gap={0.75}>
-                    {group.links.map((link) => (
-                      <Link
-                        key={link.href}
-                        href={link.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        variant="body2"
-                        underline="hover"
-                        sx={linkSx}>
-                        <Box component="span" sx={linkArrowSx}>
-                          <ArrowRight size={14} />
-                        </Box>
-                        {link.label}
-                      </Link>
-                    ))}
-                  </Stack>
-                </Box>
-              </Stack>
+                </Stack>
+                <Stack gap={0.75}>
+                  {group.links.map((link) => (
+                    <Link key={link.href} href={link.href} target="_blank" rel="noopener noreferrer" variant="body2" underline="hover" sx={linkSx}>
+                      <Box component="span" sx={linkArrowSx}>
+                        <ArrowRight size={14} />
+                      </Box>
+                      {link.label}
+                    </Link>
+                  ))}
+                </Stack>
+              </Box>
             ))}
           </Box>
         </CardContent>

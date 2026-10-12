@@ -44,15 +44,18 @@ export const groupSx = {
   minWidth: 0,
 } as const;
 
+export const groupHeaderSx = {
+  mb: 1,
+} as const;
+
 export const groupIconSx = {
+  display: 'flex',
   color: 'primary.main',
   flexShrink: 0,
-  mt: 0.25,
 } as const;
 
 export const groupTitleSx = {
   fontWeight: 600,
-  mb: 1,
 } as const;
 
 /** Body-coloured until hover, so only the arrow carries the accent at rest. */

@@ -17,6 +17,7 @@
  */
 
 import { Alert, Box, Button, CircularProgress, FormHelperText, FormLabel, Grid, IconButton, InputAdornment, Link, MenuItem, PageContent, Skeleton, Stack, Tooltip, Typography } from '@wso2/oxygen-ui';
+import { PUBLIC_REPO_URL_HELP, PUBLIC_REPO_URL_PLACEHOLDER } from '../constants/import';
 import TextField from '../components/common/TextField';
 import { ArrowLeft, GitBranch, RefreshCw, GitHub } from '@wso2/oxygen-ui-icons-react';
 import { MENU_SEARCH_THRESHOLD } from '../components/MenuSearchField';
@@ -55,14 +56,6 @@ import { toHandler, formatRepoNameToDisplayName } from '../utils/string';
 import { parseGitHubUrl } from '../utils/github';
 import { detectTechnology } from '../utils/technologyDetection';
 import { useProjectId } from '../hooks/useProjects';
-
-// Helper/error text rendered below the field+refresh row (not inside the field),
-// so the refresh icon stays centred on the input box. Matches MUI's default
-// helperText offset (14px left, 3px top).
-const FIELD_HELPER_SX = {
-  mx: 1.75,
-  mt: 0.5,
-} as const;
 
 export default function ImportIntegration(scope: ProjectScope): JSX.Element {
   const navigate = useAppNavigate();
@@ -508,7 +501,7 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
 
   // Row 1 source pickers — switches based on sourceMode:
   const renderRepoPickers = () => (
-    <Grid container spacing={3} sx={{ mb: 3 }}>
+    <Grid container columnSpacing={3} rowSpacing={1} sx={{ mb: 1 }}>
       {isPublicRepo ? (
         <Grid size={{ xs: 12, md: 3 }}>
           <TextField
@@ -518,7 +511,8 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
             onChange={(e) => setRepoUrl(e.target.value)}
             fullWidth
             error={!!urlError}
-            helperText={urlError || (isBranchesLoading && parsedOrg ? 'Fetching branches…' : 'e.g. https://github.com/org/repo')}
+            placeholder={PUBLIC_REPO_URL_PLACEHOLDER}
+            helperText={urlError || PUBLIC_REPO_URL_HELP}
             slotProps={{
               input: {
                 endAdornment:
@@ -583,9 +577,6 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
                 ))}
               </TextField>
             </Stack>
-            <FormHelperText error={authStatus === 'failed' || credentialAuthFailed} sx={FIELD_HELPER_SX}>
-              {isCredentialMode ? `${providerLabel} organization` : 'GitHub organization'}
-            </FormHelperText>
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
@@ -633,7 +624,6 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
                   ))}
               </TextField>
             </Stack>
-            <FormHelperText sx={FIELD_HELPER_SX}>Select repository</FormHelperText>
           </Grid>
         </>
       )}
@@ -673,7 +663,6 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
                 ))}
             </TextField>
           </Stack>
-          <FormHelperText sx={FIELD_HELPER_SX}>Select branch</FormHelperText>
         </Grid>
       )}
 
@@ -782,8 +771,8 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
       <Typography variant="h1" sx={{ mb: 0.5 }}>
         Import an Integration
       </Typography>
-      <Typography color="text.secondary" sx={{ mb: 6 }}>
-        {isPublicRepo ? 'Paste a public GitHub repository URL to get started.' : isCredentialMode ? `Connect your ${providerLabel} repository to start building.` : 'Connect your GitHub repository to start building.'}
+      <Typography color="text.secondary" sx={{ mb: 4 }}>
+        {isPublicRepo ? 'Bring an existing integration from a public GitHub repository into this project.' : `Bring an existing integration from your ${isCredentialMode ? providerLabel : 'GitHub'} repository into this project.`}
       </Typography>
 
       {/* Credential picker card — only while there are credentials to pick and none is
@@ -837,11 +826,11 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
           {/* Row 1 — source pickers (mode-aware) + Branch + Directory */}
           {renderRepoPickers()}
 
-          {/* Row 2 — Display Name + auto-generated Name */}
-          <Grid container spacing={3} sx={{ mb: 3 }}>
+          {/* Row 2 — Integration Name + auto-generated Integration Id */}
+          <Grid container columnSpacing={3} rowSpacing={1} sx={{ mt: 2, mb: 1 }}>
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField
-                label="Display Name"
+                label="Integration Name"
                 required
                 value={displayName}
                 onChange={(e) => {
@@ -850,17 +839,16 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
                 }}
                 fullWidth
                 error={!!displayName.trim() && !handlerValid}
-                helperText={displayName.trim() && !handlerValid ? 'Must be 3–64 chars' : 'Display Name of the Integration'}
+                helperText={displayName.trim() && !handlerValid ? 'Must be 3–64 chars' : undefined}
               />
             </Grid>
 
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField
-                label="Name"
+                label="Integration Id"
                 value={effectiveHandler}
                 fullWidth
                 disabled
-                helperText={isCheckingName ? 'Checking availability…' : 'Auto-generated identifier'}
                 slotProps={{
                   input: {
                     endAdornment: isCheckingName ? (
@@ -875,15 +863,15 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
           </Grid>
 
           {/* Row 3 — Description */}
-          <Grid container spacing={3} sx={{ mb: 3 }}>
+          <Grid container columnSpacing={3} rowSpacing={1} sx={{ mb: 1 }}>
             <Grid size={{ xs: 12, md: 6 }}>
-              <TextField label="Description" value={description} onChange={(e) => setDescription(e.target.value)} fullWidth multiline minRows={1} helperText="Brief description" />
+              <TextField label="Description" value={description} onChange={(e) => setDescription(e.target.value)} fullWidth multiline minRows={1} />
             </Grid>
           </Grid>
 
           {/* Technology */}
           <Box sx={{ mb: 3 }}>
-            <Typography variant="h5" sx={{ mb: 2, mt: 5 }}>
+            <Typography variant="h5" sx={{ mb: 2, mt: 3 }}>
               Technology
             </Typography>
             <TechnologySelector selected={selectedTechnology} detectedMode={detectedMode} enabled={showBranchAndSubPath} onSelect={setSelectedTechnology} />
@@ -906,7 +894,7 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
 
           {/* Integration Type */}
           <Box sx={{ mb: 5 }}>
-            <Typography variant="h5" sx={{ mb: 2, mt: 5 }}>
+            <Typography variant="h5" sx={{ mb: 2, mt: 3 }}>
               Integration Type
             </Typography>
             <IntegrationTypeSelector selected={selectedIntegrationType} onSelect={setSelectedIntegrationType} />

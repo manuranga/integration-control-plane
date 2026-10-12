@@ -74,7 +74,6 @@ export default function ProbeConfigFields({ kind, form, onChange }: ProbeConfigF
               label="Path"
               required
               size="small"
-              placeholder="Eg. /healthz"
               value={form.path}
               onChange={(e) => onChange({ path: e.target.value })}
               onBlur={touch('path')}

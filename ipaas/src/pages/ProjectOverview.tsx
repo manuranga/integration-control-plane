@@ -105,11 +105,11 @@ function ProjectOverviewForm({ org, project }: { org: string; project: Project }
       <Stack gap={3} sx={{ maxWidth: 640 }}>
         <Stack direction="row" gap={2} alignItems="flex-start">
           <Box sx={{ flex: 1 }}>
-            <InlineEditField label="Name" value={project.name} editable={canManage} validate={validateName} onSave={(v) => saveField({ name: v })} />
+            <InlineEditField label="Project Name" value={project.name} editable={canManage} validate={validateName} onSave={(v) => saveField({ name: v })} />
           </Box>
-          <TextField label="Handle" value={project.handler} fullWidth disabled helperText=" " sx={{ flex: 1 }} />
+          <TextField label="Project Id" value={project.handler} fullWidth disabled helperText=" " sx={{ flex: 1 }} />
         </Stack>
-        <InlineEditField label="Description" value={project.description ?? ''} placeholder="No description" multiline editable={canManage} onSave={(v) => saveField({ description: v })} />
+        <InlineEditField label="Description" value={project.description ?? ''} helperText={project.description ? undefined : 'No description yet.'} multiline editable={canManage} onSave={(v) => saveField({ description: v })} />
       </Stack>
 
       <Authorized permissions={Permissions.PROJECT_MANAGE}>

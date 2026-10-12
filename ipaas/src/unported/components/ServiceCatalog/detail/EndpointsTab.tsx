@@ -164,7 +164,7 @@ export default function EndpointsTab({ service, orgHandle, canEdit }: { service:
               <Divider />
               <Box sx={{ p: 2 }}>
                 <Stack gap={2}>
-                  <TextField label="Endpoint URL" required fullWidth size="small" value={card.serviceUrl} onChange={(e) => patchCard(card.id, { serviceUrl: e.target.value })} placeholder="https://api.provider.com/v1" disabled={!canEdit} sx={requiredSx} />
+                  <TextField label="Endpoint URL" required fullWidth size="small" value={card.serviceUrl} onChange={(e) => patchCard(card.id, { serviceUrl: e.target.value })} disabled={!canEdit} sx={requiredSx} />
 
                   {card.params.length > 0 && (
                     <Box>

@@ -142,7 +142,12 @@ async function emptyLegacyProject(page: Page): Promise<number> {
 /** Empties and deletes the legacy project; throws with the reason when it cannot. */
 async function sweepLegacyProject(page: Page, note: (description: string) => void): Promise<void> {
   const card = await filterToLegacyProject(page);
-  if (!(await card.first().isVisible({ timeout: 15_000 }).catch(() => false))) {
+  if (
+    !(await card
+      .first()
+      .isVisible({ timeout: 15_000 })
+      .catch(() => false))
+  ) {
     note(`no ${PROJECT} project to sweep`);
     return;
   }
@@ -226,7 +231,8 @@ test.describe('01 fixture project @smoke', () => {
 
   test('TC_IP_PROJ_001 the organization home lists its projects', async () => {
     await expect(page.getByRole('heading', { name: 'All Projects' })).toBeVisible({ timeout: 60_000 });
-    await expect(page.getByRole('button', { name: 'Create', exact: true })).toBeVisible();
+    // first(): an org with no projects also offers it in the empty state, and both open the same form.
+    await expect(page.getByRole('button', { name: 'Create Project', exact: true }).first()).toBeVisible();
   });
 
   test('TC_IP_PROJ_002 the organization home links to tutorials and Discord support', async () => {
@@ -241,9 +247,9 @@ test.describe('01 fixture project @smoke', () => {
     // The pipeline starts a run every half hour and a run lasts nearly an hour, so runs never share one.
     const project = activeProject();
 
-    // exact — 'Create' also prefixes 'Create an Integration' and 'Create Project'.
-    await page.getByRole('button', { name: 'Create', exact: true }).click();
-    await page.getByRole('textbox', { name: 'Display Name' }).fill(project);
+    // first(): an org with no projects also offers it in the empty state; the form's submit shares the name but lives on the next page.
+    await page.getByRole('button', { name: 'Create Project', exact: true }).first().click();
+    await page.getByRole('textbox', { name: 'Project Name' }).fill(project);
     await page.getByRole('button', { name: 'Create Project', exact: true }).click();
 
     const landed = await page
@@ -719,7 +725,7 @@ test.describe('05 import an AI agent @smoke', () => {
     await expect(page.getByRole('combobox', { name: /^Branch/ }), 'the repository did not resolve into a branch — GitHub public API rate limit is the usual cause').toContainText('main', { timeout: 60_000 });
     // Read, never opened: the picker re-runs technology detection, which can leave the submit disabled.
     await expect(page.getByRole('textbox', { name: 'Repository Sub Path' })).toBeVisible();
-    await expect(page.getByRole('textbox', { name: 'Display Name' }), 'the display name was not derived from the repository').not.toHaveValue('');
+    await expect(page.getByRole('textbox', { name: 'Integration Name' }), 'the integration name was not derived from the repository').not.toHaveValue('');
   });
 
   test('TC_IP_AGENT_003 importing provisions the agent under its derived name', async () => {
@@ -987,7 +993,7 @@ test.describe('07 page availability @smoke', () => {
     await expectPageRendered(page, `/organizations/${orgHandler}/settings`);
   });
 
-  const SECTION_IDS: Record<(typeof CLOUD_SECTIONS)[number], string> = { 'Org Details': 'TC_IP_SET_002', 'Package Registries': 'TC_IP_SET_003' };
+  const SECTION_IDS: Record<(typeof CLOUD_SECTIONS)[number], string> = { 'Package Registries': 'TC_IP_SET_003' };
   for (const section of CLOUD_SECTIONS) {
     test(`${SECTION_IDS[section]} organization settings offers "${section}"`, async () => {
       await expectPageRendered(page, `/organizations/${orgHandler}/settings`);
@@ -997,7 +1003,10 @@ test.describe('07 page availability @smoke', () => {
 
   test('TC_IP_SET_004 organization settings offers no WIP-only section', async () => {
     await expectPageRendered(page, `/organizations/${orgHandler}/settings`);
-    await expect(page.getByText('Org Details', { exact: true }).first()).toBeVisible({ timeout: 30_000 });
+    // Positive assertion first: these absences would pass on a blank page.
+    await expect(page.getByText('Package Registries', { exact: true }).first()).toBeVisible({ timeout: 30_000 });
+    // Org Details was removed from cloud settings, so it must not come back either.
+    await expect(page.getByText('Org Details', { exact: true })).not.toBeVisible();
     for (const section of WIP_ONLY_SECTIONS) {
       await expect(page.getByText(section, { exact: true })).not.toBeVisible();
     }
@@ -1005,10 +1014,6 @@ test.describe('07 page availability @smoke', () => {
 
   test('TC_IP_SET_005 package registries page exists', async () => {
     await expectPageRendered(page, `/organizations/${orgHandler}/settings/package-registries`);
-  });
-
-  test('TC_IP_SET_006 org details page exists', async () => {
-    await expectPageRendered(page, `/organizations/${orgHandler}/settings/org-details`);
   });
 });
 
@@ -1125,7 +1130,11 @@ test.describe('08b sweep abandoned projects @smoke', () => {
         await enterOrgHome(page, orgHandler);
 
         // A project already being deleted keeps its card but loses the settings button, so it cannot be opened.
-        if (!(await projectSettingsButton(page).isVisible({ timeout: 15_000 }).catch(() => false))) {
+        if (
+          !(await projectSettingsButton(page)
+            .isVisible({ timeout: 15_000 })
+            .catch(() => false))
+        ) {
           test.info().annotations.push({ type: 'fixture', description: `${project} is already being deleted; left to finish` });
           continue;
         }

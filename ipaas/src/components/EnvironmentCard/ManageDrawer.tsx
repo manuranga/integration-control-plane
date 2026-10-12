@@ -197,9 +197,9 @@ function RateLimitInputs({ policy, onChange }: { policy: RateLimitPolicy; onChan
         type="number"
         label="Request count"
         value={policy.requestCount === '-1' ? '' : policy.requestCount}
-        placeholder="-1 (unlimited)"
         onChange={(e) => onChange({ ...policy, requestCount: e.target.value || '-1' })}
         inputProps={{ min: -1 }}
+        helperText="Leave empty for unlimited."
         sx={{ flex: 1 }}
       />
       <TextField select size="small" label="Time unit" value={policy.timeUnit} onChange={(e) => onChange({ ...policy, timeUnit: e.target.value as TimeUnit })} sx={{ width: 120 }}>

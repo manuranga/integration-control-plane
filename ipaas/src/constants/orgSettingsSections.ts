@@ -31,13 +31,9 @@ export interface SettingsSectionDef {
 
 /**
  * Org Settings sections, in display order. User management and the security sections
- * aren't backed by the BFF yet, so Settings carries the org identity block and the
- * package registries.
+ * aren't backed by the BFF yet, so Settings carries only the package registries.
  */
-export const SETTINGS_SECTIONS: readonly SettingsSectionDef[] = [
-  { id: 'org-details', label: 'Org Details', path: 'org-details', permissions: [] },
-  { id: 'package-registries', label: 'Package Registries', path: 'package-registries', permissions: [Permissions.ENVIRONMENT_MANAGE] },
-];
+export const SETTINGS_SECTIONS: readonly SettingsSectionDef[] = [{ id: 'package-registries', label: 'Package Registries', path: 'package-registries', permissions: [Permissions.ENVIRONMENT_MANAGE] }];
 
 /** A section is visible if it has no gate or the user holds one of its permissions. */
 export function isSettingsSectionVisible(s: SettingsSectionDef, hasAnyPermission: (perms: string[]) => boolean): boolean {

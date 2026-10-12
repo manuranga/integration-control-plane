@@ -121,12 +121,12 @@ export default function LatencyAlertRuleForm(props: AlertRuleFormProps): JSX.Ele
               setMetric(v);
               setIsAlertRuleHalfConfigured(true);
             }}
-            renderInput={(params) => <TextField {...params} required label="Metric" placeholder="Select metric" size="small" />}
+            renderInput={(params) => <TextField {...params} required label="Metric" size="small" />}
             isOptionEqualToValue={(o, v) => o.value === v.value}
           />
         </Grid>
         <Grid size={{ xs: 12, md: 4 }}>
-          <TextField required label="Threshold (ms)" placeholder="Enter threshold" size="small" fullWidth value={threshold ?? ''} onChange={handleThresholdChange} error={!!errorThreshold} helperText={errorThreshold || 'Value in milliseconds'} />
+          <TextField required label="Threshold (ms)" size="small" fullWidth value={threshold ?? ''} onChange={handleThresholdChange} error={!!errorThreshold} helperText={errorThreshold || 'Value in milliseconds'} />
         </Grid>
       </Grid>
       <Grid container spacing={3} sx={{ mt: -1 }}>
@@ -164,7 +164,7 @@ export default function LatencyAlertRuleForm(props: AlertRuleFormProps): JSX.Ele
                     setIsAlertRuleHalfConfigured(true);
                   }
                 }}
-                renderInput={(params) => <TextField {...params} label="Period" placeholder="Select period" size="small" helperText="Duration the metric must exceed the threshold" />}
+                renderInput={(params) => <TextField {...params} label="Period" size="small" helperText="Duration the metric must exceed the threshold" />}
                 isOptionEqualToValue={(o, v) => o.value === v.value}
               />
             </Grid>

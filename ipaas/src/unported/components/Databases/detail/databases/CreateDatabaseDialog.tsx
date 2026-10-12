@@ -57,7 +57,6 @@ export default function CreateDatabaseDialog({ serverId, existingNames, onClose,
           fullWidth
           size="small"
           label="Database name"
-          placeholder="E.g. my-database"
           value={name}
           onChange={(e) => setName(e.target.value)}
           error={!!error}

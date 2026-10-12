@@ -211,21 +211,11 @@ export default function GenAIServiceWizard({ orgHandle, submitting, submitError,
               {templateLoading && <CircularProgress size={20} sx={{ display: 'block', mb: 2 }} />}
               <Stack gap={2} sx={{ maxWidth: 560 }}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
-                  <TextField label="Name" required fullWidth value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter service name" sx={{ ...requiredSx, flex: 1 }} />
-                  <TextField label="Version" fullWidth value={version} onChange={(e) => setVersion(e.target.value)} placeholder="v1" sx={{ flex: 1 }} />
+                  <TextField label="Name" required fullWidth value={name} onChange={(e) => setName(e.target.value)} sx={{ ...requiredSx, flex: 1 }} />
+                  <TextField label="Version" fullWidth value={version} onChange={(e) => setVersion(e.target.value)} sx={{ flex: 1 }} />
                 </Stack>
-                <TextField label="Summary" fullWidth multiline rows={2} value={summary} onChange={(e) => setSummary(e.target.value)} placeholder="Enter a short summary" />
-                <TextField
-                  label="Service URL"
-                  required
-                  fullWidth
-                  value={serviceUrl}
-                  onChange={(e) => setServiceUrl(e.target.value)}
-                  disabled={serviceUrlLocked}
-                  placeholder="https://api.provider.com/v1"
-                  sx={requiredSx}
-                  helperText={serviceUrlLocked ? 'Provided by the selected provider.' : ' '}
-                />
+                <TextField label="Summary" fullWidth multiline rows={2} value={summary} onChange={(e) => setSummary(e.target.value)} />
+                <TextField label="Service URL" required fullWidth value={serviceUrl} onChange={(e) => setServiceUrl(e.target.value)} disabled={serviceUrlLocked} sx={requiredSx} helperText={serviceUrlLocked ? 'Provided by the selected provider.' : ' '} />
               </Stack>
             </>
           )}
@@ -259,17 +249,8 @@ export default function GenAIServiceWizard({ orgHandle, submitting, submitError,
 
                     <Stack gap={2}>
                       <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
-                        <TextField label="Name" required size="small" fullWidth value={ep.name} onChange={(e) => patchEndpoint(ep.id, { name: e.target.value })} placeholder="ProdEndpoint" sx={{ ...requiredSx, flex: 1 }} />
-                        <TextField
-                          label="Endpoint URL"
-                          required
-                          size="small"
-                          fullWidth
-                          value={ep.values[SERVICE_URL_FIELD] ?? ''}
-                          onChange={(e) => setEndpointValue(ep.id, SERVICE_URL_FIELD, e.target.value)}
-                          placeholder="https://api.provider.com/v1"
-                          sx={{ ...requiredSx, flex: 1 }}
-                        />
+                        <TextField label="Name" required size="small" fullWidth value={ep.name} onChange={(e) => patchEndpoint(ep.id, { name: e.target.value })} sx={{ ...requiredSx, flex: 1 }} />
+                        <TextField label="Endpoint URL" required size="small" fullWidth value={ep.values[SERVICE_URL_FIELD] ?? ''} onChange={(e) => setEndpointValue(ep.id, SERVICE_URL_FIELD, e.target.value)} sx={{ ...requiredSx, flex: 1 }} />
                       </Stack>
 
                       {paramEntries.length > 0 && (

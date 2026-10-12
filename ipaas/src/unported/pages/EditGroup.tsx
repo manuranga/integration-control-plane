@@ -102,7 +102,7 @@ function AddRolesToGroupDialog({ orgHandler, groupId, existingRoleIds, onClose, 
             value={selected}
             onChange={(_, v) => setSelected(v)}
             isOptionEqualToValue={(a, b) => a.roleId === b.roleId}
-            renderInput={(params) => <TextField {...params} label="Roles" placeholder="Select roles to add to group" />}
+            renderInput={(params) => <TextField {...params} label="Roles" />}
           />
           <Box sx={{ border: 1, borderColor: 'divider', borderRadius: 1, p: 2, bgcolor: 'background.paper' }}>
             <Typography variant="body2" sx={{ mb: 1 }}>
@@ -171,7 +171,7 @@ function AddUsersToGroupDialog({ orgHandler, groupId, existingUserIds, onClose, 
         value={selected}
         onChange={(_, v) => setSelected(v)}
         isOptionEqualToValue={(a, b) => a.userId === b.userId}
-        renderInput={(params) => <TextField {...params} label="Users" placeholder="Select users to add" />}
+        renderInput={(params) => <TextField {...params} label="Users" />}
       />
     </FormDialog>
   );

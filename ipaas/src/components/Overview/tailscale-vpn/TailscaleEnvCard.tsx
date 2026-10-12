@@ -266,7 +266,6 @@ export default function TailscaleEnvCard({ orgHandler, projectId, component, ver
               disabled={!canManage || saving}
               type={showSecret ? 'text' : 'password'}
               label={authMethod === 'authKey' ? 'Tailscale Auth Key' : 'OAuth Client Secret'}
-              placeholder={existingSecret ? `Enter a new ${authMethod === 'authKey' ? 'auth key' : 'client secret'} to update` : `Add ${authMethod === 'authKey' ? 'auth key' : 'client secret'}`}
               value={authMethod === 'authKey' ? authKey : clientSecret}
               onChange={(e) => (authMethod === 'authKey' ? setAuthKey(e.target.value) : setClientSecret(e.target.value))}
               InputProps={{
@@ -373,7 +372,7 @@ export default function TailscaleEnvCard({ orgHandler, projectId, component, ver
                     <ArrowRight size={16} />
                   </Grid>
                   <Grid size={{ xs: 3 }}>
-                    <TextField size="small" fullWidth label="Device IP" placeholder="100.108.78.93" value={form.ip} onChange={(e) => setForm((f) => ({ ...f, ip: e.target.value }))} />
+                    <TextField size="small" fullWidth label="Device IP" value={form.ip} onChange={(e) => setForm((f) => ({ ...f, ip: e.target.value }))} />
                   </Grid>
                   <Grid size={{ xs: 2 }}>
                     <TextField size="small" fullWidth type="number" label="Device Port" value={form.targetPort || ''} onChange={(e) => setForm((f) => ({ ...f, targetPort: Number(e.target.value) }))} />

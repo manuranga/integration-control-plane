@@ -174,7 +174,7 @@ export function CreateDatabaseServerView({ scope, kind }: { scope: OrgScope; kin
                   );
                 })}
               </Grid>
-              <TextField label="Service Name" required fullWidth value={serviceName} onChange={(e) => setServiceName(e.target.value)} error={!!nameError} helperText={nameError} placeholder="Enter service name" sx={{ maxWidth: 480, ...REQUIRED_FIELD_SX }} />
+              <TextField label="Service Name" required fullWidth value={serviceName} onChange={(e) => setServiceName(e.target.value)} error={!!nameError} helperText={nameError} sx={{ maxWidth: 480, ...REQUIRED_FIELD_SX }} />
             </>
           ) : (
             <>

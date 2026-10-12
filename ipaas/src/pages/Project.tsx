@@ -51,6 +51,7 @@ import {
   Tooltip,
   Typography,
 } from '@wso2/oxygen-ui';
+import { CARD_TABLE_SX } from '../constants/styles';
 import TextField from '../components/common/TextField';
 import ProjectHomeSkeleton from '../components/ProjectHomeSkeleton';
 import { ChevronDown, ChevronUp, Cloud, ExternalLink, FileText, Filter, GitHub, GitBranch, Info, Link2, Pencil, Plus, PlugZap, RefreshCw, Search, Trash2 } from '@wso2/oxygen-ui-icons-react';
@@ -442,7 +443,7 @@ function IntegrationsTable({
         <>
           {filteredIntegrations.length > 0 && (
             <ListingTable.Container disablePaper>
-              <ListingTable variant="card" density="compact" sx={{ '& .MuiTableBody-root .MuiTableCell-root': { py: 2 } }}>
+              <ListingTable variant="card" density="compact" sx={CARD_TABLE_SX}>
                 <ListingTable.Head>
                   <ListingTable.Row>
                     <ListingTable.Cell>Name</ListingTable.Cell>
@@ -559,7 +560,7 @@ function IntegrationsTable({
                 Non Integrations
               </Typography>
               <ListingTable.Container disablePaper>
-                <ListingTable variant="card" density="compact" sx={{ '& .MuiTableBody-root .MuiTableCell-root': { py: 2 } }}>
+                <ListingTable variant="card" density="compact" sx={CARD_TABLE_SX}>
                   <ListingTable.Head>
                     <ListingTable.Row>
                       <ListingTable.Cell>Name</ListingTable.Cell>

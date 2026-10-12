@@ -58,7 +58,7 @@ function CreateTrackDialog({ orgUuid, componentId, onClose, onDone }: { orgUuid:
         )}
         <Stack gap={2} sx={{ mt: 1 }}>
           <TextField label="API Version" value={apiVersion} onChange={(e) => setApiVersion(e.target.value)} fullWidth required />
-          <TextField label="Branch" value={branch} onChange={(e) => setBranch(e.target.value)} fullWidth required placeholder="main" />
+          <TextField label="Branch" value={branch} onChange={(e) => setBranch(e.target.value)} fullWidth required />
           <TextField label="Description" value={description} onChange={(e) => setDescription(e.target.value)} fullWidth multiline minRows={2} />
         </Stack>
       </DialogContent>

@@ -148,7 +148,7 @@ export default function LogsAlertRuleForm(props: AlertRuleFormProps): JSX.Elemen
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2, '& .MuiFormLabel-asterisk': { color: 'error.main' } }}>
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, md: 4 }}>
-          <TextField required label="Logs search phrase" placeholder="Enter search phrase" size="small" fullWidth value={searchPhrase ?? ''} onChange={handleSearchPhraseChange} error={!!errorSearchPhrase} helperText={errorSearchPhrase ?? undefined} />
+          <TextField required label="Logs search phrase" size="small" fullWidth value={searchPhrase ?? ''} onChange={handleSearchPhraseChange} error={!!errorSearchPhrase} helperText={errorSearchPhrase ?? undefined} />
         </Grid>
       </Grid>
       <Grid container spacing={3} sx={{ mt: -1 }}>
@@ -188,12 +188,12 @@ export default function LogsAlertRuleForm(props: AlertRuleFormProps): JSX.Elemen
                     setIsAlertRuleHalfConfigured(true);
                   }
                 }}
-                renderInput={(params) => <TextField {...params} label="Interval" placeholder="Select interval" size="small" />}
+                renderInput={(params) => <TextField {...params} label="Interval" size="small" />}
                 isOptionEqualToValue={(o, v) => o.value === v.value}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField label="Count" placeholder="Enter count" size="small" fullWidth value={count ?? ''} onChange={handleCountChange} error={!!errorCount} helperText={errorCount ?? undefined} />
+              <TextField label="Count" size="small" fullWidth value={count ?? ''} onChange={handleCountChange} error={!!errorCount} helperText={errorCount ?? undefined} />
             </Grid>
           </Grid>
         </Collapse>

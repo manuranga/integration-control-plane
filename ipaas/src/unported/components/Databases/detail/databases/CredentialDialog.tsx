@@ -114,22 +114,11 @@ export default function CredentialDialog({ serverId, orgHandle, dbName, defaultU
               </Stack>
             )}
 
-            <TextField
-              label="Credential Name"
-              required
-              fullWidth
-              size="small"
-              value={form.displayName}
-              onChange={(e) => patch({ displayName: e.target.value })}
-              placeholder="Enter credential name"
-              error={!!nameError}
-              helperText={nameError || ' '}
-              sx={REQUIRED_FIELD_SX}
-            />
+            <TextField label="Credential Name" required fullWidth size="small" value={form.displayName} onChange={(e) => patch({ displayName: e.target.value })} error={!!nameError} helperText={nameError || ' '} sx={REQUIRED_FIELD_SX} />
 
             {!form.isSuperAdmin && (
               <>
-                <TextField label="Username" required fullWidth size="small" value={form.username} onChange={(e) => patch({ username: e.target.value })} placeholder="Enter username" sx={REQUIRED_FIELD_SX} />
+                <TextField label="Username" required fullWidth size="small" value={form.username} onChange={(e) => patch({ username: e.target.value })} sx={REQUIRED_FIELD_SX} />
                 <TextField
                   label="Password"
                   required
@@ -138,7 +127,6 @@ export default function CredentialDialog({ serverId, orgHandle, dbName, defaultU
                   type={showPassword ? 'text' : 'password'}
                   value={form.password}
                   onChange={(e) => patch({ password: e.target.value })}
-                  placeholder="Enter password"
                   sx={REQUIRED_FIELD_SX}
                   InputProps={{
                     endAdornment: (
@@ -157,7 +145,7 @@ export default function CredentialDialog({ serverId, orgHandle, dbName, defaultU
                   value={form.privileges}
                   onChange={(_, value) => patch({ privileges: value })}
                   renderTags={(value, getTagProps) => value.map((option, index) => <Chip label={option} size="small" {...getTagProps({ index })} key={option} />)}
-                  renderInput={(params) => <TextField {...params} label="Privileges" required placeholder="Select privilege level" sx={REQUIRED_FIELD_SX} />}
+                  renderInput={(params) => <TextField {...params} label="Privileges" required sx={REQUIRED_FIELD_SX} />}
                 />
               </>
             )}
@@ -176,7 +164,7 @@ export default function CredentialDialog({ serverId, orgHandle, dbName, defaultU
               onChange={(_, value) => patch({ environments: value })}
               getOptionLabel={(id) => envLabel(environments, id)}
               renderTags={(value, getTagProps) => value.map((option, index) => <Chip label={envLabel(environments, option)} size="small" {...getTagProps({ index })} key={option} />)}
-              renderInput={(params) => <TextField {...params} label="Environments" required placeholder="Select environment" sx={REQUIRED_FIELD_SX} />}
+              renderInput={(params) => <TextField {...params} label="Environments" required sx={REQUIRED_FIELD_SX} />}
             />
           </Stack>
         )}

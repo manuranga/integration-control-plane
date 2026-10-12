@@ -34,12 +34,14 @@ interface DirectoryPickerFieldProps {
   isFetching: boolean;
   onRefetch: () => void;
   disabled?: boolean;
+  /** Keeps an empty line under the field for an error to appear in; off where something else sits directly below. */
+  reserveErrorSpace?: boolean;
 }
 
-export default function DirectoryPickerField({ repo, value, onChange, statusIcon, isValidating = false, isError = false, contents, isFetching, onRefetch, disabled = false }: DirectoryPickerFieldProps): JSX.Element {
+export default function DirectoryPickerField({ repo, value, onChange, statusIcon, isValidating = false, isError = false, contents, isFetching, onRefetch, disabled = false, reserveErrorSpace = true }: DirectoryPickerFieldProps): JSX.Element {
   const [open, setOpen] = useState(false);
 
-  const helperText = isValidating ? 'Validating…' : isError || 'Path (/ for root)';
+  const helperText = typeof isError === 'string' && !isValidating ? isError : undefined;
 
   return (
     <>
@@ -84,7 +86,7 @@ export default function DirectoryPickerField({ repo, value, onChange, statusIcon
             ),
           },
         }}
-        error={!!isError && !isValidating}
+        error={!!isError && !isValidating ? true : reserveErrorSpace ? false : undefined}
         helperText={helperText}
         sx={{ cursor: disabled ? 'default' : 'pointer' }}
       />

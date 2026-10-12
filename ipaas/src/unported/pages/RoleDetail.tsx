@@ -166,7 +166,7 @@ function AssignRoleToGroupsDialog({ orgHandler, roleId, roleName, existingGroupI
             value={selected}
             onChange={(_, v) => setSelected(v)}
             isOptionEqualToValue={(a, b) => a.groupId === b.groupId}
-            renderInput={(params) => <TextField {...params} label="Groups" placeholder="Select groups" />}
+            renderInput={(params) => <TextField {...params} label="Groups" />}
           />
           <Box sx={{ border: 1, borderColor: 'divider', borderRadius: 1, p: 2, bgcolor: 'background.paper' }}>
             <Typography variant="body2" sx={{ mb: 1 }}>
