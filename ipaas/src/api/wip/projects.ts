@@ -221,7 +221,7 @@ export async function linkProjectRepository(input: LinkProjectRepositoryInput): 
     orgId: orgNumericId(),
     projectId: input.projectId,
     repository: input.repository,
-    secretRef: input.secretRef,
+    secretRef: input.secretRef ?? '',
     gitOrganization: input.gitOrganization,
     branch: input.branch,
     directoryPath: input.directoryPath,

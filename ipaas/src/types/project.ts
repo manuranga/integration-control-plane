@@ -92,7 +92,7 @@ export interface LinkProjectRepositoryInput {
   gitProvider: string;
   directoryPath: string;
   isPublicRepo: boolean;
-  secretRef: string;
+  secretRef?: string;
 }
 
 export type GitProvider = 'github' | 'public';

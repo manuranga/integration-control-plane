@@ -18,9 +18,9 @@
 
 import { Box, Button, CircularProgress, FormControlLabel, Paper, Slider, Stack, Switch, Typography } from '@wso2/oxygen-ui';
 import { useEffect, useState, type JSX } from 'react';
-import { useCreateHpa, useHpaMetricMutations, useUpdateHpa } from '../../../hooks/useScaling';
-import { CPU_THRESHOLD, MEMORY_THRESHOLD } from '../../../constants/scaling';
-import RangeInput from '../../../components/Scaling/RangeInput';
+import { useCreateHpa, useHpaMetricMutations, useUpdateHpa } from '../../hooks/useScaling';
+import { CPU_THRESHOLD, MEMORY_THRESHOLD } from '../../constants/scaling';
+import RangeInput from './RangeInput';
 import type { Hpa, HpaMetric, MetricResource, ScalingPath } from '../../../types/scaling';
 
 interface HpaConfigProps {

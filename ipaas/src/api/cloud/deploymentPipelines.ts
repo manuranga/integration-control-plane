@@ -73,7 +73,9 @@ interface BffProject {
 }
 
 /**
- * Walk the promotion tree, emitting a path per node that has children.
+ * Walk the promotion tree, emitting a path per node that has children. A first
+ * environment with no successors still gets a path (with no targets) — otherwise a
+ * single-environment pipeline would be written with no environments at all.
  *
  * Refs come from `env_template_id`, which carries the environment slug. The
  * `?? env_name` fallback exists only for trees that predate the id — `env_name`
@@ -82,18 +84,19 @@ interface BffProject {
  */
 const treeToPromotionPaths = (tree: PromotionTreeNode | null | undefined): BffPromotionPath[] => {
   const paths: BffPromotionPath[] = [];
-  const walk = (nodes: PromotionTreeNode[] | undefined): void => {
+  const walk = (nodes: PromotionTreeNode[] | undefined, isFirst: boolean): void => {
     for (const node of nodes ?? []) {
       const source = node.env_template_id ?? node.env_name;
       const targets = (node.children ?? []).map((c) => c.env_template_id ?? c.env_name).filter((n): n is string => !!n);
-      if (source && targets.length > 0) paths.push({ sourceEnvironment: source, targetEnvironments: targets });
-      walk(node.children);
+      if (source && (targets.length > 0 || isFirst)) paths.push({ sourceEnvironment: source, targetEnvironments: targets });
+      // Below the synthetic wrapper (no env), its children are still the first environments.
+      walk(node.children, isFirst && !source);
     }
   };
   // Walk from the root itself: the synthetic wrapper (name:'Root', no env) is
   // skipped by the source guard above, while a genuine root environment — if the
   // tree ever carries one — still contributes its outgoing edge.
-  walk(tree ? [tree] : []);
+  walk(tree ? [tree] : [], true);
   return paths;
 };
 

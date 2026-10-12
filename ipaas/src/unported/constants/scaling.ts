@@ -16,7 +16,7 @@
  * under the License.
  */
 
-import { ScalingMethod } from '../types/scaling';
+import { ScalingMethod } from '../../types/scaling';
 
 export interface ScalingMethodCard {
   value: typeof ScalingMethod.ScaleToZero | typeof ScalingMethod.HPA | typeof ScalingMethod.None;

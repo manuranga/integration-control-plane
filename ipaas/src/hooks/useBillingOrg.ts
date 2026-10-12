@@ -17,25 +17,15 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { IS_CLOUD } from '../features';
+import { fetchBillingOrg } from '../api/cloud/billing';
 import type { BillingOrg } from '../types/billing';
 
-/**
- * Billing org record for the subscription/trial chip.
- *
- * Billing is a cloud-exclusive surface. The query is gated `enabled: IS_CLOUD`
- * so wip/icp never fetch, and the cloud service module is loaded lazily inside
- * queryFn (not imported through `#api`) so it stays out of the non-cloud
- * bundles entirely — wip/icp have no billing backend and carry no contract.
- */
+/** Billing org record for the subscription/trial chip. */
 export function useBillingOrg(product: string): { org: BillingOrg | null; isLoading: boolean } {
   const { data, isLoading } = useQuery({
     queryKey: ['billingOrg', product],
-    queryFn: async (): Promise<BillingOrg> => {
-      const { fetchBillingOrg } = await import('../api/cloud/billing');
-      return fetchBillingOrg(product);
-    },
-    enabled: IS_CLOUD && !!product,
+    queryFn: (): Promise<BillingOrg> => fetchBillingOrg(product),
+    enabled: !!product,
     staleTime: 5 * 60 * 1000,
     retry: false,
   });

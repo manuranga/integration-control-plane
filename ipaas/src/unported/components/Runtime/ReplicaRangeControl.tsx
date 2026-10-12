@@ -21,7 +21,7 @@ import { useEffect, useState, type JSX } from 'react';
 import RangeInput from '../Scaling/RangeInput';
 import { CLOUD_DP_MAX_REPLICAS } from '../../constants/scaling';
 import { useUpdateHpa } from '../../hooks/useScaling';
-import type { Hpa, ScalingPath } from '../../types/scaling';
+import type { Hpa, ScalingPath } from '../../../types/scaling';
 
 interface ReplicaRangeControlProps {
   /** Absent when the release scales by a fixed replica count rather than an HPA. */

@@ -17,14 +17,14 @@
  */
 
 import { Alert, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, InputAdornment, Stack, Tooltip, Typography } from '@wso2/oxygen-ui';
-import TextField from '../../common/TextField';
+import TextField from '../../../../components/common/TextField';
 import { Eye, EyeOff, X } from '@wso2/oxygen-ui-icons-react';
 import { useState, type ComponentType, type JSX, type ReactNode } from 'react';
-import AzureDevOpsIcon from '../../../assets/icons/AzureDevOpsIcon';
-import GitLabIcon from '../../../assets/icons/GitLabIcon';
-import BitbucketIcon from '../../../assets/icons/BitbucketIcon';
+import AzureDevOpsIcon from '../../../../assets/icons/AzureDevOpsIcon';
+import GitLabIcon from '../../../../assets/icons/GitLabIcon';
+import BitbucketIcon from '../../../../assets/icons/BitbucketIcon';
 import { useCreateGitCredential } from '../../../hooks/useCredentials';
-import { GitProvider, type CreateGitCredentialInput, type GitCredential } from '../../../types/credentials';
+import { GitProvider, type CreateGitCredentialInput, type GitCredential } from '../../../../types/credentials';
 
 interface FieldDef {
   label: string;

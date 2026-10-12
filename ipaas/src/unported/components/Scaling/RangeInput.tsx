@@ -17,7 +17,7 @@
  */
 
 import { Box, IconButton, Stack, Typography } from '@wso2/oxygen-ui';
-import TextField from '../common/TextField';
+import TextField from '../../../components/common/TextField';
 import { Minus, Plus } from '@wso2/oxygen-ui-icons-react';
 import type { JSX } from 'react';
 

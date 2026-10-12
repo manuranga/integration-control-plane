@@ -16,21 +16,18 @@
  * under the License.
  */
 
-import { Alert, Avatar, Box, Button, CircularProgress, IconButton, ListingTable, PageContent, PageTitle, Stack, TablePagination, Tooltip, Typography } from '@wso2/oxygen-ui';
-import { CARD_TABLE_SX } from '../constants/styles';
+import { Alert, Box, Button, Chip, CircularProgress, IconButton, ListingTable, PageContent, PageTitle, Stack, TablePagination, Tooltip, Typography } from '@wso2/oxygen-ui';
 import TextField from '../components/common/TextField';
 import { Clock, Layers, Plus, Trash2, AlertTriangle } from '@wso2/oxygen-ui-icons-react';
 import { useState, useMemo, useEffect, type JSX } from 'react';
 import { useLocation } from 'react-router';
 import { useAppNavigate } from '../hooks/useAppNavigate';
-import { IS_CLOUD } from '../features';
 import ConfirmDeleteDialog from '../components/ConfirmDeleteDialog';
 import { useDeleteEnvironmentTemplate, useEnvDeleteEligibility, useEnvironmentTemplates } from '../hooks/useEnvironments';
 import { useOrgs } from '../hooks/useOrg';
 import { useOrgUuid } from '../hooks/useOrgUuid';
 import type { EnvironmentTemplate } from '../types/environment';
 import EmptyListing from '../components/EmptyListing';
-import SearchField from '../components/SearchField';
 import { formatDistanceToNow } from '../utils/time';
 import { newEnvironmentUrl, type OrgScope, type ProjectScope } from '../nav';
 import { useAccessControl } from '../contexts/AccessControlContext';
@@ -106,8 +103,6 @@ function DeleteDialog({ template, orgUuid, onClose, onSuccess, onError }: { temp
   );
 }
 
-// Cloud cannot create environments, so the empty state describes them instead of
-// pointing at an action that isn't there.
 const EMPTY_DESCRIPTION = 'Create your first environment to get started';
 
 export default function Environments(scope: OrgScope | ProjectScope): JSX.Element {
@@ -179,23 +174,24 @@ export default function Environments(scope: OrgScope | ProjectScope): JSX.Elemen
               {alert.message}
             </Alert>
           )}
-          {/* Search and the create action sit above the table, as on the project's integrations list. */}
-          <Stack direction="row" alignItems="center" justifyContent="space-between" gap={2} sx={{ mb: 2 }}>
-            <SearchField value={search} onChange={setSearch} />
-            <Authorized permissions={Permissions.ENVIRONMENT_MANAGE}>
-              <Button variant="contained" startIcon={<Plus size={20} />} onClick={() => navigate(newEnvironmentUrl(scope))}>
-                Create Environment
-              </Button>
-            </Authorized>
-          </Stack>
-          <ListingTable.Container disablePaper>
-            <ListingTable variant="card" density="compact" sx={CARD_TABLE_SX}>
+          <ListingTable.Container>
+            <ListingTable.Toolbar
+              searchValue={search}
+              onSearchChange={setSearch}
+              searchPlaceholder="Search environments..."
+              actions={
+                <Authorized permissions={Permissions.ENVIRONMENT_MANAGE}>
+                  <Button variant="contained" startIcon={<Plus size={20} />} onClick={() => navigate(newEnvironmentUrl(scope))}>
+                    Create Environment
+                  </Button>
+                </Authorized>
+              }
+            />
+            <ListingTable>
               <ListingTable.Head>
                 <ListingTable.Row>
                   <ListingTable.Cell>Name</ListingTable.Cell>
                   <ListingTable.Cell>Type</ListingTable.Cell>
-                  {/* OpenChoreo derives no per-environment hostname, so cloud has no DNS prefix. */}
-                  {!IS_CLOUD && <ListingTable.Cell>DNS Prefix</ListingTable.Cell>}
                   <ListingTable.Cell>Created</ListingTable.Cell>
                   <ListingTable.Cell align="right">Action</ListingTable.Cell>
                 </ListingTable.Row>
@@ -203,7 +199,7 @@ export default function Environments(scope: OrgScope | ProjectScope): JSX.Elemen
               <ListingTable.Body>
                 {filtered.length === 0 ? (
                   <ListingTable.Row>
-                    <ListingTable.Cell colSpan={IS_CLOUD ? 4 : 5} align="center">
+                    <ListingTable.Cell colSpan={4} align="center">
                       No records to display
                     </ListingTable.Cell>
                   </ListingTable.Row>
@@ -211,13 +207,11 @@ export default function Environments(scope: OrgScope | ProjectScope): JSX.Elemen
                   paginated.map((t) => (
                     <ListingTable.Row key={t.id}>
                       <ListingTable.Cell>
-                        <Stack direction="row" alignItems="center" gap={1.5}>
-                          <Avatar sx={{ width: 32, height: 32, fontSize: 14, bgcolor: 'action.hover', color: 'text.secondary' }}>{t.name[0]?.toUpperCase()}</Avatar>
-                          {t.name}
-                        </Stack>
+                        <ListingTable.CellIcon icon={<Layers size={20} />} primary={t.name} />
                       </ListingTable.Cell>
-                      <ListingTable.Cell>{t.critical ? 'Critical' : 'Non-Critical'}</ListingTable.Cell>
-                      {!IS_CLOUD && <ListingTable.Cell>{t.dnsPrefix || '—'}</ListingTable.Cell>}
+                      <ListingTable.Cell>
+                        <Chip size="small" variant="outlined" label={t.critical ? 'Critical' : 'Non-Critical'} />
+                      </ListingTable.Cell>
                       <ListingTable.Cell>
                         <Stack direction="row" alignItems="center" gap={0.5}>
                           <Clock size={14} />
@@ -238,19 +232,19 @@ export default function Environments(scope: OrgScope | ProjectScope): JSX.Elemen
                 )}
               </ListingTable.Body>
             </ListingTable>
+            <TablePagination
+              component="div"
+              count={filtered.length}
+              page={safePage}
+              onPageChange={(_, p) => setPage(p)}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={(e) => {
+                setRowsPerPage(parseInt(e.target.value, 10));
+                setPage(0);
+              }}
+              rowsPerPageOptions={[5, 10, 25, 50]}
+            />
           </ListingTable.Container>
-          <TablePagination
-            component="div"
-            count={filtered.length}
-            page={safePage}
-            onPageChange={(_, p) => setPage(p)}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={(e) => {
-              setRowsPerPage(parseInt(e.target.value, 10));
-              setPage(0);
-            }}
-            rowsPerPageOptions={[5, 10, 25, 50]}
-          />
         </>
       )}
 

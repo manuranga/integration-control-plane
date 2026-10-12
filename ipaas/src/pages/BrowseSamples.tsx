@@ -26,14 +26,13 @@ import { isQuotaError } from '../utils/apiErrors';
 import FilterSection from '../components/FilterSection';
 import SampleGridCard from '../components/SampleGridCard';
 import IntegrationCreationLoader from '../components/IntegrationCreationLoader';
-import { componentSubTypeFromSample, displayTypeFromSample, formatBuildPack, formatComponentType, normalizeComponentType } from '../constants/integrations';
+import { componentSubTypeFromSample, displayTypeFromSample, formatComponentType, normalizeComponentType } from '../constants/integrations';
 import { PAGE_SIZE } from '../constants/samples';
 import { useSamples } from '../hooks/useSamples';
 import { resourceUrl, narrow, newComponentUrl, type ProjectScope } from '../nav';
 import type { Sample } from '../types/samples';
 import { toHandler } from '../utils/string';
 import { useProjectId } from '../hooks/useProjects';
-import { MI_SAMPLES_ENABLED } from '../features';
 
 export default function BrowseSamples(scope: ProjectScope): JSX.Element {
   const navigate = useAppNavigate();
@@ -41,12 +40,10 @@ export default function BrowseSamples(scope: ProjectScope): JSX.Element {
   const { data: samplesData, isLoading: isSamplesLoading, isError: isSamplesError } = useSamples();
 
   const uniqueTypes = samplesData?.uniqueTypes ?? [];
-  const uniqueBuildPacks = samplesData?.uniqueBuildPacks ?? [];
   const uniqueTags = samplesData?.uniqueTags ?? [];
 
   const [search, setSearch] = useState('');
   const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set());
-  const [selectedBuildPacks, setSelectedBuildPacks] = useState<Set<string>>(new Set());
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(1);
   const [deployingSample, setDeployingSample] = useState<string | null>(null);
@@ -92,12 +89,11 @@ export default function BrowseSamples(scope: ProjectScope): JSX.Element {
     const q = search.toLowerCase();
     return samples.filter((s) => {
       const matchesType = selectedTypes.size === 0 || selectedTypes.has(normalizeComponentType(s.componentType));
-      const matchesBuildPack = selectedBuildPacks.size === 0 || selectedBuildPacks.has(s.buildPack);
       const matchesTags = selectedTags.size === 0 || s.tags.some((t) => selectedTags.has(t));
       const matchesSearch = !q || s.displayName.toLowerCase().includes(q) || s.description.toLowerCase().includes(q) || s.tags.some((t) => t.toLowerCase().includes(q));
-      return matchesType && matchesBuildPack && matchesTags && matchesSearch;
+      return matchesType && matchesTags && matchesSearch;
     });
-  }, [samplesData?.samples, search, selectedTypes, selectedBuildPacks, selectedTags]);
+  }, [samplesData?.samples, search, selectedTypes, selectedTags]);
 
   // Reset to page 1 whenever filters change
   useEffect(() => {
@@ -190,14 +186,6 @@ export default function BrowseSamples(scope: ProjectScope): JSX.Element {
           <FilterSection title="Type" items={uniqueTypes} selected={selectedTypes} onToggle={toggleFilter(setSelectedTypes)} labelFn={formatComponentType} />
 
           <Box sx={{ borderTop: '1px solid', borderColor: 'divider', my: 1 }} />
-
-          {MI_SAMPLES_ENABLED && (
-            <>
-              <FilterSection title="Technology" items={uniqueBuildPacks} selected={selectedBuildPacks} onToggle={toggleFilter(setSelectedBuildPacks)} labelFn={formatBuildPack} />
-
-              <Box sx={{ borderTop: '1px solid', borderColor: 'divider', my: 1 }} />
-            </>
-          )}
 
           <FilterSection title="Tags" items={uniqueTags} selected={selectedTags} onToggle={toggleFilter(setSelectedTags)} />
         </Box>

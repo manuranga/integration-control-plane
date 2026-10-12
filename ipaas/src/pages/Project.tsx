@@ -64,12 +64,12 @@ import LinkRepositoryDialog from '../components/ProjectCreate/LinkRepositoryDial
 import IntegratorIcon from '../assets/icons/IntegratorIcon';
 import { useAppNavigate } from '../hooks/useAppNavigate';
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type JSX } from 'react';
-import { useProject, useProjectByHandler, useProjects, useUpdateProject, useGitHubReadme, useIsOrgScopeReady } from '../hooks/useProjects';
+import { useProject, useProjectByHandler, useProjects, useUpdateProject, useGitHubReadme } from '../hooks/useProjects';
 import { useComponents } from '../hooks/useComponents';
 import { useRemovalNotice } from '../hooks/useRemovalNotice';
 import { useFreshDefaultProject } from '../hooks/useFreshDefaultProject';
 import { useOrgs, useOrgComponentLimits, useOrgSubscriptions } from '../hooks/useOrg';
-import { useChoreoSampleImages } from '../hooks/useRepository';
+import { useChoreoSampleImages, useComponentRepositories } from '../hooks/useRepository';
 import type { Component, ComponentDeletionError, ComponentSubscription, SubscriptionInfo } from '../types/component';
 import { useDeleteComponent } from '../hooks/useComponents';
 import NotFound from '../components/NotFound';
@@ -238,10 +238,9 @@ function getInitProgress(c: Component, isWorkspace: boolean): { progress: number
   return INIT_PROGRESS_MAP[c.initStatus.toLowerCase()] ?? null;
 }
 
-function ComponentNameCell({ component: c, isWorkspace, external = false, projectGitOrg, projectGitRepo }: { component: Component; isWorkspace: boolean; external?: boolean; projectGitOrg?: string; projectGitRepo?: string }) {
+function ComponentNameCell({ component: c, isWorkspace, external = false, isExternalRepo }: { component: Component; isWorkspace: boolean; external?: boolean; isExternalRepo: boolean }) {
   const init = getInitProgress(c, isWorkspace);
   const nameLabel = init && c.displayType ? `${c.displayName}: ${c.displayType}` : c.displayName;
-  const isExternalRepo = isExternalRepoIntegration(c, projectGitOrg, projectGitRepo);
   return (
     <Stack direction="row" alignItems="center" gap={1.5}>
       {init ? (
@@ -288,8 +287,7 @@ function IntegrationsTable({
   projectId,
   orgDevantComponentCount,
   isWorkspace,
-  projectGitOrg,
-  projectGitRepo,
+  isExternalRepo,
   onSelect,
 }: {
   components: Component[];
@@ -300,8 +298,8 @@ function IntegrationsTable({
   projectId: string;
   orgDevantComponentCount: number;
   isWorkspace: boolean;
-  projectGitOrg?: string;
-  projectGitRepo?: string;
+  /** Whether an integration builds from a repository other than the project's linked one. */
+  isExternalRepo: (component: Component) => boolean;
   onSelect: (handler: string) => void;
 }) {
   const navigate = useAppNavigate();
@@ -481,7 +479,7 @@ function IntegrationsTable({
                             }
                           }}>
                           <ListingTable.Cell>
-                            <ComponentNameCell component={c} isWorkspace={isWorkspace} projectGitOrg={projectGitOrg} projectGitRepo={projectGitRepo} />
+                            <ComponentNameCell component={c} isWorkspace={isWorkspace} isExternalRepo={isExternalRepo(c)} />
                           </ListingTable.Cell>
                           <ListingTable.Cell>
                             {!init && (
@@ -577,7 +575,7 @@ function IntegrationsTable({
                         <Tooltip key={c.id} followCursor title={`This component is not part of WSO2 Integration Platform. Switch to ${getNonIntegrationPlatform(c.originCloud)} to view and manage it.`}>
                           <ListingTable.Row variant="card" aria-disabled tabIndex={-1} sx={{ opacity: 0.5, cursor: 'default' }}>
                             <ListingTable.Cell>
-                              <ComponentNameCell component={c} isWorkspace={isWorkspace} external projectGitOrg={projectGitOrg} projectGitRepo={projectGitRepo} />
+                              <ComponentNameCell component={c} isWorkspace={isWorkspace} external isExternalRepo={isExternalRepo(c)} />
                             </ListingTable.Cell>
                             <ListingTable.Cell>
                               {!init && (
@@ -640,14 +638,9 @@ export default function Project(scope: ProjectScope): JSX.Element {
   const { data: allProjects = [], isLoading: loadingProjects, isFetching: fetchingProjects } = useProjects();
   const projectFromList = !isUuid ? (allProjects.find((p) => p.handler === scope.project) ?? null) : null;
   const project = isUuid ? projectById : (projectByHandle ?? projectFromList);
-  const isOrgScopeReady = useIsOrgScopeReady();
-  // Right after fresh onboarding, asgardeoOrgNumericId isn't recovered yet, so the project
-  // queries above are disabled and report isLoading: false — indistinguishable from "we checked
-  // and there's genuinely no project" unless we also wait on org-scope readiness here. Without
-  // this, the page briefly flashes "Project not found" before the real data arrives.
-  // fetchingProjects covers the other route to the same flash: a refetch of the invalidated
-  // list reports isLoading false while its data is still pre-creation.
-  const loadingProject = !isOrgScopeReady || (!project && (isUuid ? loadingById : loadingByHandle || loadingProjects || fetchingProjects));
+  // fetchingProjects keeps "Project not found" from flashing while a refetch of the invalidated
+  // list reports isLoading false with its data still pre-creation.
+  const loadingProject = !project && (isUuid ? loadingById : loadingByHandle || loadingProjects || fetchingProjects);
   const projectId = project?.id ?? '';
   useLoadProjectPermissions(scope.org, projectId);
   // Shared with AppLayout's left-nav hiding, so both surfaces hide on exactly the same one-shot
@@ -656,6 +649,19 @@ export default function Project(scope: ProjectScope): JSX.Element {
   // the project is still empty, so it never vanishes on a repeat visit.
   const justProvisionedDefaultProject = useFreshDefaultProject();
   const { data: components = [], isLoading: loadingComponents, isFetching: fetchingComponents, isSuccess: isComponentsSuccess, refetch: refetchComponents } = useComponents(scope.org, projectId);
+  // The component list carries no repository, so a linked project looks each integration's up.
+  const isRepoLinked = !!project?.gitOrganization && !!project?.repository;
+  const repoByHandler = useComponentRepositories(
+    projectId,
+    components.map((c) => c.handler),
+    isRepoLinked,
+  );
+  const isExternalRepo = (c: Component): boolean => {
+    const repository = repoByHandler.get(c.handler);
+    // Not flagged until the lookup settles, so the icon doesn't flash on every row.
+    if (repository === undefined) return false;
+    return isExternalRepoIntegration({ ...c, repository: repository ?? undefined }, project?.gitOrganization, project?.repository);
+  };
   // Avoids flashing the "has integrations" table chrome (search bar, Create button, table spinner)
   // before flipping to the true empty state once the components query resolves — the query
   // reporting isLoading: true otherwise makes `isEmpty` false by default, picking the wrong
@@ -708,10 +714,10 @@ export default function Project(scope: ProjectScope): JSX.Element {
   const isEmpty = justProvisionedDefaultProject || (isComponentsSuccess ? components.length === 0 : cachedIsEmpty);
   const isWorkspace = project.type === 'MONO_REPO';
   // The editor clones the project repo, so only an integration that builds from it can open.
-  const openInCloudComponent = components.find((c) => isSupportedIntegration(c.displayType, c.componentSubType, c.buildpackType) && !isExternalRepoIntegration(c, project.gitOrganization, project.repository)) ?? null;
+  const openInCloudComponent = components.find((c) => isSupportedIntegration(c.displayType, c.componentSubType, c.buildpackType) && !isExternalRepo(c) && (!isRepoLinked || repoByHandler.get(c.handler) !== undefined)) ?? null;
   const projectRepoUrl = buildProjectRepoUrl(project.gitProvider, project.gitOrganization, project.repository, project.branch);
 
-  const externalComponents = components.filter((c) => isExternalRepoIntegration(c, project.gitOrganization, project.repository));
+  const externalComponents = components.filter(isExternalRepo);
 
   const doOpenInCloud = () => {
     if (!codeServerSample || !openInCloudComponent) return;
@@ -980,8 +986,7 @@ export default function Project(scope: ProjectScope): JSX.Element {
               projectId={projectId}
               orgDevantComponentCount={orgDevantComponentCount}
               isWorkspace={isWorkspace}
-              projectGitOrg={project.gitOrganization}
-              projectGitRepo={project.repository}
+              isExternalRepo={isExternalRepo}
               onSelect={(handler) => navigate(componentOverviewUrl(scope.org, project?.handler ?? scope.project, handler))}
             />
             {readmeContent && (

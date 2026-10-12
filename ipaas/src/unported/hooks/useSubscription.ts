@@ -18,8 +18,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { getComponentLimits, getSubscriptions } from '#api/subscriptions';
-import { IS_WIP } from '../features';
-import type { ComponentLimits, SubscriptionList } from '../types/subscription';
+import { IS_WIP } from '../../features';
+import type { ComponentLimits, SubscriptionList } from '../../types/subscription';
 
 // Billing/upgrade is wip-only, so both queries are gated on IS_WIP (cloud/icp stubs throw).
 

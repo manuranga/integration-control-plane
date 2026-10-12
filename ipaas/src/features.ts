@@ -27,5 +27,3 @@
 
 export const IS_WIP = __PRODUCT__ === 'wip'; // Choreo v2 / preview-dv
 export const IS_CLOUD = __PRODUCT__ === 'cloud'; // Choreo v3 / cloud
-
-export const MI_SAMPLES_ENABLED = !IS_CLOUD;

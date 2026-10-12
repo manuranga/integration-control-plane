@@ -18,7 +18,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { credentialsForProvider } from './gitCredentials';
-import { GitProvider, type GitCredential } from '../types/credentials';
+import { GitProvider, type GitCredential } from '../../types/credentials';
 
 const cred = (id: string, type: string): GitCredential => ({
   id,

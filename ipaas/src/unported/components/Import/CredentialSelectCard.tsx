@@ -17,11 +17,11 @@
  */
 
 import { Box, Divider, MenuItem, MenuList, Paper, Popover, Stack, Typography } from '@wso2/oxygen-ui';
-import { providerIconSx, providerTitleSx } from '../ProjectCreate/GitProviderCards.styles';
+import { providerIconSx, providerTitleSx } from '../../../components/ProjectCreate/GitProviderCards.styles';
 import { Check, ChevronDown, Plus } from '@wso2/oxygen-ui-icons-react';
 import { useRef, useState, type JSX, type ReactNode } from 'react';
-import { GIT_PROVIDER_LABEL, gitProviderIcon } from '../../constants/gitProviders';
-import type { GitCredential } from '../../types/credentials';
+import { GIT_PROVIDER_LABEL, gitProviderIcon } from '../../../constants/gitProviders';
+import type { GitCredential } from '../../../types/credentials';
 
 interface CredentialSelectCardProps {
   /** Credentials-enum provider value (e.g. GitProvider.GITLAB_SELF_MANAGED). */

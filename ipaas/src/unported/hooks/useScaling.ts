@@ -18,9 +18,9 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createHpa, createHpaMetric, deleteHpaMetric, getHpa, getHttpScaler, getScalingState, listPodMetrics, listPods, setScalingMethod, updateHpa, updateHpaMetric, updateHttpScaler } from '#api/scaling';
-import { IS_WIP } from '../features';
-import { useOrgUuid } from './useOrgUuid';
-import type { HpaMetric, HpaWriteData, HttpScalerWriteData, ScalingMethodToggle, ScalingPath } from '../types/scaling';
+import { IS_WIP } from '../../features';
+import { useOrgUuid } from '../../hooks/useOrgUuid';
+import type { HpaMetric, HpaWriteData, HttpScalerWriteData, ScalingMethodToggle, ScalingPath } from '../../types/scaling';
 
 const ROOT = 'scaling';
 

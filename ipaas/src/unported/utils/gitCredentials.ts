@@ -16,7 +16,7 @@
  * under the License.
  */
 
-import { GitProvider, type GitCredential } from '../types/credentials';
+import { GitProvider, type GitCredential } from '../../types/credentials';
 
 /**
  * Filter stored credentials down to those usable for the given provider. Bitbucket cloud and

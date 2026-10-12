@@ -33,6 +33,5 @@ export interface SamplesData {
   samples: Sample[];
   featuredSamples: Sample[];
   uniqueTypes: string[];
-  uniqueBuildPacks: string[];
   uniqueTags: string[];
 }

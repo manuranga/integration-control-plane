@@ -16,11 +16,10 @@
  * under the License.
  */
 
-import { Alert, Box, CircularProgress, MenuItem, PageContent, Select, Snackbar, Typography } from '@wso2/oxygen-ui';
+import { Box, Chip, CircularProgress, MenuItem, PageContent, Select, Typography } from '@wso2/oxygen-ui';
 import { useEffect, useMemo, useState, type JSX } from 'react';
 import DeploymentTrackBar from '../components/DeploymentTrackBar';
 import PodInsightsTable from '../components/Runtime/PodInsightsTable';
-import ReplicaRangeControl from '../components/Runtime/ReplicaRangeControl';
 import ResourceUsageCards from '../components/Runtime/ResourceUsageCards';
 import RuntimeOverview from '../components/Runtime/RuntimeOverview';
 import { useAccessControl } from '../contexts/AccessControlContext';
@@ -33,7 +32,6 @@ import { useProjectId } from '../hooks/useProjects';
 import { Permissions } from '../constants/permissions';
 import { IS_CLOUD } from '../features';
 import { useComponentPodMetrics, useComponentPods, useReleaseDetails, useRedeployRelease } from '../hooks/useRuntime';
-import { useHpa, useScalingState } from '../hooks/useScaling';
 import { DeploymentStatus } from '../types/deployment';
 import { calculateAggregateUsage, usageFromComponentLevelMetrics } from '../utils/podMetrics';
 import type { ComponentScope } from '../nav';
@@ -88,12 +86,7 @@ export default function ComponentRuntime({ org, project, component }: ComponentS
   // when it's absent but pods are actually running, "0 used" would misreport unknown as zero.
   const usageUnavailable = IS_CLOUD && !metrics.data?.componentLevelMetrics && (pods.data?.length ?? 0) > 0;
 
-  // Min/max replicas above the pod table edit the same HPA the Scaling page owns.
-  const { data: hpa, isLoading: loadingHpa, isError: hpaError, refetch: refetchHpa } = useHpa(projectId, componentId, releaseId);
-  const { data: scalingState } = useScalingState(projectId, componentId, releaseId);
-  const scalingPath = useMemo(() => ({ componentId, releaseId }), [componentId, releaseId]);
   const podScope = useMemo(() => ({ projectId, clusterId, namespace, releaseId, orgHandler: org, projectHandler: project, componentHandler: component }), [projectId, clusterId, namespace, releaseId, org, project, component]);
-  const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Landing straight on this page skips the Overview, which is where component-scoped
   // permissions are normally loaded.
@@ -183,22 +176,7 @@ export default function ComponentRuntime({ org, project, component }: ComponentS
               }}
               scope={podScope}
               canManage={canManage}
-              replicasControl={
-                <ReplicaRangeControl
-                  hpa={hpa ?? undefined}
-                  isLoading={loadingHpa}
-                  isError={hpaError}
-                  onRetry={() => refetchHpa()}
-                  replicas={replicaCount}
-                  orgUuid={orgUuid ?? ''}
-                  projectId={projectId}
-                  path={scalingPath}
-                  version={scalingState?.version ?? ''}
-                  canManage={canManage}
-                  onSaved={(message) => setAlert({ type: 'success', message })}
-                  onError={(message) => setAlert({ type: 'error', message })}
-                />
-              }
+              replicasControl={<Chip variant="outlined" label={`Replicas ${replicaCount}`} />}
             />
             <Box sx={{ mt: 4 }}>
               <ResourceUsageCards usage={usage} usageUnavailable={usageUnavailable} />
@@ -206,12 +184,6 @@ export default function ComponentRuntime({ org, project, component }: ComponentS
           </>
         )}
       </PageContent>
-
-      <Snackbar open={!!alert} autoHideDuration={6000} onClose={() => setAlert(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
-        <Alert severity={alert?.type ?? 'success'} onClose={() => setAlert(null)} variant="filled">
-          {alert?.message}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 }
