@@ -20,6 +20,8 @@ import { type RouteProps, Navigate, Outlet } from 'react-router';
 import { cookiePolicyUrl, loginUrl, signupUrl, registerOrgUrl } from '../paths';
 import { ScopeResolver, generateMatrixRoutes, withScope, type Matrix } from '../nav';
 import HiddenPageRedirect from '../components/HiddenPageRedirect';
+import UnknownRoute from '../components/UnknownRoute';
+import Logout from '../pages/Logout';
 import { createElement } from 'react';
 import { lazyPage } from './lazyPage';
 const PrebuiltIntegrationConfigProvider = lazyPage(() => import('../contexts/PrebuiltIntegrationConfigContext').then((m) => ({ default: m.PrebuiltIntegrationConfigProvider })));
@@ -117,6 +119,7 @@ const routes: AppRoute[] = [
     children: [{ path: cookiePolicyUrl(), element: <CookiePolicy /> }],
   },
   { path: '/signin', element: <OIDCCallback /> },
+  { path: '/logout', element: <Logout /> },
   { path: '/ghapp', element: <GitHubOAuthCallback /> },
   {
     element: <ProtectedRoute />,
@@ -231,6 +234,8 @@ const routes: AppRoute[] = [
       },
     ],
   },
+  // Anything no route above claims: sign in when signed out, otherwise a not-found page.
+  { path: '*', element: <UnknownRoute /> },
 ];
 
 export default routes;
