@@ -29,8 +29,10 @@ export const CLOUD_EDITOR_STEPS: CloudEditorStep[] = [
 
 /** Height of one wheel row in px. */
 export const CLOUD_EDITOR_WHEEL_ROW_HEIGHT = 40;
-/** Keep-alive ping interval (ms). */
+/** Readiness poll + keep-alive ping interval (ms). */
 export const CLOUD_EDITOR_POLL_MS = 3_000;
+/** Give up waiting for the editor to report ready after this (ms), once its address is known. */
+export const CLOUD_EDITOR_READY_TIMEOUT_MS = 3 * 60 * 1000;
 
 /**
  * Message of the error thrown when the cloud poll budget expires. Shared so

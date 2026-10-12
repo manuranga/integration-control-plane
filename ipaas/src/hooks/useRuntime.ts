@@ -30,7 +30,7 @@ const LOGS_POLL_MS = 10_000;
 
 export function useReleaseDetails(projectId: string, componentName: string, releaseId: string) {
   return useQuery({
-    queryKey: [ROOT_KEY, 'release', projectId, releaseId],
+    queryKey: [ROOT_KEY, 'release', projectId, componentName, releaseId],
     queryFn: () => fetchReleaseDetails(projectId, '', componentName, releaseId),
     enabled: !!projectId && !!releaseId && !!componentName,
     retry: false,

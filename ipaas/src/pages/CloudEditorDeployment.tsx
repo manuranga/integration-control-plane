@@ -20,7 +20,7 @@ import { useEffect, useMemo, useRef, useState, type JSX } from 'react';
 import { useLocation } from 'react-router';
 import { Alert, Box, Button, Typography } from '@wso2/oxygen-ui';
 import { useCreateCodeServer, useEditorKeepAlive, useEditorReady, useGetOrCreateSampleRegistry } from '../hooks/useCloudEditor';
-import { CLOUD_EDITOR_STEPS, CLOUD_EDITOR_TIMEOUT_MESSAGE } from '../constants/cloudEditor';
+import { CLOUD_EDITOR_READY_TIMEOUT_MS, CLOUD_EDITOR_STEPS, CLOUD_EDITOR_TIMEOUT_MESSAGE } from '../constants/cloudEditor';
 import DeploymentWheel from '../components/CloudEditor/DeploymentWheel';
 import type { ChoreoSampleImage, CloudEditorStepKey, CodeServerInstance, DeploymentParams } from '../types/cloudEditor';
 
@@ -160,8 +160,22 @@ export default function CloudEditorDeployment(): JSX.Element {
     redirect(current.url);
   }, [awaitingReady, readyQuery.data]);
 
+  // A readiness lookup that keeps failing ends the wait rather than spinning on.
+  useEffect(() => {
+    if (awaitingReady && readyQuery.isError) setError('Could not check whether your Cloud Editor is ready. Please close this window and try again.');
+  }, [awaitingReady, readyQuery.isError]);
+
   // Keep the scale-to-zero timer off the editor for the whole wait.
   useEditorKeepAlive(instance?.url, awaitingReady);
+
+  // Give up if the editor never reports ready.
+  useEffect(() => {
+    if (!awaitingReady) return undefined;
+    const id = window.setTimeout(() => {
+      if (!hasRedirected.current) setError('Your Cloud Editor setup is taking longer than usual. Please close this window and try again later.');
+    }, CLOUD_EDITOR_READY_TIMEOUT_MS);
+    return () => clearTimeout(id);
+  }, [awaitingReady]);
 
   const activeIndex = CLOUD_EDITOR_STEPS.findIndex((s) => s.key === stepKey);
 
