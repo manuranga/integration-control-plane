@@ -107,7 +107,7 @@ export async function fetchTaskExecutionCount(releaseId: string): Promise<number
 
 // wip has no schedule-only endpoint: clearCron on the stop mutation is how a schedule is stopped there.
 export async function stopSchedule(input: StopScheduleInput): Promise<void> {
-  await stopDeployment({ orgHandler: input.orgHandler, componentId: input.componentId, releaseId: input.releaseId, type: 'scheduledTask', clearCron: true });
+  await stopDeployment({ orgHandler: input.orgHandler, componentId: input.componentId, releaseId: input.releaseId, environment: '', type: 'scheduledTask', clearCron: true });
 }
 
 export async function updateJobConfigs(input: UpdateJobConfigsInput): Promise<boolean> {

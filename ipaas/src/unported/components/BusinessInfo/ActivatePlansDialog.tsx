@@ -19,9 +19,9 @@
 import { Alert, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControlLabel, IconButton, Stack, Switch, Typography } from '@wso2/oxygen-ui';
 import { X } from '@wso2/oxygen-ui-icons-react';
 import { useEffect, useState } from 'react';
-import { useUpdateApimApi } from '../../hooks/useApim';
-import type { ApimApiInfo } from '../../types/apim';
-import { useThrottlingPolicies } from '../../hooks/useMarketplace';
+import { useUpdateApimApi } from '../../../hooks/useApim';
+import type { ApimApiInfo } from '../../../types/apim';
+import { useThrottlingPolicies } from '../../../hooks/useMarketplace';
 
 interface ActivatePlansDialogProps {
   open: boolean;

@@ -18,8 +18,8 @@
 
 import { Box, Button, Card, CardContent, Divider, Skeleton, Stack, Tooltip, Typography } from '@wso2/oxygen-ui';
 import { ExternalLink, FileText } from '@wso2/oxygen-ui-icons-react';
-import { useAppNavigate } from '../../hooks/useAppNavigate';
-import { useApiDocuments } from '../../hooks/useMarketplace';
+import { useAppNavigate } from '../../../hooks/useAppNavigate';
+import { useApiDocuments } from '../../../hooks/useMarketplace';
 
 interface Props {
   apimId: string | null;

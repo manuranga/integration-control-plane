@@ -20,7 +20,6 @@ import { Alert, Box, MenuItem, PageContent, PageTitle, Select, Stack } from '@ws
 import { useEffect, useMemo, useState, type JSX } from 'react';
 import ComingSoon from './ComingSoon';
 import McpPlayground from '../components/McpPlayground/McpPlayground';
-import DeploymentTrackBar from '../components/DeploymentTrackBar';
 import { IS_CLOUD } from '../features';
 import { useGeneratedTestKey } from '../hooks/useApim';
 import { useEndpointTestAccess } from '../hooks/useEndpointTestAccess';
@@ -51,7 +50,7 @@ const VISIBILITY_OPTIONS: { value: string; label: string; getUrl: (ep: EnvEndpoi
  */
 export default function McpTest(scope: ComponentScope): JSX.Element {
   const orgUuid = useOrgUuid() ?? '';
-  const { projectId, project } = useProjectId(scope.project);
+  const { projectId } = useProjectId(scope.project);
   const { data: component } = useComponentByHandler(projectId, scope.component);
   const isMcp = component?.componentSubType === 'MCP';
 
@@ -129,8 +128,6 @@ export default function McpTest(scope: ComponentScope): JSX.Element {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
-      {tracks.length > 0 && <DeploymentTrackBar tracks={tracks} selectedId={selectedTrackId} onChange={setSelectedTrackId} orgHandler={scope.org} projectHandler={project?.handler ?? scope.project} componentHandler={scope.component} />}
-
       <PageContent sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" gap={2} flexWrap="wrap">
           <PageTitle>

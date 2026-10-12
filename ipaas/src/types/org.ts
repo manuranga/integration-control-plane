@@ -32,6 +32,8 @@ export interface OrgEntry {
   handle: string;
   numericId: number;
   uuid?: string;
+  /** Display name; absent when the source only knows the handle. */
+  name?: string;
 }
 
 export interface RegisterUserResponse {

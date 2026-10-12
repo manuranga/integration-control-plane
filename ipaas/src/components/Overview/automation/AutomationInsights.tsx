@@ -18,8 +18,7 @@
 
 import { Avatar, Box, CircularProgress, Divider, Stack, Typography } from '@wso2/oxygen-ui';
 import { Activity, AlertTriangle, Clock, TrendingUp } from '@wso2/oxygen-ui-icons-react';
-import { useTaskExecutionCount, useTaskExecutions } from '../../../hooks/useExecutions';
-import { IS_CLOUD } from '../../../features';
+import { useTaskExecutions } from '../../../hooks/useExecutions';
 
 interface MetricTileProps {
   icon: React.ReactNode;
@@ -73,12 +72,9 @@ interface AutomationInsightsProps {
 export default function AutomationInsights({ releaseId, executionScope }: AutomationInsightsProps) {
   const { data: executions, isLoading: execLoading } = useTaskExecutions(releaseId, executionScope?.componentId, executionScope?.envId, executionScope?.projectId);
 
-  // Cloud reconstructs ~30 days of executions into the list, so the count is just
-  // its length — skip the separate count fetch. wip lists only the latest few runs
-  // and keeps a dedicated count endpoint for the true total.
-  const { data: countData, isLoading: countQueryLoading } = useTaskExecutionCount(releaseId, executionScope?.componentId, executionScope?.envId, executionScope?.projectId, !IS_CLOUD);
-  const count = IS_CLOUD ? (executions?.length ?? null) : (countData ?? null);
-  const countLoading = IS_CLOUD ? execLoading : countQueryLoading;
+  // The list reconstructs ~30 days of executions, so the count is just its length.
+  const count = executions?.length ?? null;
+  const countLoading = execLoading;
 
   const durations = executions?.map((e) => Number(e.completionTime) - Number(e.startTime)).filter((d) => d > 0) ?? [];
 

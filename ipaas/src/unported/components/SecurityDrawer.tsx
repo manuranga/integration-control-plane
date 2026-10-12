@@ -17,11 +17,11 @@
  */
 
 import { Alert, Box, Button, Checkbox, CircularProgress, Collapse, Divider, Drawer, FormControlLabel, IconButton, InputAdornment, MenuItem, Select, Stack, Switch, Table, TableBody, TableCell, TableHead, TableRow, Tooltip, Typography } from '@wso2/oxygen-ui';
-import TextField from './common/TextField';
+import TextField from '../../components/common/TextField';
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, ChevronsLeft, ChevronsRight, Plus, Search, X } from '@wso2/oxygen-ui-icons-react';
 import { useEffect, useMemo, useState } from 'react';
-import { useComponentEndpoints } from '../hooks/useComponents';
-import { useApimApi, useUpdateApimApi } from '../hooks/useApim';
+import { useComponentEndpoints } from '../../hooks/useComponents';
+import { useApimApi, useUpdateApimApi } from '../../hooks/useApim';
 
 const OAUTH2 = 'oauth2';
 const API_KEY = 'api_key';

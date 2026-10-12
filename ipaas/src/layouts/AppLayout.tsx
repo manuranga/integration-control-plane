@@ -152,6 +152,8 @@ export default function AppLayout(): JSX.Element {
   const [componentSearch, setComponentSearch] = useState('');
   const componentSearchRef = useRef<HTMLInputElement>(null);
   const { data: orgsData = [], isLoading: orgsLoading } = useOrgs();
+  // The handle stays in the URL; the header shows the org's display name when the token carries one.
+  const orgDisplayName = orgsData.find((o) => o.handle === scope.org)?.name || scope.org;
 
   const projectParam = hasProject(scope) ? scope.project : '';
   const isProjectUuid = UUID_RE.test(projectParam);
@@ -371,10 +373,10 @@ export default function AppLayout(): JSX.Element {
                 sx={{ minWidth: 180, maxWidth: 220, '& .MuiListItemText-root': { minWidth: 0, overflow: 'hidden' } }}
                 IconComponent={() => null}
                 SelectDisplayProps={{ 'aria-label': 'Select organization' }}
-                renderValue={() => <ComplexSelect.MenuItem.Text primary={scope.org} secondary="Organization" primaryTypographyProps={{ noWrap: true, title: scope.org }} />}
+                renderValue={() => <ComplexSelect.MenuItem.Text primary={orgDisplayName} secondary="Organization" primaryTypographyProps={{ noWrap: true, title: orgDisplayName }} />}
                 label="Organization">
                 <ComplexSelect.MenuItem value={scope.org}>
-                  <ComplexSelect.MenuItem.Text primary={scope.org} secondary="Organization" primaryTypographyProps={{ noWrap: true, title: scope.org }} />
+                  <ComplexSelect.MenuItem.Text primary={orgDisplayName} secondary="Organization" primaryTypographyProps={{ noWrap: true, title: orgDisplayName }} />
                 </ComplexSelect.MenuItem>
               </ComplexSelect>
             </Box>

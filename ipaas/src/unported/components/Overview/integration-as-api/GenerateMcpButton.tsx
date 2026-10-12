@@ -19,9 +19,9 @@
 import { IconButton, Tooltip } from '@wso2/oxygen-ui';
 import { MCP } from '@wso2/oxygen-ui-icons-react';
 import type { ReactNode } from 'react';
-import { useAppNavigate } from '../../../hooks/useAppNavigate';
-import { useApimApi } from '../../../hooks/useApim';
-import { generateMcpUrl } from '../../../nav';
+import { useAppNavigate } from '../../../../hooks/useAppNavigate';
+import { useApimApi } from '../../../../hooks/useApim';
+import { generateMcpUrl } from '../../../../nav';
 
 interface GenerateMcpButtonProps {
   apimId?: string | null;

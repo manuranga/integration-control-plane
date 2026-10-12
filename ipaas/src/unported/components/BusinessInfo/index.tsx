@@ -17,7 +17,7 @@
  */
 
 import { Box } from '@wso2/oxygen-ui';
-import type { ApimApiInfo } from '../../types/apim';
+import type { ApimApiInfo } from '../../../types/apim';
 import ComplianceCard from './ComplianceCard';
 import DocumentsCard from './DocumentsCard';
 import SubscriptionPlansCard from './SubscriptionPlansCard';

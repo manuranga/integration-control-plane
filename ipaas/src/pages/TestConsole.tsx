@@ -60,7 +60,7 @@ const HideTopPlugin = () => ({
 export default function TestConsole(scope: ComponentScope): JSX.Element {
   const orgUuid = useOrgUuid() ?? '';
 
-  const { projectId, project } = useProjectId(scope.project);
+  const { projectId } = useProjectId(scope.project);
 
   // Component + environments
   const { data: component, isLoading: loadingComponent } = useComponentByHandler(projectId, scope.component);
@@ -69,8 +69,8 @@ export default function TestConsole(scope: ComponentScope): JSX.Element {
   // Deployment track selection (default to latest) — derived rather than synced via an effect,
   // since an effect+render round trip here would delay useComponentDeployment/useEnvEndpoints below.
   const tracks = useMemo(() => component?.deploymentTracks ?? [], [component?.deploymentTracks]);
-  const [selectedTrackIdState, setSelectedTrackId] = useState('');
-  const selectedTrackId = tracks.some((t) => t.id === selectedTrackIdState) ? selectedTrackIdState : (tracks.find((t) => t.latest)?.id ?? tracks[0]?.id ?? '');
+  // An integration has one implicit deployment track.
+  const selectedTrackId = tracks.find((t) => t.latest)?.id ?? tracks[0]?.id ?? '';
 
   // Environment selection (by ID for stability across refetches) — same reasoning.
   const [selectedEnvIdState, setSelectedEnvId] = useState('');
@@ -213,7 +213,7 @@ export default function TestConsole(scope: ComponentScope): JSX.Element {
 
   return (
     <Box sx={{ position: 'relative', overflow: 'hidden', flex: 1 }}>
-      {tracks.length > 0 && <DeploymentTrackBar tracks={tracks} selectedId={selectedTrackId} onChange={setSelectedTrackId} orgHandler={scope.org} projectHandler={project?.handler ?? scope.project} componentHandler={component.handler} extra={envSelector} />}
+      {tracks.length > 0 && <DeploymentTrackBar extra={envSelector} />}
 
       <PageContent>
         <Typography variant="h1" sx={{ mb: 3 }}>

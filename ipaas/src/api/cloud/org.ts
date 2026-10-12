@@ -33,7 +33,7 @@ import { bff, items, seg, type ListResponse } from './_client';
 
 // Read org claims from the access-token payload. Returns empty on any failure
 // — callers treat that as "unscoped" rather than throwing.
-async function readJwtOrgClaims(): Promise<{ handle?: string; uuid?: string }> {
+async function readJwtOrgClaims(): Promise<{ handle?: string; uuid?: string; name?: string }> {
   const token = await getAccessToken();
   if (!token) return {};
   try {
@@ -45,7 +45,8 @@ async function readJwtOrgClaims(): Promise<{ handle?: string; uuid?: string }> {
     const org = (payload.organization as Record<string, unknown> | undefined) ?? {};
     const handle = (org.handle as string | undefined) ?? (payload.ouHandle as string | undefined);
     const uuid = (org.uuid as string | undefined) ?? (payload.ouId as string | undefined);
-    return { handle, uuid };
+    const name = (org.name as string | undefined) ?? (payload.ouName as string | undefined);
+    return { handle, uuid, name };
   } catch {
     return {};
   }
@@ -56,9 +57,9 @@ async function readJwtOrgClaims(): Promise<{ handle?: string; uuid?: string }> {
 // No BFF round-trip: the org switcher is disabled in cloud, and AppLayout
 // only needs an entry where handle === scope.org for the header to render.
 export const fetchOrgs = async (): Promise<OrgEntry[]> => {
-  const { handle, uuid } = await readJwtOrgClaims();
+  const { handle, uuid, name } = await readJwtOrgClaims();
   if (!handle && !uuid) return [];
-  return [{ handle: handle ?? '', numericId: 0, ...(uuid ? { uuid } : {}) }];
+  return [{ handle: handle ?? '', numericId: 0, ...(uuid ? { uuid } : {}), ...(name ? { name } : {}) }];
 };
 
 // Alias kept for contract parity with the devant variant.

@@ -176,6 +176,7 @@ export default function Environments(scope: OrgScope | ProjectScope): JSX.Elemen
           )}
           <ListingTable.Container>
             <ListingTable.Toolbar
+              showSearch
               searchValue={search}
               onSearchChange={setSearch}
               searchPlaceholder="Search environments..."
@@ -207,7 +208,7 @@ export default function Environments(scope: OrgScope | ProjectScope): JSX.Elemen
                   paginated.map((t) => (
                     <ListingTable.Row key={t.id}>
                       <ListingTable.Cell>
-                        <ListingTable.CellIcon icon={<Layers size={20} />} primary={t.name} />
+                        <Typography variant="body2">{t.name}</Typography>
                       </ListingTable.Cell>
                       <ListingTable.Cell>
                         <Chip size="small" variant="outlined" label={t.critical ? 'Critical' : 'Non-Critical'} />

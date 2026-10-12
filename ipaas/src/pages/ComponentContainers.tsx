@@ -67,7 +67,7 @@ export default function ComponentContainers({ org, project, component }: Compone
 
   return (
     <Box>
-      {tracks.length > 0 && <DeploymentTrackBar tracks={tracks} selectedId={trackId} onChange={setTrackId} orgHandler={org} projectHandler={project} componentHandler={component} versionView extra={envSelect} />}
+      {tracks.length > 0 && <DeploymentTrackBar extra={envSelect} />}
       <PageContent>
         <PageTitle>
           <PageTitle.Header>Containers</PageTitle.Header>

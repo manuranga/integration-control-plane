@@ -19,7 +19,7 @@
 import { Box, Card, CardContent, Divider, Skeleton, Stack, Tooltip, Typography } from '@wso2/oxygen-ui';
 import { ShieldOff } from '@wso2/oxygen-ui-icons-react';
 import { useMemo } from 'react';
-import { useRuleAdherence } from '../../hooks/useMarketplace';
+import { useRuleAdherence } from '../../../hooks/useMarketplace';
 
 interface Props {
   projectId: string;

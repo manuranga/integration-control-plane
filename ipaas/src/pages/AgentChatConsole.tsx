@@ -24,7 +24,6 @@ import { useComponentDeployment } from '../hooks/useDeployments';
 import { useEnvironments } from '../hooks/useEnvironments';
 import { useOrgUuid } from '../hooks/useOrgUuid';
 import { useProjectId } from '../hooks/useProjects';
-import DeploymentTrackBar from '../components/DeploymentTrackBar';
 import NotFound from '../components/NotFound';
 import AgentChat from '../components/AgentChat';
 import { broaden, resourceUrl, type ComponentScope } from '../nav';
@@ -40,7 +39,7 @@ import { IS_CLOUD } from '../features';
  */
 export default function AgentChatConsole(scope: ComponentScope): JSX.Element {
   const orgUuid = useOrgUuid() ?? '';
-  const { projectId, project } = useProjectId(scope.project);
+  const { projectId } = useProjectId(scope.project);
   const { data: component, isLoading: loadingComponent } = useComponentByHandler(projectId, scope.component);
   const { data: environments = [] } = useEnvironments(scope.org, projectId);
 
@@ -81,7 +80,6 @@ export default function AgentChatConsole(scope: ComponentScope): JSX.Element {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-      {tracks.length > 0 && <DeploymentTrackBar tracks={tracks} selectedId={selectedTrackId} onChange={setSelectedTrackId} orgHandler={scope.org} projectHandler={project?.handler ?? scope.project} componentHandler={component.handler} />}
       <PageContent>
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }} flexWrap="wrap" gap={1}>
           <Stack direction="row" alignItems="center" gap={1.5}>
