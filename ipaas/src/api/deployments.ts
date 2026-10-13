@@ -107,8 +107,8 @@ export function toEnvEndpoint(ep: BffEndpointResources, releaseId: string): EnvE
     projectUrl,
     // Not organizationUrl: organization visibility needs to be implemented yet.
     invokeUrl: publicUrl || internalUrl,
-    // The swagger view reads activeEndpoint.apimRevisionId; cloud has no APIM, so
-    // carry the base64 OpenAPI here for cloud/apim.ts#fetchApimSwagger to decode.
+    // The swagger view reads activeEndpoint.apimRevisionId; there is no APIM, so carry
+    // the base64 OpenAPI here for apim.ts#fetchApimSwagger to decode.
     apimRevisionId: ep.schemaContent ?? null,
   };
 }

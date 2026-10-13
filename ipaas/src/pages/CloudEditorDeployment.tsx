@@ -159,10 +159,10 @@ export default function CloudEditorDeployment(): JSX.Element {
     redirect(current.url);
   }, [awaitingReady, readyQuery.data]);
 
-  // A readiness lookup that keeps failing ends the wait rather than spinning on.
-  useEffect(() => {
-    if (awaitingReady && readyQuery.isError) setError('Could not check whether your Cloud Editor is ready. Please close this window and try again.');
-  }, [awaitingReady, readyQuery.isError]);
+  // Polling carries on through failed lookups (a blip during a pod restart is normal), so only
+  // the timeout ends the wait; it reports a lookup that was still failing at that point.
+  const readyLookupFailingRef = useRef(false);
+  readyLookupFailingRef.current = readyQuery.isError;
 
   // Keep the scale-to-zero timer off the editor for the whole wait.
   useEditorKeepAlive(instance?.url, awaitingReady);
@@ -171,7 +171,8 @@ export default function CloudEditorDeployment(): JSX.Element {
   useEffect(() => {
     if (!awaitingReady) return undefined;
     const id = window.setTimeout(() => {
-      if (!hasRedirected.current) setError('Your Cloud Editor setup is taking longer than usual. Please close this window and try again later.');
+      if (hasRedirected.current) return;
+      setError(readyLookupFailingRef.current ? 'Could not check whether your Cloud Editor is ready. Please close this window and try again.' : 'Your Cloud Editor setup is taking longer than usual. Please close this window and try again later.');
     }, CLOUD_EDITOR_READY_TIMEOUT_MS);
     return () => clearTimeout(id);
   }, [awaitingReady]);

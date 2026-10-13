@@ -62,7 +62,7 @@ export default function EnvCardActions({
 
   const handleStop = () => {
     stopMutation.mutate(
-      // cloud: OpenChoreo's stop endpoint is per-environment; wip ignores it.
+      // OpenChoreo's stop endpoint is per-environment.
       { orgHandler, componentId: component.id, releaseId, environment: env.id, type: 'service', clearCron: false },
       {
         onSuccess: () => {

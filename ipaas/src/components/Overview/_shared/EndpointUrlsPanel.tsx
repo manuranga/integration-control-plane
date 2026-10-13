@@ -130,7 +130,7 @@ export default function EndpointUrlsPanel({ endpoints, selectedIdx, onSelect, ex
   // Fallback to invokeUrl if no visibility-specific URL
   const fallbackUrl = urlRows.length === 0 ? ep.invokeUrl || '' : '';
 
-  // The spec arrives with the endpoint list, base64 in the apimRevisionId slot (see cloud/deployments.ts).
+  // The spec arrives with the endpoint list, base64 in the apimRevisionId slot (see api/deployments.ts).
   const inlineSpec = decodeBase64Spec(ep.apimRevisionId);
   const canDownload = !!inlineSpec;
 

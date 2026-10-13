@@ -135,7 +135,7 @@ export interface EnvEndpoint {
 /** Input for updating an endpoint's network visibility. */
 export interface UpdateEndpointInput {
   componentId: string;
-  /** Cloud only — resolves the component's release bindings. wip carries the project in the id. */
+  /** Resolves the component's release bindings. */
   projectId?: string;
   versionId: string;
   releaseId: string;

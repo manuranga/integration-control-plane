@@ -55,11 +55,9 @@ function MetricTile({ icon, label, value, unit, loading }: MetricTileProps) {
   );
 }
 
-// releaseId is the only intrinsic input. executionScope is the per-environment scope
-// (component/env/project) that the cloud (OpenChoreo) execution queries key on; the
-// wip data path keys by releaseId and ignores it. It is one optional, all-or-nothing
-// object so the contract reads clearly: that per-product behavior lives in the gated
-// useExecutions hook + src/api/{cloud,wip}, keeping this component product-agnostic.
+// executionScope is the per-environment scope (component/env/project) the OpenChoreo
+// execution queries key on. It is one optional, all-or-nothing object so the contract
+// reads clearly.
 interface AutomationInsightsProps {
   releaseId: string;
   executionScope?: {

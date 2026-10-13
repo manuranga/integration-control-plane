@@ -58,7 +58,7 @@ function toApiInsightsData(raw: ApiInsightsRaw): ApiInsightsData {
 
 /**
  * Integration-level API insights — apiId-scoped queries (see `fetchApiInsights`
- * in `api/wip/insights.ts`) against the same analyticsqueryapi endpoint as the
+ * in the removed WIP `api/wip/insights.ts`) against the same analyticsqueryapi endpoint as the
  * project view. Fetches lazily per active tab: the base bundle (KPIs +
  * Overview/Traffic trend + Availability + the Latency/Errors trends) is always
  * included, and each tab's extra breakdown (by-app/by-backend/resources for

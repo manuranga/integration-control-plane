@@ -25,7 +25,7 @@
  * BuildRunLogs (init/build/deploy) from its task phases.
  *
  * The log text itself comes from the wso2cloud observability proxy, queried by
- * WorkflowRun name (see cloud/logs.ts) — the same source as runtime logs.
+ * WorkflowRun name (see logs.ts) — the same source as runtime logs.
  */
 
 import type { BuildRunLogs, BuildStage, BuildStep } from '../types/build';
