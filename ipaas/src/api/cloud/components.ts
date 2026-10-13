@@ -92,17 +92,21 @@ const isWebhookInput = (input: CreateComponentInput): boolean =>
 // ComponentType referenced here (deployment/integration-as-api,
 // cronjob/scheduled-task, deployment/event-integration) is provisioned with
 // ballerina-buildpack-builder in its allowedWorkflows.
+//
+// MI integrations use the mi-* ComponentTypes, which allow only mi-image-builder
+// and carry MI resource defaults (requests 100m / 512Mi, limits 500m / 1024Mi);
+// the shared types' 128Mi-256Mi defaults OOMKill the MI JVM.
 const DISPLAY_TYPE_MAP: Record<DisplayType, { componentType: string; workflow: string }> = {
   ballerinaService: { componentType: 'deployment/integration-as-api', workflow: 'ballerina-buildpack-builder' },
   scheduledTask: { componentType: 'cronjob/scheduled-task', workflow: 'ballerina-buildpack-builder' },
   manualTrigger: { componentType: 'cronjob/scheduled-task', workflow: 'ballerina-buildpack-builder' },
   webhook: { componentType: 'deployment/event-integration', workflow: 'ballerina-buildpack-builder' },
   ballerinaEventHandler: { componentType: 'deployment/event-integration', workflow: 'ballerina-buildpack-builder' },
-  miApiService: { componentType: 'deployment/integration-as-api', workflow: 'mi-image-builder' },
-  miCronjob: { componentType: 'cronjob/scheduled-task', workflow: 'mi-image-builder' },
-  miJob: { componentType: 'cronjob/scheduled-task', workflow: 'mi-image-builder' },
-  miWebhook: { componentType: 'deployment/event-integration', workflow: 'mi-image-builder' },
-  miEventHandler: { componentType: 'deployment/event-integration', workflow: 'mi-image-builder' },
+  miApiService: { componentType: 'deployment/mi-integration-as-api', workflow: 'mi-image-builder' },
+  miCronjob: { componentType: 'cronjob/mi-scheduled-task', workflow: 'mi-image-builder' },
+  miJob: { componentType: 'cronjob/mi-scheduled-task', workflow: 'mi-image-builder' },
+  miWebhook: { componentType: 'deployment/mi-event-integration', workflow: 'mi-image-builder' },
+  miEventHandler: { componentType: 'deployment/mi-event-integration', workflow: 'mi-image-builder' },
 };
 
 // Reverse map (read path): the BFF returns a composite displayType from
@@ -145,8 +149,8 @@ function withFrontendDisplayType<T extends Component>(c: T): T {
 
 function resolveCreateMapping(input: CreateComponentInput): { componentType: string; workflow: string } {
   const mapping = DISPLAY_TYPE_MAP[input.displayType] ?? DISPLAY_TYPE_MAP.ballerinaService;
-  const isFileIntegration = input.componentSubType === 'ballerinaFileIntegration' || input.componentSubType === 'miFileIntegration';
-  if (isFileIntegration) return { ...mapping, componentType: 'deployment/file-integration' };
+  if (input.componentSubType === 'ballerinaFileIntegration') return { ...mapping, componentType: 'deployment/file-integration' };
+  if (input.componentSubType === 'miFileIntegration') return { ...mapping, componentType: 'deployment/mi-file-integration' };
   // The BFF routes create, build, deploy and delete to agent-manager on this type.
   // 'deployment/ai-agent' names the agents created before that move.
   if (input.componentSubType === 'aiAgent') return { ...mapping, componentType: 'proxy/agent-api' };

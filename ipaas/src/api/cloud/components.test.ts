@@ -69,7 +69,7 @@ describe('createComponent component-type mapping', () => {
   it.each([
     ['MCP', 'deployment/mcp-server'],
     ['ballerinaFileIntegration', 'deployment/file-integration'],
-    ['miFileIntegration', 'deployment/file-integration'],
+    ['miFileIntegration', 'deployment/mi-file-integration'],
   ])('leaves the %s sub-type on its own component type', async (subType, expected) => {
     await createComponent({ ...baseInput, componentSubType: subType } as CreateComponentInput);
     expect(bodyOf().spec.componentType.name).toBe(expected);
@@ -78,5 +78,18 @@ describe('createComponent component-type mapping', () => {
   it('leaves a plain integration on the display-type mapping', async () => {
     await createComponent(baseInput);
     expect(bodyOf().spec.componentType.name).toBe('deployment/integration-as-api');
+  });
+
+  // The mi-* types carry the MI resource defaults; the shared types' defaults OOMKill the MI JVM.
+  it.each([
+    ['miApiService', 'deployment/mi-integration-as-api'],
+    ['miCronjob', 'cronjob/mi-scheduled-task'],
+    ['miJob', 'cronjob/mi-scheduled-task'],
+    ['miWebhook', 'deployment/mi-event-integration'],
+    ['miEventHandler', 'deployment/mi-event-integration'],
+  ])('creates the %s display type on its MI component type', async (displayType, expected) => {
+    await createComponent({ ...baseInput, displayType } as CreateComponentInput);
+    expect(bodyOf().spec.componentType.name).toBe(expected);
+    expect(bodyOf().spec.workflow?.name).toBe('mi-image-builder');
   });
 });
