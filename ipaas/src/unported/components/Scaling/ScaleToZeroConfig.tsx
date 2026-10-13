@@ -18,8 +18,8 @@
 
 import { Button, CircularProgress, Stack } from '@wso2/oxygen-ui';
 import { useEffect, useState, type JSX } from 'react';
-import { useUpdateHttpScaler } from '../../../hooks/useScaling';
-import RangeInput from '../../../components/Scaling/RangeInput';
+import { useUpdateHttpScaler } from '../../hooks/useScaling';
+import RangeInput from './RangeInput';
 import type { HttpScaler, ScalingPath } from '../../../types/scaling';
 
 interface ScaleToZeroConfigProps {

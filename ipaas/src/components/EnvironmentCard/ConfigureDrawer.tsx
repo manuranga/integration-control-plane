@@ -28,9 +28,7 @@ import type { SchemaConfigItem, CertGroup, CertMapping, CertMappingConfig } from
 import { useGenerateComponentEndpoints, useUpdateEndpoint } from '../../hooks/useComponents';
 import { useSaveSchemaConfig, usePostCertificateMappings } from '../../hooks/useConfiguration';
 import { useDeployDeploymentTrack } from '../../hooks/useDeployments';
-import ManageDrawer from './ManageDrawer';
 import ApiSettingsDrawer from '../Overview/integration-as-api/ApiSettingsDrawer';
-import { IS_CLOUD } from '../../features';
 import { toEndpointOptions } from '../../utils/endpoints';
 import { EndpointCard, VISIBILITY_OPTS } from '../EndpointCard';
 import { ConfigForm, type BaseType, type LinkingInfo, type JSONSchema } from '../SchemaConfigForm';
@@ -721,7 +719,6 @@ function AutomationConfigureDrawer({ open, onClose, onSaved, projectId, componen
           configGroups={configGroups}
           handleValueChange={handleValueChange}
           handleValidationChange={handleValidationChange}
-          showLinking
         />
         {saveError && (
           <Alert severity="error" sx={{ mt: 1 }}>
@@ -1182,7 +1179,6 @@ function GenericServiceConfigureDrawer({
           configGroups={configGroups}
           handleValueChange={handleValueChange}
           handleValidationChange={handleValidationChange}
-          showLinking
         />
         {saveError && (
           <Alert severity="error" sx={{ mt: 1 }}>
@@ -1280,11 +1276,7 @@ function GenericServiceConfigureDrawer({
         )}
       </Drawer>
 
-      {IS_CLOUD ? (
-        <ApiSettingsDrawer open={manageDrawerOpen} onClose={() => setManageDrawerOpen(false)} componentName={componentId} envName={envId} endpoints={toEndpointOptions(endpoints)} activeEndpointName={settingsEp?.id} />
-      ) : (
-        <ManageDrawer open={manageDrawerOpen} onClose={() => setManageDrawerOpen(false)} apimId={settingsEp?.apimId ?? null} />
-      )}
+      <ApiSettingsDrawer open={manageDrawerOpen} onClose={() => setManageDrawerOpen(false)} componentName={componentId} envName={envId} endpoints={toEndpointOptions(endpoints)} activeEndpointName={settingsEp?.id} />
     </>
   );
 }

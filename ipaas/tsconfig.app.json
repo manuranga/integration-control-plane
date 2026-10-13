@@ -23,7 +23,6 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
     "paths": {
-      "#api/*": ["./src/api/cloud/*"],
       "#auth": ["./src/auth/cloud/index.ts"]
     }
   },
