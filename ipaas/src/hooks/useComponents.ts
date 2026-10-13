@@ -151,6 +151,7 @@ export function useUpdateEndpoint() {
   return useMutation({
     mutationFn: (input: UpdateEndpointInput) => updateEndpoint(input),
     onSuccess: (_data, input) => {
+      qc.invalidateQueries({ queryKey: ['componentDeployment'] });
       qc.invalidateQueries({ queryKey: ['envEndpoints'] });
       qc.invalidateQueries({ queryKey: ['componentEndpoints', input.componentId, input.versionId] });
     },
