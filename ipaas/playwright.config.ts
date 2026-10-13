@@ -42,7 +42,6 @@ export default defineConfig({
   reporter: [['html', { open: 'never', outputFolder: ARTIFACT_DIR ? `${ARTIFACT_DIR}/report` : 'playwright-report' }], ['list']],
   timeout: 60_000,
   use: {
-    baseURL: process.env.E2E_BASE_URL ?? 'https://preview-o2-dev.devant.dev',
     trace: 'retain-on-failure',
     // E2E_VIDEO=1 keeps a video per test, including passing ones.
     video: process.env.E2E_VIDEO ? 'on' : 'retain-on-failure',
@@ -51,26 +50,7 @@ export default defineConfig({
     navigationTimeout: 60_000,
   },
   projects: [
-    // WIP — Asgardeo IdP, email + OTP sign-in.
-    {
-      name: 'setup',
-      testDir: './tests/e2e',
-      testMatch: /global\.setup\.ts/,
-    },
-    {
-      name: 'wip',
-      testIgnore: /specs[\\/]cloud/,
-      use: {
-        ...devices['Desktop Chrome'],
-        storageState: '.auth/user.json',
-        launchOptions: {
-          args: ['--incognito'],
-        },
-      },
-      dependencies: ['setup'],
-    },
-
-    // Cloud — Thunder IdP, GitHub SSO. Own baseURL, so a stray E2E_BASE_URL cannot cross-target.
+    // Thunder IdP. The session comes from a GitHub sign-in (setup-cloud) or a platform-issued token (setup-cloud-token).
     {
       name: 'setup-cloud',
       testDir: './tests/e2e',
@@ -108,9 +88,7 @@ export default defineConfig({
     },
     {
       name: 'cloud',
-      // specs/shared is excluded: those page checks assume the org's default project, which the
-      // journey's own fixture project has replaced as the thing under test on cloud.
-      testIgnore: /specs[\\/](wip|cloud-anon|shared)[\\/]/,
+      testIgnore: /specs[\\/]cloud-anon[\\/]/,
       retries: CLOUD_RETRIES,
       // The journey spec depends on declaration order within its file.
       fullyParallel: false,

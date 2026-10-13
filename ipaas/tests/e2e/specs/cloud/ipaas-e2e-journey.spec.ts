@@ -11,8 +11,7 @@
  */
 
 import { expect, test, type BrowserContext, type Locator, type Page } from '@playwright/test';
-import { getAuthContext } from '../../helpers/auth-context.js';
-import { authStatePath } from '../../helpers/product.js';
+import { AUTH_STATE_PATH, getAuthContext } from '../../helpers/auth-context.js';
 import { expectPageRendered } from '../../helpers/cloud-fixtures.js';
 import { newConsoleContext } from '../../helpers/session-storage.js';
 import { BUILD_TIMEOUT_MS, waitForBuildToSettle } from '../../helpers/build.js';
@@ -44,7 +43,7 @@ import {
   REDEPLOY_SETTLE_MS,
   REMOVAL_TIMEOUT_MS,
   SAMPLE,
-  WIP_ONLY_SECTIONS,
+  UNPORTED_SECTIONS,
 } from '../../helpers/journey-fixtures.js';
 import { activeProject, listFixtureProjects, STALE_AGE_MS, staleProjects, setActiveProject } from '../../helpers/journey-project.js';
 import { enterOrgHome, enterProject, enterProjectOrSkip, openProjectSettings, projectSettingsButton, reseedHere } from '../../helpers/journey-session.js';
@@ -100,9 +99,9 @@ let context: BrowserContext;
 let page: Page;
 
 test.beforeAll(async ({ browser }, testInfo) => {
-  orgHandler = getAuthContext(testInfo.project.name).orgHandler;
+  orgHandler = getAuthContext().orgHandler;
   context = await newConsoleContext(browser, {
-    storageState: authStatePath(testInfo.project.name),
+    storageState: AUTH_STATE_PATH,
     baseURL: testInfo.project.use.baseURL,
   });
   page = await context.newPage();
@@ -1001,13 +1000,13 @@ test.describe('07 page availability @smoke', () => {
     });
   }
 
-  test('TC_IP_SET_004 organization settings offers no WIP-only section', async () => {
+  test('TC_IP_SET_004 organization settings offers no unported section', async () => {
     await expectPageRendered(page, `/organizations/${orgHandler}/settings`);
     // Positive assertion first: these absences would pass on a blank page.
     await expect(page.getByText('Package Registries', { exact: true }).first()).toBeVisible({ timeout: 30_000 });
     // Org Details was removed from cloud settings, so it must not come back either.
     await expect(page.getByText('Org Details', { exact: true })).not.toBeVisible();
-    for (const section of WIP_ONLY_SECTIONS) {
+    for (const section of UNPORTED_SECTIONS) {
       await expect(page.getByText(section, { exact: true })).not.toBeVisible();
     }
   });

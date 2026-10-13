@@ -132,7 +132,7 @@ function withFrontendDisplayType<T extends Component>(c: T): T {
   // componentType 'fileIntegration' but no subType, so surface the service
   // displayType plus the file componentSubType; otherwise the overview would
   // classify them as 'unsupported'.
-  // TODO: Remove this SubType logic once WIP is decommissioned.
+  // TODO: Drop this once the BFF returns componentSubType itself.
   if (c.componentType === 'fileIntegration') {
     return { ...c, displayType: isMI ? 'miApiService' : 'ballerinaService', componentSubType: isMI ? 'miFileIntegration' : 'ballerinaFileIntegration' };
   }
