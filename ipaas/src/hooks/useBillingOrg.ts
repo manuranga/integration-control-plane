@@ -18,7 +18,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { IS_CLOUD } from '../features';
-import type { BillingOrg } from '../types/billing';
+import type { BillingOrg, BillingPlan } from '../types/billing';
 
 /**
  * Billing org record for the subscription/trial chip.
@@ -40,4 +40,22 @@ export function useBillingOrg(product: string): { org: BillingOrg | null; isLoad
     retry: false,
   });
   return { org: data ?? null, isLoading };
+}
+
+/**
+ * A plan of the billing catalog, read by its code to learn whether it is paid. Plans change only
+ * with a catalog release, so the result is kept for the session rather than refetched.
+ */
+export function useBillingPlan(code: string | undefined): { plan: BillingPlan | null; isLoading: boolean } {
+  const { data, isLoading } = useQuery({
+    queryKey: ['billingPlan', code],
+    queryFn: async (): Promise<BillingPlan> => {
+      const { fetchBillingPlan } = await import('../api/cloud/billing');
+      return fetchBillingPlan(code ?? '');
+    },
+    enabled: IS_CLOUD && !!code,
+    staleTime: Infinity,
+    retry: false,
+  });
+  return { plan: data ?? null, isLoading };
 }

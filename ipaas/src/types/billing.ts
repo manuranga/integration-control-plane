@@ -24,8 +24,8 @@ export interface BillingOrg {
     id: string;
     org_id: string;
     status: 'trial' | 'active' | 'past_due' | 'cancelled' | string;
-    /** Set once the org upgrades to a paid plan, absent on free plans; `status` reads "active" for both. */
-    billing_account_id?: string | null;
+    /** The plan's summary carries no free/paid type: read the plan by its code for that. */
+    plan?: { id?: string; code: string; name?: string };
     billing_period?: string;
     current_period_start?: string;
     current_period_end?: string;
@@ -35,4 +35,11 @@ export interface BillingOrg {
     };
     product?: { id: string; name: string; code: string };
   };
+}
+
+/** A plan of the billing catalog, as GET /plans/{code} returns it. */
+export interface BillingPlan {
+  code: string;
+  name?: string;
+  type?: 'free' | 'paid' | string;
 }
