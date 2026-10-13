@@ -19,7 +19,7 @@
 import { useEffect, useRef } from 'react';
 import { useAuth } from '#auth';
 import { useAccessControl } from '../contexts/AccessControlContext';
-import { fetchProjectPermissions, fetchComponentPermissions } from '#api/auth';
+import { fetchProjectPermissions, fetchComponentPermissions } from '../api/auth';
 
 export function useLoadProjectPermissions(orgHandle: string, projectId: string) {
   const { userId, isOidcUser } = useAuth();

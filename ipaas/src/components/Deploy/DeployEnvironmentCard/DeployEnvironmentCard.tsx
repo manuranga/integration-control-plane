@@ -36,7 +36,6 @@ import DeployEnvironmentCardBody from './DeployEnvironmentCardBody';
 import DeploymentHistoryDrawer from './DeploymentHistoryDrawer';
 import EndpointsDrawer from './EndpointsDrawer';
 import type { DeployEnvironmentCardProps } from '../../../types/deploy';
-import { IS_CLOUD } from '../../../features';
 
 export default function DeployEnvironmentCard({
   orgHandler,
@@ -222,8 +221,8 @@ export default function DeployEnvironmentCard({
         orgHandler,
         componentId,
         releaseId,
-        // cloud: OpenChoreo's stop endpoint is per-environment; wip ignores it.
-        ...(IS_CLOUD ? { environment: env.id } : {}),
+        // OpenChoreo's stop endpoint is per-environment.
+        environment: env.id,
         type: flags.isAutomation ? 'scheduledTask' : 'service',
         // Stopping the deployment leaves the CronJob's schedule untouched.
         clearCron: false,
@@ -398,20 +397,7 @@ export default function DeployEnvironmentCard({
 
       <DeploymentHistoryDrawer open={historyOpen} onClose={() => setHistoryOpen(false)} orgUuid={orgUuid} projectId={projectId} componentId={componentId} versionId={versionId} environmentId={env.id} envName={env.name} />
 
-      {showEndpoints && (
-        <EndpointsDrawer
-          open={endpointsOpen}
-          onClose={() => setEndpointsOpen(false)}
-          endpoints={endpoints}
-          isLoading={endpointsLoading}
-          envName={env.name}
-          componentId={componentId}
-          versionId={versionId}
-          releaseId={releaseId}
-          buildId={deployedBuildId ?? undefined}
-          environmentId={env.id}
-        />
-      )}
+      {showEndpoints && <EndpointsDrawer open={endpointsOpen} onClose={() => setEndpointsOpen(false)} endpoints={endpoints} isLoading={endpointsLoading} envName={env.name} componentId={componentId} environmentId={env.id} />}
     </>
   );
 }

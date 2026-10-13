@@ -28,7 +28,6 @@ interface ConnectionSidebarProps {
   status: McpConnectionStatus;
   isTokenFetching?: boolean;
   endpointSwitcher?: McpSwitcher;
-  visibilitySwitcher?: McpSwitcher;
   onConnect: () => void;
   onDisconnect: () => void;
   onReconnect: () => void;
@@ -44,8 +43,8 @@ const STATUS_META: Record<McpConnectionStatus, { label: string; color: string }>
 
 const readOnlyInputSx = { bgcolor: 'action.hover', fontFamily: 'monospace', fontSize: 12.5 } as const;
 
-/** The playground's left panel: endpoint/visibility selectors, the derived URL + test key, and connect controls. */
-export default function ConnectionSidebar({ url, token, status, isTokenFetching, endpointSwitcher, visibilitySwitcher, onConnect, onDisconnect, onReconnect, onGetTestKey }: ConnectionSidebarProps): JSX.Element {
+/** The playground's left panel: the endpoint selector, the derived URL + test key, and connect controls. */
+export default function ConnectionSidebar({ url, token, status, isTokenFetching, endpointSwitcher, onConnect, onDisconnect, onReconnect, onGetTestKey }: ConnectionSidebarProps): JSX.Element {
   const [showToken, setShowToken] = useState(false);
   const connected = status === 'connected';
   const connecting = status === 'connecting';
@@ -59,20 +58,6 @@ export default function ConnectionSidebar({ url, token, status, isTokenFetching,
           <Box component="span" sx={{ display: 'block' }}>
             <TextField select label="Endpoint" size="small" fullWidth value={endpointSwitcher.value} onChange={(e) => endpointSwitcher.onChange(e.target.value)} disabled={connected || connecting}>
               {endpointSwitcher.options.map((o) => (
-                <MenuItem key={o.value} value={o.value}>
-                  {o.label}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Box>
-        </Tooltip>
-      )}
-
-      {visibilitySwitcher && (
-        <Tooltip title={connected || connecting ? 'Disconnect to change the visibility.' : ''}>
-          <Box component="span" sx={{ display: 'block' }}>
-            <TextField select label="Visibility" size="small" fullWidth value={visibilitySwitcher.value} onChange={(e) => visibilitySwitcher.onChange(e.target.value)} disabled={connected || connecting}>
-              {visibilitySwitcher.options.map((o) => (
                 <MenuItem key={o.value} value={o.value}>
                   {o.label}
                 </MenuItem>

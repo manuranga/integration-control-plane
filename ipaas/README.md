@@ -90,8 +90,7 @@ nginx -g 'daemon off;'
 Run the development server:
 
 ```bash
-pnpm dev          # WIP on https://localhost:3000 (HTTPS)
-pnpm dev:cloud    # Cloud variant
+pnpm dev          # https://localhost:3000 (HTTPS)
 ```
 
 ### Build

@@ -44,7 +44,7 @@ export function isNotFoundError(error: unknown): boolean {
 
 /**
  * The API layer has no implementation for this call — the `ni()` stubs in
- * `src/api/cloud/` throw `[cloud] domain.fn: not implemented`.
+ * `src/api/` throw `[cloud] domain.fn: not implemented`.
  * A feature absent from the product is not a failure, so callers should treat it
  * as "unavailable here" rather than showing an error.
  */
