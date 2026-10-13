@@ -76,7 +76,7 @@ import NotFound from '../components/NotFound';
 import { formatDistanceToNow } from '../utils/time';
 import { resourceUrl, broaden, newComponentUrl, type ProjectScope } from '../nav';
 import { useOrgUuid } from '../hooks/useOrgUuid';
-import { useAuth } from '#auth';
+import { useAuth } from '../auth';
 import { componentOverviewUrl } from '../paths';
 import { Permissions } from '../constants/permissions';
 import { isSupportedIntegration, getDisplayLabel, getNonIntegrationPlatform } from '../constants/integrations';
@@ -84,7 +84,6 @@ import { identifyIntegration } from '../utils/identifyIntegration';
 import IntegrationIcon from '../components/IntegrationIcon';
 import Authorized from '../components/Authorized';
 import { useFeaturePreview } from '../contexts/FeaturePreviewContext';
-import { useLoadProjectPermissions } from '../hooks/usePermissionLoader';
 import { UUID_RE } from '../utils/string';
 import { isExternalRepoIntegration } from '../utils/projectRepo';
 import { DESCRIPTION_MAX_LENGTH, DESCRIPTION_MAX_NEWLINES, clampDescription, isAtNewlineLimit } from '../utils/description';
@@ -642,7 +641,6 @@ export default function Project(scope: ProjectScope): JSX.Element {
   // list reports isLoading false with its data still pre-creation.
   const loadingProject = !project && (isUuid ? loadingById : loadingByHandle || loadingProjects || fetchingProjects);
   const projectId = project?.id ?? '';
-  useLoadProjectPermissions(scope.org, projectId);
   // Shared with AppLayout's left-nav hiding, so both surfaces hide on exactly the same one-shot
   // "just landed here right after onboarding" signal and can't drift out of sync. This only fires
   // on that first landing — navigating elsewhere and back always shows the header again, even if

@@ -17,7 +17,7 @@
  */
 
 import { type RouteProps, Navigate, Outlet } from 'react-router';
-import { cookiePolicyUrl, loginUrl, signupUrl, registerOrgUrl } from '../paths';
+import { cookiePolicyUrl, loginUrl, signupUrl } from '../paths';
 import { ScopeResolver, generateMatrixRoutes, withScope, type Matrix } from '../nav';
 import HiddenPageRedirect from '../components/HiddenPageRedirect';
 import UnknownRoute from '../components/UnknownRoute';
@@ -40,10 +40,8 @@ const OrgHomeRedirect = lazyPage(() => import('../components/OrgHomeRedirect'));
 
 const OIDCCallback = lazyPage(() => import('../pages/OIDCCallback'));
 const GitHubOAuthCallback = lazyPage(() => import('../pages/GitHubOAuthCallback'));
-const RegisterOrganization = lazyPage(() => import('../pages/RegisterOrganization'));
 const CookiePolicy = lazyPage(() => import('../pages/CookiePolicy'));
 const CloudEditorDeployment = lazyPage(() => import('../pages/CloudEditorDeployment'));
-const ForceChangePassword = lazyPage(() => import('../pages/ForceChangePassword'));
 const ProjectsRedirect = lazyPage(() => import('../pages/ProjectsRedirect'));
 const OrgHome = lazyPage(() => import('../pages/OrgHome'));
 const Projects = lazyPage(() => import('../pages/Projects'));
@@ -124,9 +122,6 @@ const routes: AppRoute[] = [
   {
     element: <ProtectedRoute />,
     children: [
-      { path: registerOrgUrl(), element: <RegisterOrganization /> },
-      // WIP local login can require a password change; remove with the WIP auth.
-      { path: '/change-password', element: <ForceChangePassword /> },
       { path: '/editor', element: <CloudEditorDeployment /> },
       {
         element: <ScopeResolver />,

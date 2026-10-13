@@ -19,18 +19,19 @@
 import { Navigate, Outlet } from 'react-router';
 import { Box, ColorSchemeToggle, Layout, ParticleBackground, Stack } from '@wso2/oxygen-ui';
 import type { JSX } from 'react';
-import { useAuth } from '#auth';
-import { orgHomeUrl, projectHomeUrl, registerOrgUrl } from '../paths';
+import { useAuth } from '../auth';
+import { orgHomeUrl, projectHomeUrl } from '../paths';
 
 export default function PublicLayout(): JSX.Element {
   const { isAuthenticated, userId } = useAuth();
 
-  if (isAuthenticated) {
-    const storedOrg = localStorage.getItem('org_handle');
-    const org = storedOrg && storedOrg !== 'default' ? storedOrg : null;
+  const storedOrg = localStorage.getItem('org_handle');
+  const org = storedOrg && storedOrg !== 'default' ? storedOrg : null;
 
+  // A signed-in user has an org (Thunder provisions one at sign-up), so the public pages hand over to it.
+  if (isAuthenticated && org) {
     // Restore the last visited project if it matches the stored org
-    if (org && userId) {
+    if (userId) {
       try {
         const lastProjectRaw = localStorage.getItem(`last_project:${userId}`);
         if (lastProjectRaw) {
@@ -44,7 +45,7 @@ export default function PublicLayout(): JSX.Element {
       }
     }
 
-    return <Navigate to={org ? orgHomeUrl(org) : registerOrgUrl()} replace />;
+    return <Navigate to={orgHomeUrl(org)} replace />;
   }
 
   return (

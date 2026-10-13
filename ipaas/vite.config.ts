@@ -16,7 +16,6 @@
  * under the License.
  */
 
-import path from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import { visualizer } from 'rollup-plugin-visualizer';
@@ -28,16 +27,9 @@ export default defineConfig({
   server: {
     port: 3000,
     https: {},
-    proxy: {
-      '/subscriptions-proxy': {
-        target: 'https://subscriptions.dv.wso2.com',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/subscriptions-proxy/, ''),
-      },
-    },
   },
   // Preview mirrors the dev server: the IDP only accepts redirects on :3000, and
-  // `vite preview` reads none of `server`, so port and proxy are repeated here.
+  // `vite preview` reads none of `server`, so the port is repeated here.
   preview: {
     port: 3000,
     strictPort: true,
@@ -49,9 +41,6 @@ export default defineConfig({
   },
   resolve: {
     dedupe: ['react', 'react-dom', 'react/jsx-runtime'],
-    alias: {
-      '#auth': path.resolve(__dirname, 'src/auth/cloud'),
-    },
   },
   build: {
     outDir: 'dist',

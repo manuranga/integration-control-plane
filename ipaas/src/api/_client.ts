@@ -24,7 +24,7 @@
  * supported here because the shared HttpClient lacks it.
  */
 
-import { authenticatedFetch } from '#auth';
+import { authenticatedFetch } from '../auth';
 import { HttpError } from '../types/http';
 
 /** Standard BFF list envelope: { items: T[] }. */

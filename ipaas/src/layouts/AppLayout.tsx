@@ -44,7 +44,6 @@ import {
 } from '@wso2/oxygen-ui';
 import TextField from '../components/common/TextField';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import type { JSX } from 'react';
 import { useNavigate, Outlet, NavLink, useLocation } from 'react-router';
 import { useAppNavigate } from '../hooks/useAppNavigate';
@@ -58,8 +57,7 @@ import { useOrgs } from '../hooks/useOrg';
 import { useBillingOrg } from '../hooks/useBillingOrg';
 import { isSupportedIntegration, GENERIC_SERVICE_TYPES } from '../constants/integrations';
 import { identifyIntegration } from '../utils/identifyIntegration';
-import { useOrgPermissions } from '../hooks/useAuth';
-import { switchOrgToken, useAuth } from '#auth';
+import { useAuth } from '../auth';
 import {
   useScope,
   broaden,
@@ -79,13 +77,12 @@ import {
   type Scope,
 } from '../nav';
 import { isSettingsSectionVisible, type SettingsSectionDef } from '../constants/orgSettingsSections';
-import { componentOverviewUrl, documentationUrl, loginUrl, orgHomeUrl, privacyPolicyUrl, registerOrgUrl, termsOfUseUrl } from '../paths';
+import { componentOverviewUrl, documentationUrl, loginUrl, orgHomeUrl, privacyPolicyUrl, termsOfUseUrl } from '../paths';
 import { formatDocumentTitle, pageTitleFor } from '../utils/documentTitle';
 import { useAccessControl } from '../contexts/AccessControlContext';
 
 // ComplexSelect is content-sized, and at org level there is no card beside the icon to stretch against.
 import { useLoadedImage } from '../hooks/useLoadedImage';
-import { Permissions } from '../constants/permissions';
 import { DB_TRADEMARK_NOTICE } from '../constants/platformServices';
 import { UUID_RE, userInitials } from '../utils/string';
 
@@ -94,13 +91,12 @@ export default function AppLayout(): JSX.Element {
   const { pathname } = useLocation();
   const scope = useScope();
 
-  const queryClient = useQueryClient();
-  const { username, displayName, pictureUrl, logout, userId, isOidcUser } = useAuth();
+  const { username, displayName, pictureUrl, logout, userId } = useAuth();
   const userName = displayName || username || 'User';
   // Oxygen falls back to one letter when a picture fails, so it only gets the picture once it has loaded.
   const loadedPicture = useLoadedImage(pictureUrl);
   const userAvatar = loadedPicture ?? userInitials(userName);
-  const { hasAnyPermission, setOrgPermissions } = useAccessControl();
+  const { hasAnyPermission } = useAccessControl();
 
   // Billing trial indicator shown in the header.
   const { org: billingOrg } = useBillingOrg('integration-platform');
@@ -151,7 +147,7 @@ export default function AppLayout(): JSX.Element {
   const [componentMenuDir, setComponentMenuDir] = useState<'right' | 'below'>('right');
   const [componentSearch, setComponentSearch] = useState('');
   const componentSearchRef = useRef<HTMLInputElement>(null);
-  const { data: orgsData = [], isLoading: orgsLoading } = useOrgs();
+  const { data: orgsData = [] } = useOrgs();
   // The handle stays in the URL; the header shows the org's display name when the token carries one.
   const orgDisplayName = orgsData.find((o) => o.handle === scope.org)?.name || scope.org;
 
@@ -219,94 +215,10 @@ export default function AppLayout(): JSX.Element {
     }
   }, [userId, scope]);
 
-  const { data: orgPermsData, isError: isOrgPermsError } = useOrgPermissions(scope.org, userId, !isOidcUser);
-  useEffect(() => {
-    if (isOidcUser) {
-      // OIDC users are authorized via Choreo STS — grant all ICP permissions locally
-      setOrgPermissions(Object.values(Permissions));
-    } else if (orgPermsData) {
-      setOrgPermissions(orgPermsData.permissionNames);
-    } else if (isOrgPermsError) {
-      setOrgPermissions([]);
-    }
-  }, [isOidcUser, orgPermsData, isOrgPermsError, setOrgPermissions]);
-
-  // Recover org numeric ID if it was not saved during OIDC callback (e.g. old sessions)
-  const [, setOrgIdVersion] = useState(0);
-  useEffect(() => {
-    if (!isOidcUser || !userId || !scope.org || !orgsData.length) return;
-    const match = orgsData.find((o) => o.handle === scope.org);
-    if (match && match.numericId > 0 && window.API_CONFIG.asgardeoOrgNumericId !== match.numericId) {
-      window.API_CONFIG.asgardeoOrgNumericId = match.numericId;
-      localStorage.setItem('org_numeric_id', String(match.numericId));
-      setOrgIdVersion((v) => v + 1); // trigger re-render so queries re-evaluate orgId()
-    }
-  }, [isOidcUser, userId, scope.org, orgsData]);
-
-  // Re-scope auth to the URL's org when it differs from the currently active one — e.g. a
-  // shared link to org A opened by someone whose stored token/org is still scoped to org B.
-  // Without this, breadcrumbs (URL-driven `scope.org`) show org A while every org-scoped query
-  // (useOrgUuid, orgId() in useProjects) keeps fetching org B's data.
-  //
-  // Two distinct failure shapes are both surfaced as "no access", since neither leaves us with
-  // a validly-scoped token to render org A's data with:
-  //  - `scope.org` isn't in this user's own org list at all (they were never a member).
-  //  - it IS in their list, but the STS re-scope call itself failed (e.g. revoked mid-session).
-  const orgSyncingRef = useRef<string | null>(null);
-  // Aborts the in-flight exchange (if any) the moment a newer one starts, so a slow, now-stale
-  // request can't resolve later and persist an older org's token over the one that's since won.
-  const orgSyncAbortRef = useRef<AbortController | null>(null);
-  const [orgAccessDeniedFor, setOrgAccessDeniedFor] = useState<string | null>(null);
-  const [isSyncingOrgToken, setIsSyncingOrgToken] = useState(false);
-  useEffect(() => {
-    // Wait for the org list to actually settle before judging membership — `orgsData` defaults to
-    // `[]` both while the query is still loading AND once it settles with a genuinely empty list,
-    // so gating on `orgsData.length` alone would let a zero-org user's mismatch go undetected forever.
-    if (!scope.org || orgsLoading) return;
-    const activeOrgHandle = localStorage.getItem('org_handle');
-    if (activeOrgHandle === scope.org || orgSyncingRef.current === scope.org) return;
-    const match = orgsData.find((o) => o.handle === scope.org);
-    if (!match) {
-      setOrgAccessDeniedFor(scope.org);
-      return;
-    }
-    orgSyncAbortRef.current?.abort();
-    const abortController = new AbortController();
-    orgSyncAbortRef.current = abortController;
-    orgSyncingRef.current = scope.org;
-    setIsSyncingOrgToken(true);
-    switchOrgToken(scope.org, abortController.signal)
-      .then(() => {
-        if (abortController.signal.aborted) return; // superseded — a newer switch already committed
-        if (match.numericId > 0) {
-          window.API_CONFIG.asgardeoOrgNumericId = match.numericId;
-          localStorage.setItem('org_numeric_id', String(match.numericId));
-        }
-        setOrgAccessDeniedFor(null);
-        // invalidateQueries (not clear()) — components stay mounted here (no navigation follows,
-        // we're already on the right URL), so clear() would nuke the cache out from under their
-        // active subscriptions and leave them stuck loading. invalidateQueries refetches in place.
-        queryClient.invalidateQueries();
-        setOrgIdVersion((v) => v + 1);
-      })
-      .catch(() => {
-        if (abortController.signal.aborted) return; // superseded, not a real failure — ignore
-        orgSyncingRef.current = null;
-        setOrgAccessDeniedFor(scope.org);
-      })
-      .finally(() => {
-        if (!abortController.signal.aborted) setIsSyncingOrgToken(false);
-      });
-  }, [scope.org, orgsData, orgsLoading, queryClient]);
-  const orgAccessDenied = orgAccessDeniedFor === scope.org;
-  // Hold scoped content (rather than render it against a possibly-still-wrong-org token) until
-  // membership is known and any resync above has finished — an unsettled org list or an in-flight
-  // token exchange both mean we can't yet tell whether `scope.org` is the right, active org.
-  const orgSyncUnresolved = !!scope.org && (orgsLoading || isSyncingOrgToken);
-  // Where "back to your organizations" should land: the user's own first accessible org, or the
-  // create-an-org flow if they don't have one yet (both come from the same unscoped org list).
-  const alternativeOrg = orgsData.find((o) => o.handle !== scope.org);
-  const ownOrgFallbackUrl = alternativeOrg ? orgHomeUrl(alternativeOrg.handle) : registerOrgUrl();
+  // The session is scoped to the org chosen at sign-in and can't be switched, so a link to any
+  // other org shows "no access" with a way back to the user's own org.
+  const sessionOrg = localStorage.getItem('org_handle') ?? '';
+  const orgAccessDenied = !!scope.org && !!sessionOrg && scope.org !== sessionOrg;
 
   // Find component UUID for permission checks
   const currentComponent = hasComponent(scope) ? components.find((c) => c.handler === scope.component) : undefined;
@@ -1060,11 +972,7 @@ export default function AppLayout(): JSX.Element {
               overflowX: 'auto',
             }}>
             {orgAccessDenied ? (
-              <NotFound message={`You don't have access to "${scope.org}". Ask an admin for an invite, or switch to one of your own organizations.`} backTo={ownOrgFallbackUrl} backLabel="Back to your organizations" />
-            ) : orgSyncUnresolved ? (
-              <Box sx={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                <CircularProgress color="primary" />
-              </Box>
+              <NotFound message={`You don't have access to "${scope.org}". Ask an admin for an invite.`} backTo={orgHomeUrl(sessionOrg)} backLabel="Back to your organization" />
             ) : (
               <Suspense
                 fallback={

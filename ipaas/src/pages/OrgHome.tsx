@@ -20,7 +20,7 @@ import { useEffect, useState } from 'react';
 import type { JSX } from 'react';
 import { useParams } from 'react-router';
 import { useAppNavigate } from '../hooks/useAppNavigate';
-import { useAuth } from '#auth';
+import { useAuth } from '../auth';
 import { Alert, Box, Button, Card, CardContent, Typography } from '@wso2/oxygen-ui';
 import ProjectCardListSkeleton from '../components/ProjectCardListSkeleton';
 import { useCreateProject } from '../hooks/useProjects';
@@ -75,7 +75,7 @@ export default function OrgHome(): JSX.Element {
   // scope comes from the token, so fetchProjects ignores its org-id argument.
   useEffect(() => {
     if (step !== 'checking') return;
-    fetchProjectsApi(0)
+    fetchProjectsApi()
       .then((projects) => {
         const usable = projects.filter((p) => p.handler);
         if (usable.length > 0) {

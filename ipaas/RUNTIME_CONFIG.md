@@ -1,154 +1,45 @@
 # Runtime Configuration
 
-## Overview
+The console reads its backend URLs from `/config.json` when it starts, so one build runs in every environment.
 
-This application supports runtime configuration, allowing you to modify backend API URLs **after building** without needing to rebuild the application.
+## How it works
 
-## How It Works
+1. `src/config/runtimeConfig.ts` fetches `/config.json` before the app renders and maps it onto `window.API_CONFIG`.
+2. Each key overrides its default in `DEFAULT_CONFIG` on its own. A key that is missing keeps its default.
+3. If `config.json` fails to load, the app boots on the defaults and logs `Failed to load runtime config, using defaults`. The defaults are placeholders, not a working environment.
 
-1. **Build time**: Hardcoded fallback defaults are included in the build
-2. **Runtime**: The app loads `/config.json` on startup with the actual configuration
-3. **Priority**: Runtime config (`config.json`) overrides hardcoded defaults, key by key — a key missing from `config.json` keeps its default
+`public/config.json` is copied to `dist/config.json` on build. It points at the local k3d stack. Each deployment mounts its own file over it. In wso2cloud-deployment that is the `config.json` in the ipaas-console `ReleaseBinding`.
 
-## Files
+## Keys
 
-- `public/config.json` - Runtime configuration (copied to `dist/config.json` on build)
-- `src/config/runtimeConfig.ts` - Every supported key, how it maps onto `window.API_CONFIG`, and the fallback defaults
+Some key names come from earlier products (`CHOREO_*`, `ASGARDEO_*`, `VITE_*`). They stay as they are because the deployments set them.
 
-## Configuration Format
+| Key                                                                          | Used for                                                                                                                 |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `CHOREO_BASE_API_URL`                                                        | ipaas-service (BFF) base URL. Every console API call goes through it.                                                    |
+| `VITE_AUTH_BASE_URL`                                                         | Thunder base URL. The SDK reads `<base>/.well-known/openid-configuration`.                                               |
+| `ASGARDEO_CLIENT_ID`                                                         | Thunder OAuth client ID (`IPAAS_CONSOLE`)                                                                                |
+| `ASGARDEO_SCOPE`                                                             | Requested scopes                                                                                                         |
+| `ASGARDEO_RESOURCE`                                                          | `resource` on the authorize request only, never on the token request                                                     |
+| `ASGARDEO_SIGN_IN_REDIRECT_URL`                                              | Redirect URI. Defaults to `<console origin>/signin`.                                                                     |
+| `VITE_OBSERVABILITY_URL`                                                     | Observability proxy (logs and metrics)                                                                                   |
+| `SYSTEM_APIS_BASE_URL`, `SYS_API_PREFIX`                                     | System APIs gateway (component logs, usage insights)                                                                     |
+| `BILLING_API_BASE_URL`                                                       | Billing user API. Loading the billing org activates the org's subscription.                                              |
+| `ENABLE_BILLING_FEATURE`, `BILLING_CONSOLE_URL`, `CHOREO_SAAS_OFFER_URL`     | Upgrade button and billing links                                                                                         |
+| `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_SLUG`, `GITHUB_APP_AUTH_REDIRECTION_URL` | GitHub App authorization and installation. GitHub is off without the client ID.                                          |
+| `EDITOR_CALLBACK_ORIGINS`, `EDITOR_CALLBACK_DOMAINS`                         | Comma-separated https origins and parent domains an editor's sign-in or GitHub result may be sent to. Empty allows none. |
+| `CHOREO_URL_MANAGER_URL`, `ENABLE_CUSTOM_URL_MAPPINGS_FEATURE`               | URL settings for an integration. Both are needed.                                                                        |
+| `SAMPLES_URL`, `PREBUILT_INTEGRATIONS_URL`                                   | Sample and prebuilt integration catalogs. Both default to GitHub raw.                                                    |
+| `RAG_INGESTION_IMAGE`                                                        | Image the RAG ingestion wizard deploys                                                                                   |
+| `INTEGRATION_BUILDER_*`                                                      | AI Integration Builder: copilot base URL, model, max tokens, connectors GraphQL URL                                      |
+| `AI_COPILOT_URL_SUFFIX`                                                      | Copilot path on the system APIs gateway                                                                                  |
 
-```json
-{
-  "CHOREO_BASE_API_URL": "https://<api-gateway-host>/<console-api-path>",
-  "VITE_AUTH_BASE_URL": "https://<identity-provider-host>",
-  "VITE_OBSERVABILITY_URL": "https://<observability-host>"
-}
-```
-
-## Usage
-
-### Local Development
-
-Edit `public/config.json` with your backend URLs, then restart the dev server.
-
-### Production Deployment
-
-#### Option 1: Modify config.json After Build
-
-```bash
-# Build the app
-pnpm build
-
-# Edit the config in dist/
-nano dist/config.json
-
-# Deploy dist/ folder
-```
-
-#### Option 2: Docker with Environment Variables
-
-Create a `docker-entrypoint.sh`:
-
-```bash
-#!/bin/sh
-# Generate config.json from environment variables
-cat > /usr/share/nginx/html/config.json <<EOF
-{
-  "CHOREO_BASE_API_URL": "${API_BASE_URL}",
-  "VITE_AUTH_BASE_URL": "${AUTH_BASE_URL}",
-  "VITE_OBSERVABILITY_URL": "${OBSERVABILITY_URL}"
-}
-EOF
-
-# Start nginx
-nginx -g 'daemon off;'
-```
-
-Dockerfile:
-
-```dockerfile
-FROM nginx:alpine
-COPY dist/ /usr/share/nginx/html/
-COPY docker-entrypoint.sh /
-RUN chmod +x /docker-entrypoint.sh
-ENTRYPOINT ["/docker-entrypoint.sh"]
-```
-
-Run with:
-
-```bash
-docker run -e API_BASE_URL=https://api.example.com/console-api \
-           -e AUTH_BASE_URL=https://auth.example.com \
-           -e OBSERVABILITY_URL=https://obs.example.com \
-           my-app
-```
-
-#### Option 3: Kubernetes ConfigMap
-
-```yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: app-config
-data:
-  config.json: |
-    {
-      "CHOREO_BASE_API_URL": "https://api.example.com/console-api",
-      "VITE_AUTH_BASE_URL": "https://auth.example.com",
-      "VITE_OBSERVABILITY_URL": "https://obs.example.com"
-    }
----
-apiVersion: v1
-kind: Pod
-metadata:
-  name: frontend
-spec:
-  containers:
-    - name: nginx
-      image: my-frontend:latest
-      volumeMounts:
-        - name: config
-          mountPath: /usr/share/nginx/html/config.json
-          subPath: config.json
-  volumes:
-    - name: config
-      configMap:
-        name: app-config
-```
-
-## Cloud sign-in (Thunder SDK)
-
-The `cloud` build signs in with the Thunder SDK (`@thunderid/react`). Until it gets keys of its own it reads the existing ones:
-
-| Key                             | Used as                                                                   |
-| ------------------------------- | ------------------------------------------------------------------------- |
-| `VITE_AUTH_BASE_URL`            | Thunder base URL; the SDK reads `<base>/.well-known/openid-configuration` |
-| `ASGARDEO_CLIENT_ID`            | OAuth client ID (`IPAAS_CONSOLE`)                                         |
-| `ASGARDEO_SCOPE`                | Requested scopes                                                          |
-| `ASGARDEO_RESOURCE`             | `resource` on the authorize request only — never on the token request     |
-| `ASGARDEO_SIGN_IN_REDIRECT_URL` | Redirect URI (`https://<console-host>/signin`)                            |
-
-Sign-out returns to the page origin, the only post-logout URI the client registers. `ASGARDEO_AUTHORIZE_ENDPOINT`, `ASGARDEO_TOKEN_ENDPOINT` and the `STS_*` keys are not read by the cloud build — the SDK takes its endpoints from discovery.
+Sign-out returns to the page origin. Thunder must list that origin in the client's `postLogoutRedirectUris`.
 
 ## Verification
 
-Open browser console after app loads - you should see:
+After the app loads, the browser console shows:
 
 ```
 ✓ Runtime configuration loaded from config.json
 ```
-
-## Fallback Behavior
-
-If `config.json` fails to load:
-
-- Falls back to the hardcoded defaults (`DEFAULT_CONFIG` in `src/config/runtimeConfig.ts`)
-- Shows warning in console: `"Failed to load runtime config, using defaults"`
-- The defaults are placeholders, not a working environment, so every deployment must ship its own `config.json`
-
-## Benefits
-
-✅ **One build, multiple environments** - Build once, deploy everywhere  
-✅ **No rebuild required** - Change URLs instantly  
-✅ **DevOps friendly** - Easy to configure via ConfigMaps, env vars, or direct file modification  
-✅ **Safe fallbacks** - The app still boots without config.json, with a console warning

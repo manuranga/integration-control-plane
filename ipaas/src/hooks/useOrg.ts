@@ -16,8 +16,8 @@
  * under the License.
  */
 
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { fetchOrgComponentLimits, fetchOrgSubscriptions, fetchOrgs, fetchProjectsByOrgId, registerUser, validateOrgName } from '../api/org';
+import { useQuery } from '@tanstack/react-query';
+import { fetchOrgComponentLimits, fetchOrgSubscriptions, fetchOrgs } from '../api/org';
 
 export function useOrgs() {
   return useQuery({
@@ -43,25 +43,5 @@ export function useOrgSubscriptions(orgUuid: string) {
     enabled: !!orgUuid,
     staleTime: 5 * 60 * 1000,
     retry: 0,
-  });
-}
-
-export function useProjectsByOrgId(orgNumericId: number, enabled = true) {
-  return useQuery({
-    queryKey: ['projects-by-org', orgNumericId],
-    queryFn: () => fetchProjectsByOrgId(orgNumericId),
-    enabled: enabled && orgNumericId > 0,
-  });
-}
-
-export function useValidateOrgName() {
-  return useMutation({
-    mutationFn: (orgName: string) => validateOrgName(orgName),
-  });
-}
-
-export function useRegisterUser() {
-  return useMutation({
-    mutationFn: ({ orgName, termsAccepted, serviceName }: { orgName: string; termsAccepted: boolean; serviceName: string }) => registerUser(orgName, termsAccepted, serviceName),
   });
 }

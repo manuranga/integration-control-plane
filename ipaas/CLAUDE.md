@@ -5,15 +5,14 @@
 The frontend for WSO2's integration platform (formerly Devant).
 
 - Stack: Vite 7, React 19, React Router 7, TanStack Query 5, TypeScript 5, pnpm
-- Auth: WSO2 Identity Platform OIDC (PKCE flow) + local username/password fallback
+- Auth: Thunder (WSO2 Cloud's IdP) through the Thunder SDK (`@thunderid/react`)
 - Runtime config: `public/config.json` (loaded at startup, not baked into the bundle)
-- Deployed WIP staging URL: `https://preview-o2-dev.devant.dev`
 
 ## Project structure
 
 ```
 src/
-  auth/          # Auth and token management — import it only via the #auth alias
+  auth/          # Sign-in and tokens on the Thunder SDK — import it only from src/auth (its index)
   config/        # routes.tsx — all app routes defined here
   layouts/       # AppLayout (authenticated shell), PublicLayout, PolicyLayout
   pages/         # One file per page/route (~51 pages)
@@ -21,7 +20,7 @@ src/
   api/           # API call modules
   unported/      # Features the cloud BFF can't serve yet (ni() stubs); live code never imports from here
 public/
-  config.json    # Runtime config (API URLs, Asgardeo client ID, etc.)
+  config.json    # Runtime config for the local k3d stack (see RUNTIME_CONFIG.md)
 tests/e2e/       # Playwright smoke suite (see tests/e2e/README.md)
 playwright.config.ts
 ```
@@ -44,12 +43,11 @@ All authenticated routes are under `/organizations/:orgHandler/`. The `orgHandle
 ## Auth flow
 
 1. User clicks a sign-in button on `/login`
-2. `loginWithOIDC(fidp)` generates PKCE challenge → redirects to WSO2 Identity Platform
-3. WSO2 Identity Platform redirects back to `/signin` with auth code
-4. `OIDCCallback` exchanges code → calls `validate/user` → STS token exchange
-5. Navigates to last project (localStorage) or projects/redirect
+2. `loginWithOIDC(fidp)` hands off to Thunder through the Thunder SDK (PKCE)
+3. Thunder redirects back to `/signin`; the SDK exchanges the code and refreshes tokens itself
+4. `OIDCCallback` forwards Cloud Editor results, then navigates to the last project (localStorage) or projects/redirect
 
-Cloud differs: `/login` hands off to Thunder through the Thunder SDK (`@thunderid/react`), which exchanges the code and refreshes tokens itself; `OIDCCallback` only forwards Cloud Editor results and routes. See `src/auth/cloud/`.
+The access token is scoped to the org chosen at sign-in and can't be switched; a link to another org shows "no access". Thunder creates orgs at sign-up, so the console has no org registration. See `src/auth/`.
 
 For tests, `global.setup.ts` logs in once and saves `storageState` to `.auth/user.json`. All specs reuse that state.
 
@@ -67,7 +65,7 @@ pnpm test:unit:watch     # watch mode for local development
 pnpm test:unit:ui        # Vitest browser UI
 ```
 
-Unit tests live alongside their source as `*.test.ts` / `*.test.tsx`. The current suite covers all utility modules in `src/utils/`. See `vitest.config.ts` for environment and alias setup.
+Unit tests live alongside their source as `*.test.ts` / `*.test.tsx`. The current suite covers all utility modules in `src/utils/`. See `vitest.config.ts` for environment setup.
 
 ## Running e2e tests
 
@@ -87,6 +85,6 @@ See `tests/e2e/README.md` for full setup and troubleshooting.
 
 ## Things to know before changing code
 
-- **`public/config.json`** is not committed with real credentials — it points to `preview-dv` by default. Each environment deploys its own config.
+- **`public/config.json`** is not committed with real credentials — it points to the local k3d stack. Each environment deploys its own config (see `RUNTIME_CONFIG.md`).
 - **React Router v7** — uses the new `<Route>` JSX API, not the v6 object config. Check `src/config/routes.tsx`.
 - **storageState in `.auth/`** is gitignored — it contains live session tokens. Never commit it.

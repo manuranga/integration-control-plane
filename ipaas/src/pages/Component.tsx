@@ -37,7 +37,6 @@ import HeaderShell from '../components/Overview/_shared/HeaderShell';
 import { useIntegrationModule } from '../hooks/useIntegrationModule';
 import type { SelectedArtifact } from '../components/artifact-config';
 import { resourceUrl, broaden, type ComponentScope } from '../nav';
-import { useLoadComponentPermissions } from '../hooks/usePermissionLoader';
 import BuildCard from '../components/BuildCard';
 import { latestCommitOf } from '../utils/commits';
 import { UUID_RE } from '../utils/string';
@@ -85,7 +84,6 @@ export default function Component(scope: ComponentScope): JSX.Element {
   const [selectedArtifact, setSelectedArtifact] = useState<SelectedArtifact | null>(null);
 
   // Load component permissions using the UUID - only when component is loaded
-  useLoadComponentPermissions(scope.org, projectId, component?.id || '');
 
   const queryClient = useQueryClient();
   const { data: buildDeployments = [] } = useDeploymentStatus(component?.id ?? '', versionId);

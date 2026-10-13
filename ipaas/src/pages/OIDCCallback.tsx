@@ -22,9 +22,9 @@ import type { JSX } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { Alert, Box, Typography } from '@wso2/oxygen-ui';
 import PageLoader from '../components/PageLoader';
-import { useAuth, getAndClearRedirectUrl } from '#auth';
+import { useAuth, getAndClearRedirectUrl } from '../auth';
 import { fetchProjects as fetchProjectsApi } from '../api/projects';
-import { loginUrl, projectHomeUrl, projectsRedirectUrl, registerOrgUrl } from '../paths';
+import { loginUrl, projectHomeUrl, projectsRedirectUrl } from '../paths';
 
 export default function OIDCCallback(): JSX.Element {
   const [searchParams] = useSearchParams();
@@ -94,9 +94,8 @@ export default function OIDCCallback(): JSX.Element {
               }
 
               // 2. No stored last project — fetch from API and use the most recently updated one.
-              // The org scope comes from the token, so fetchProjects ignores its org-id argument.
               if (!navigatedToLastProject) {
-                const projects = (await fetchProjectsApi(0)).filter((p) => p.handler);
+                const projects = (await fetchProjectsApi()).filter((p) => p.handler);
                 if (projects.length > 0) {
                   const recent = projects.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0];
                   // Mark ToS accepted — this user already has projects, they've been through onboarding
@@ -113,7 +112,7 @@ export default function OIDCCallback(): JSX.Element {
           if (!navigatedToLastProject) {
             // Redirect to the projects/redirect route which shows the ToS welcome dialog.
             // There is an org handle here: completeSignIn refuses a token without one.
-            navigate(orgHandle ? projectsRedirectUrl(orgHandle) : registerOrgUrl(), { replace: true });
+            navigate(orgHandle ? projectsRedirectUrl(orgHandle) : loginUrl(), { replace: true });
           }
         }
       } catch (err) {

@@ -20,7 +20,7 @@ import { CircularProgress, MenuItem, PageContent, Select } from '@wso2/oxygen-ui
 import { ScrollText } from '@wso2/oxygen-ui-icons-react';
 import { useMemo, useState, type JSX } from 'react';
 import { useOrgs } from '../hooks/useOrg';
-import { useProjectsByOrg } from '../hooks/useProjects';
+import { useProjects } from '../hooks/useProjects';
 import { useComponents } from '../hooks/useComponents';
 import { useEnvironments, useAllEnvironments } from '../hooks/useEnvironments';
 import { useInfiniteLogs, useVisibleLogs, useResumeLiveOnAutoRefresh } from '../hooks/useLogs';
@@ -39,7 +39,7 @@ export default function RuntimeLogsProject(scope: ProjectScope): JSX.Element {
   const { envFilter, levelFilter, sortDir, searchPhrase, autoFetch, startTime, endTime } = filters;
 
   const { data: orgs, isLoading: loadingOrgs } = useOrgs();
-  const { data: projects, isLoading: loadingProjects } = useProjectsByOrg(scope.org);
+  const { data: projects, isLoading: loadingProjects } = useProjects();
 
   const loadingProject = loadingOrgs || loadingProjects;
   const project = projects?.find((p) => p.id === scope.project || p.handler === scope.project);
