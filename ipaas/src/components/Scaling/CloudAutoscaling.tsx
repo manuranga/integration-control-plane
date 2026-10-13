@@ -27,7 +27,7 @@ import ScaleMethodCard from './ScaleMethodCard';
 import RangeInput from './RangeInput';
 import ThresholdSlider from './ThresholdSlider';
 import type { Autoscaling } from '../../types/scaling';
-import { atMaxReplicasMessage, blockedAutoscalingMessages } from '../../utils/scaling';
+import { atMaxReplicasMessage, blockedAutoscalingMessages } from '../../utils/autoscaling';
 import { alertSx, cardsRowSx, sectionSx, sectionTitleSx } from './CloudAutoscaling.styles';
 
 const NOT_AVAILABLE = 'Not available yet';

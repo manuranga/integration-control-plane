@@ -20,7 +20,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createHpa, createHpaMetric, deleteHpaMetric, getAutoscaling, getHpa, getHttpScaler, getScalingState, listPodMetrics, listPods, setScalingMethod, updateAutoscaling, updateHpa, updateHpaMetric, updateHttpScaler } from '#api/scaling';
 import { IS_CLOUD, IS_WIP } from '../features';
 import { useOrgUuid } from './useOrgUuid';
-import { pollsAutoscaling } from '../utils/scaling';
+import { pollsAutoscaling } from '../utils/autoscaling';
 import type { AutoscalingWriteData, HpaMetric, HpaWriteData, HttpScalerWriteData, ScalingMethodToggle, ScalingPath } from '../types/scaling';
 
 const ROOT = 'scaling';
