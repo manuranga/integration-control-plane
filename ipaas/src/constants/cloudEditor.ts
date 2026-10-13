@@ -35,7 +35,7 @@ export const CLOUD_EDITOR_POLL_MS = 3_000;
 export const CLOUD_EDITOR_READY_TIMEOUT_MS = 3 * 60 * 1000;
 
 /**
- * Message of the error thrown when the cloud poll budget expires. Shared so
- * CloudEditorDeployment can branch on it without a bare literal across the #api seam.
+ * Message of the error thrown when the poll budget expires. Shared so
+ * CloudEditorDeployment can branch on it without repeating the literal.
  */
 export const CLOUD_EDITOR_TIMEOUT_MESSAGE = 'Timed out waiting for the Cloud Editor to become ready';

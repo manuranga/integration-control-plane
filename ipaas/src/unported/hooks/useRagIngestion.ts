@@ -18,13 +18,12 @@
 
 import { useCallback, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createByoiComponent, deployByoiImage, getSampleRegistryId } from '#api/tailscale';
-import { createConfigMap, createSecret, deleteConfigMap, deleteSecret, getReleaseById, mountConfig } from '#api/devopsConfigs';
-import { fetchComponentDetail, fetchFirstEnvironment } from '#api/prebuilt';
-import { deleteComponent, fetchComponents } from '#api/components';
-import { getServer, getServerAdminUser } from '#api/platformServices';
-import { retrieveChunks } from '#api/ragBackend';
-import { IS_WIP } from '../../features';
+import { createByoiComponent, deployByoiImage, getSampleRegistryId } from '../../api/tailscale';
+import { createConfigMap, createSecret, deleteConfigMap, deleteSecret, getReleaseById, mountConfig } from '../../api/devopsConfigs';
+import { fetchComponentDetail, fetchFirstEnvironment } from '../../api/prebuilt';
+import { deleteComponent, fetchComponents } from '../../api/components';
+import { getServer, getServerAdminUser } from '../../api/platformServices';
+import { retrieveChunks } from '../../api/ragBackend';
 import {
   RAG_INGESTION_COMPONENT_TYPE,
   RAG_INGESTION_SUBTYPE,
@@ -43,9 +42,10 @@ import { ragIngestionImage } from '../../hooks/useRagIngestion';
 import type { AutomationConfig, EmbeddingConfig, RagIngestionForm, RetrievalQuery, VectorStoreConfig } from '../../types/ragIngestion';
 import type { PrebuiltComponentRef } from '../../types/prebuilt';
 
-/** True only when the RAG Ingestion feature is available (wip build + config flag on). */
+/** Whether the RAG Ingestion feature is available. */
 export function isRagIngestionEnabled(): boolean {
-  return IS_WIP && !!window.API_CONFIG?.enableRagIngestionFeature;
+  // Not served by the BFF yet; flip this when the feature is ported.
+  return false;
 }
 
 // A freshly-created component's release is provisioned asynchronously; poll for it.

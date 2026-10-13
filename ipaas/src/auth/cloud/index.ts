@@ -17,7 +17,7 @@
  */
 
 /**
- * Cloud auth, on the Thunder SDK. Resolved through `#auth` when PRODUCT=cloud.
+ * Cloud auth, on the Thunder SDK. Resolved through `#auth`.
  */
 
 export { AuthProvider, useAuth } from './AuthProvider';

@@ -17,7 +17,7 @@
  */
 
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { fetchOrgComponentLimits, fetchOrgSubscriptions, fetchOrgs, fetchProjectsByOrgId, registerUser, validateOrgName } from '#api/org';
+import { fetchOrgComponentLimits, fetchOrgSubscriptions, fetchOrgs, fetchProjectsByOrgId, registerUser, validateOrgName } from '../api/org';
 
 export function useOrgs() {
   return useQuery({

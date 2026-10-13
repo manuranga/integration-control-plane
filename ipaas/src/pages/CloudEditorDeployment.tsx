@@ -26,7 +26,6 @@ import type { ChoreoSampleImage, CloudEditorStepKey, CodeServerInstance, Deploym
 
 /**
  * Pull the server's own message out of a BFF failure ({"error":..,"message":..}).
- * Duck-typed rather than `instanceof BffError`: #api resolves per product.
  */
 function serverDetail(err: unknown): string | null {
   const body = (err as { body?: unknown } | null)?.body;

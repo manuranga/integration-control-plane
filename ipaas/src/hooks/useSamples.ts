@@ -17,7 +17,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { fetchSamples } from '#api/samples';
+import { fetchSamples } from '../api/samples';
 import type { SamplesData } from '../types/samples';
 import { ALLOWED_SAMPLE_TYPES, MI_BUILDPACK, normalizeComponentType } from '../constants/integrations';
 

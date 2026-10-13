@@ -22,7 +22,7 @@ import { useDeployPrebuiltImage } from './useDeployments';
 import { getOrgUuidFromToken } from '#auth';
 import { componentSubTypeFromSample, displayTypeFromSample } from '../constants/integrations';
 import { derivePrebuiltSlug } from '../utils/prebuilt';
-import { checkNameAvailability, fetchComponentDetail, fetchFirstEnvironment, fetchLatestCommitSha, savePrebuiltConfig } from '#api/prebuilt';
+import { checkNameAvailability, fetchComponentDetail, fetchFirstEnvironment, fetchLatestCommitSha, savePrebuiltConfig } from '../api/prebuilt';
 import { isQuotaError } from '../utils/apiErrors';
 import type { DeployPrebuiltIntegrationInput, DeployPrebuiltIntegrationState } from '../types/prebuilt';
 

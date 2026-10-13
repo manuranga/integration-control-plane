@@ -56,8 +56,7 @@ For tests, `global.setup.ts` logs in once and saves `storageState` to `.auth/use
 ## Running the app
 
 ```bash
-pnpm dev          # WIP on https://localhost:3000 (HTTPS)
-pnpm dev:cloud    # Cloud variant
+pnpm dev          # https://localhost:3000 (HTTPS)
 ```
 
 ## Running unit tests

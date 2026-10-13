@@ -17,7 +17,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchCertificateGroups, fetchConfigGroups, fetchCertificateMappings, fetchSchemaConfig, fetchConfigMgt, saveSchemaConfig, postConfigMgt, postCertificateMappings } from '#api/configuration';
+import { fetchCertificateGroups, fetchConfigGroups, fetchCertificateMappings, fetchSchemaConfig, fetchConfigMgt, saveSchemaConfig, postConfigMgt, postCertificateMappings } from '../api/configuration';
 import type { CertMapping, SchemaConfigItem, SaveSchemaConfigInput, PostConfigMgtInput } from '../types/configuration';
 
 export function useCertificateGroups(projectId: string, componentId: string, enabled: boolean) {

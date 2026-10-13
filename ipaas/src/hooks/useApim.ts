@@ -37,7 +37,7 @@ import {
   saveMarketplaceService,
   updateApimApi,
   updateApimDocument,
-} from '#api/apim';
+} from '../api/apim';
 import type { ApimApiInfo, DeploySettingsV2Payload, GeneratedTestKey, LifecycleHistory, LifecycleState, MarketplaceService } from '../types/apim';
 import type { ApiDocument } from '../types/marketplace';
 import type { EnvEndpoint } from '../types/component';

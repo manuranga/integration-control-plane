@@ -23,7 +23,7 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { Alert, Box, Typography } from '@wso2/oxygen-ui';
 import PageLoader from '../components/PageLoader';
 import { useAuth, getAndClearRedirectUrl } from '#auth';
-import { fetchProjects as fetchProjectsApi } from '#api/projects';
+import { fetchProjects as fetchProjectsApi } from '../api/projects';
 import { loginUrl, projectHomeUrl, projectsRedirectUrl, registerOrgUrl } from '../paths';
 
 export default function OIDCCallback(): JSX.Element {

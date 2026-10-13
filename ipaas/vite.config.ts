@@ -22,20 +22,9 @@ import react from '@vitejs/plugin-react-swc';
 import { visualizer } from 'rollup-plugin-visualizer';
 import basicSsl from '@vitejs/plugin-basic-ssl';
 
-type Product = 'wip' | 'cloud';
-const ALLOWED_PRODUCTS: Product[] = ['wip', 'cloud'];
-const rawProduct = process.env.PRODUCT ?? 'wip';
-if (!(ALLOWED_PRODUCTS as string[]).includes(rawProduct)) {
-  throw new Error(`Invalid PRODUCT="${rawProduct}"; must be one of: ${ALLOWED_PRODUCTS.join(', ')}`);
-}
-const product = rawProduct as Product;
-
 // https://vite.dev/config/
 export default defineConfig({
   base: '/',
-  define: {
-    __PRODUCT__: JSON.stringify(product),
-  },
   server: {
     port: 3000,
     https: {},
@@ -61,8 +50,7 @@ export default defineConfig({
   resolve: {
     dedupe: ['react', 'react-dom', 'react/jsx-runtime'],
     alias: {
-      '#api': path.resolve(__dirname, `src/api/${product}`),
-      '#auth': path.resolve(__dirname, `src/auth/${product}`),
+      '#auth': path.resolve(__dirname, 'src/auth/cloud'),
     },
   },
   build: {

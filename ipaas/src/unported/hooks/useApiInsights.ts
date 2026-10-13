@@ -18,7 +18,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { fetchApiInsights } from '#api/insights';
+import { fetchApiInsights } from '../../api/insights';
 import { useInsightsQueryUrl } from '../../hooks/useInsights';
 import type { ApiInsightsData, ApiInsightsRaw, ApiInsightsTab, InsightsApiRef, InsightsEnvironment, InsightsRange } from '../../types/insights';
 

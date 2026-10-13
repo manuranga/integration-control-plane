@@ -17,16 +17,15 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createHpa, createHpaMetric, deleteHpaMetric, getHpa, getHttpScaler, getScalingState, listPodMetrics, listPods, setScalingMethod, updateHpa, updateHpaMetric, updateHttpScaler } from '#api/scaling';
-import { IS_WIP } from '../../features';
+import { createHpa, createHpaMetric, deleteHpaMetric, getHpa, getHttpScaler, getScalingState, listPodMetrics, listPods, setScalingMethod, updateHpa, updateHpaMetric, updateHttpScaler } from '../../api/scaling';
 import { useOrgUuid } from '../../hooks/useOrgUuid';
 import type { HpaMetric, HpaWriteData, HttpScalerWriteData, ScalingMethodToggle, ScalingPath } from '../../types/scaling';
 
 const ROOT = 'scaling';
 
-/** Scaling is a wip-only surface for now (cloud/icp API stubs throw). */
+/** Scaling is not served by the BFF yet; flip this when the feature is ported. */
 export function isScalingEnabled(): boolean {
-  return IS_WIP;
+  return false;
 }
 
 export function useScalingState(projectId: string, componentId: string, releaseId: string) {

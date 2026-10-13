@@ -18,7 +18,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { UUID_RE } from '../utils/string';
-import { fetchProjects, fetchProject, fetchProjectContributors, fetchProjectComponentLabels, fetchProjectHandlerAvailability, createProject, createMonoRepoProject, linkProjectRepository, updateProject, deleteProject } from '#api/projects';
+import { fetchProjects, fetchProject, fetchProjectContributors, fetchProjectComponentLabels, fetchProjectHandlerAvailability, createProject, createMonoRepoProject, linkProjectRepository, updateProject, deleteProject } from '../api/projects';
 import type { Project, CreateProjectInput, CreateMonoRepoProjectInput, LinkProjectRepositoryInput, UpdateProjectInput } from '../types/project';
 import { useOrgs } from './useOrg';
 import { pollWhileDeleting } from '../utils/deletionPolling';

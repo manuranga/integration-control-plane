@@ -17,7 +17,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { fetchBillingOrg } from '../api/cloud/billing';
+import { fetchBillingOrg } from '../api/billing';
 import type { BillingOrg } from '../types/billing';
 
 /** Billing org record for the subscription/trial chip. */

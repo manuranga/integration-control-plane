@@ -17,22 +17,14 @@
  */
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchExecutionConfigs, fetchTaskExecutions, fetchRuntimeArguments, fetchExecutionArguments, fetchExecutionLogs, fetchTaskExecutionCount, updateJobConfigs, stopSchedule, triggerTask, triggerComponentRun } from '#api/executions';
-import type { StopScheduleInput, ExecutionConfigs, TaskExecution, ExecutionLogEntry, ExecutionLogWindow, UpdateJobConfigsInput, TriggerComponentInput, RuntimeArgument } from '../types/executions';
+import { fetchExecutionConfigs, fetchTaskExecutions, fetchRuntimeArguments, fetchExecutionArguments, fetchExecutionLogs, fetchTaskExecutionCount, updateJobConfigs, stopSchedule, triggerTask, triggerComponentRun } from '../api/executions';
+import type { StopScheduleInput, ExecutionLogWindow, UpdateJobConfigsInput, TriggerComponentInput, RuntimeArgument } from '../types/executions';
 import type { TriggerTaskInput } from '../types/artifact';
-
-// OpenChoreo scopes schedules and executions per environment, so the API takes extra
-// positional args (envId/projectId) beyond the shared ExecutionsApi contract. The
-// narrow contract function is assignable to the wider signature.
-const fetchExecutionConfigsScoped: (componentId: string, releaseId: string, envId: string) => Promise<ExecutionConfigs | null> = fetchExecutionConfigs;
-const fetchTaskExecutionsScoped: (releaseId: string, componentId: string, envId: string, projectId: string) => Promise<TaskExecution[]> = fetchTaskExecutions;
-const fetchTaskExecutionCountScoped: (releaseId: string, componentId: string, envId: string, projectId: string) => Promise<number | null> = fetchTaskExecutionCount;
-const fetchExecutionLogsScoped: (componentId: string, deploymentTrackId: string, executionId: string, environmentId: string, run?: ExecutionLogWindow) => Promise<ExecutionLogEntry[]> = fetchExecutionLogs;
 
 export function useExecutionConfigs(componentId: string, releaseId: string, envId = '') {
   return useQuery({
     queryKey: ['executionConfigs', componentId, releaseId, envId],
-    queryFn: () => fetchExecutionConfigsScoped(componentId, releaseId, envId),
+    queryFn: () => fetchExecutionConfigs(componentId, releaseId, envId),
     enabled: !!componentId && !!envId && !!releaseId,
     retry: false,
   });
@@ -41,7 +33,7 @@ export function useExecutionConfigs(componentId: string, releaseId: string, envI
 export function useTaskExecutions(releaseId: string, componentId = '', envId = '', projectId = '', refetchInterval: number | false = false) {
   return useQuery({
     queryKey: ['taskExecutions', releaseId, componentId, envId, projectId],
-    queryFn: () => fetchTaskExecutionsScoped(releaseId, componentId, envId, projectId),
+    queryFn: () => fetchTaskExecutions(releaseId, componentId, envId, projectId),
     enabled: !!componentId && !!envId,
     retry: false,
     staleTime: 0,
@@ -83,7 +75,7 @@ export function useExecutionArguments(runId: string, componentId: string, releas
 export function useExecutionLogs(componentId: string, deploymentTrackId: string, executionId: string, environmentId: string, enabled: boolean, run?: ExecutionLogWindow) {
   return useQuery({
     queryKey: ['executionLogs', componentId, deploymentTrackId, executionId, environmentId, run?.completionTime ?? ''],
-    queryFn: () => fetchExecutionLogsScoped(componentId, deploymentTrackId, executionId, environmentId, run),
+    queryFn: () => fetchExecutionLogs(componentId, deploymentTrackId, executionId, environmentId, run),
     enabled: enabled && !!componentId && !!executionId && !!environmentId,
     retry: false,
     staleTime: 30000,
@@ -95,7 +87,7 @@ export function useExecutionLogs(componentId: string, deploymentTrackId: string,
 export function useTaskExecutionCount(releaseId: string, componentId = '', envId = '', projectId = '', enabled = true) {
   return useQuery({
     queryKey: ['taskExecutionCount', releaseId, componentId, envId, projectId],
-    queryFn: () => fetchTaskExecutionCountScoped(releaseId, componentId, envId, projectId),
+    queryFn: () => fetchTaskExecutionCount(releaseId, componentId, envId, projectId),
     enabled: enabled && !!componentId && !!envId,
     retry: false,
     staleTime: 30_000,

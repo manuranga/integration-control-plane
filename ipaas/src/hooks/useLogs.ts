@@ -19,7 +19,7 @@
 import { useInfiniteQuery, useQueryClient, type QueryKey } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { InfiniteData } from '@tanstack/react-query';
-import { fetchLogs, fetchComponentLogs, fetchGatewayLogs } from '#api/logs';
+import { fetchLogs, fetchComponentLogs, fetchGatewayLogs } from '../api/logs';
 import { filterLogRows, type LogRowFilter } from '../utils/logs';
 import type { LogsRequest, ComponentLogsRequest, GatewayEnvironmentCursor, GatewayEnvironmentsPage, GatewayLogsPage, GatewayLogsRequest, LogRow } from '../types/logs';
 

@@ -17,7 +17,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { deployByoiImage } from '#api/tailscale';
+import { deployByoiImage } from '../api/tailscale';
 import { RAG_INGESTION_DEFAULT_IMAGE } from '../constants/ragIngestion';
 
 /** The ingestion container image to deploy (runtime-config override, else the default). */

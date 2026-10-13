@@ -50,8 +50,6 @@ export interface DeploymentPipeline {
 
 export interface CreateDeploymentPipelineRequest {
   name: string;
-  /** OpenChoreo has no default flag, so the BFF ignores it. */
-  is_default?: boolean;
   promotion_tree: PromotionTreeNode;
 }
 

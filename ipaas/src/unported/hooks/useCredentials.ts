@@ -17,7 +17,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { checkGitCredentialDeletion, createGitCredential, deleteGitCredential, fetchGitCredentials } from '#api/credentials';
+import { checkGitCredentialDeletion, createGitCredential, deleteGitCredential, fetchGitCredentials } from '../../api/credentials';
 import type { CreateGitCredentialInput, CredentialDeleteEligibility, GitCredential } from '../../types/credentials';
 
 const ROOT_KEY = 'credentials';

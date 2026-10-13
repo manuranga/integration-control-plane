@@ -17,17 +17,18 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { getComponentLimits, getSubscriptions } from '#api/subscriptions';
-import { IS_WIP } from '../../features';
+import { getComponentLimits, getSubscriptions } from '../../api/subscriptions';
 import type { ComponentLimits, SubscriptionList } from '../../types/subscription';
 
-// Billing/upgrade is wip-only, so both queries are gated on IS_WIP (cloud/icp stubs throw).
+// Subscriptions are not served by the BFF yet (the API stubs reject), so both queries stay off
+// until the feature is ported.
+const SUBSCRIPTIONS_SERVED = false;
 
 export function useSubscriptions(orgUuid: string, enabled = true) {
   return useQuery<SubscriptionList>({
     queryKey: ['subscriptions', orgUuid],
     queryFn: () => getSubscriptions(orgUuid),
-    enabled: IS_WIP && enabled && !!orgUuid,
+    enabled: SUBSCRIPTIONS_SERVED && enabled && !!orgUuid,
     staleTime: 5 * 60 * 1000,
     retry: false,
   });
@@ -37,7 +38,7 @@ export function useComponentLimits(orgUuid: string, enabled = true) {
   return useQuery<ComponentLimits>({
     queryKey: ['componentLimits', orgUuid],
     queryFn: () => getComponentLimits(orgUuid),
-    enabled: IS_WIP && enabled && !!orgUuid,
+    enabled: SUBSCRIPTIONS_SERVED && enabled && !!orgUuid,
     staleTime: 5 * 60 * 1000,
     retry: false,
   });

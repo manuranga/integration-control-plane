@@ -17,7 +17,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
-import { fetchBallerinaCentralToken, removeBallerinaCentralToken, saveBallerinaCentralToken } from '../api/cloud/packageRegistries';
+import { fetchBallerinaCentralToken, removeBallerinaCentralToken, saveBallerinaCentralToken } from '../api/packageRegistries';
 import type { BallerinaCentralTokenStatus } from '../types/packageRegistries';
 
 const ROOT_KEY = 'ballerinaCentralToken';

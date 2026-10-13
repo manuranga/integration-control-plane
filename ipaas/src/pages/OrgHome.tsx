@@ -24,7 +24,7 @@ import { useAuth } from '#auth';
 import { Alert, Box, Button, Card, CardContent, Typography } from '@wso2/oxygen-ui';
 import ProjectCardListSkeleton from '../components/ProjectCardListSkeleton';
 import { useCreateProject } from '../hooks/useProjects';
-import { fetchProjects as fetchProjectsApi } from '#api/projects';
+import { fetchProjects as fetchProjectsApi } from '../api/projects';
 import { projectHomeUrl } from '../paths';
 import { newComponentUrl } from '../nav';
 import { DEFAULT_PROJECT_HANDLER } from '../constants/project';

@@ -61,8 +61,6 @@ export default function CreateEnvironment(scope: OrgScope): JSX.Element {
         name: name.trim(),
         dataplaneId,
         isProd: critical,
-        // OpenChoreo derives no per-environment hostname; the gateway host is fixed at deploy time.
-        vhost: '',
         description: description.trim(),
       },
       {
