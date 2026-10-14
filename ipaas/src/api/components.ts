@@ -149,8 +149,9 @@ function withFrontendDisplayType<T extends Component>(c: T): T {
 
 function resolveCreateMapping(input: CreateComponentInput): { componentType: string; workflow: string } {
   const mapping = DISPLAY_TYPE_MAP[input.displayType] ?? DISPLAY_TYPE_MAP.ballerinaService;
-  if (input.componentSubType === 'ballerinaFileIntegration') return { ...mapping, componentType: 'deployment/file-integration' };
-  if (input.componentSubType === 'miFileIntegration') return { ...mapping, componentType: 'deployment/mi-file-integration' };
+  // File types allow a single workflow, so pin it rather than trust displayType.
+  if (input.componentSubType === 'ballerinaFileIntegration') return { componentType: 'deployment/file-integration', workflow: 'ballerina-buildpack-builder' };
+  if (input.componentSubType === 'miFileIntegration') return { componentType: 'deployment/mi-file-integration', workflow: 'mi-image-builder' };
   // The BFF routes create, build, deploy and delete to agent-manager on this type.
   // 'deployment/ai-agent' names the agents created before that move.
   if (input.componentSubType === 'aiAgent') return { ...mapping, componentType: 'proxy/agent-api' };

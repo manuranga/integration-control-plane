@@ -66,6 +66,14 @@ describe('createComponent component-type mapping', () => {
     expect(bodyOf().spec.componentType.name).toBe(expected);
   });
 
+  it.each([
+    ['miFileIntegration', 'ballerinaService', 'mi-image-builder'],
+    ['ballerinaFileIntegration', 'miApiService', 'ballerina-buildpack-builder'],
+  ])('builds %s with its own workflow despite a %s display type', async (subType, displayType, expected) => {
+    await createComponent({ ...baseInput, displayType, componentSubType: subType } as CreateComponentInput);
+    expect(bodyOf().spec.workflow?.name).toBe(expected);
+  });
+
   it('leaves a plain integration on the display-type mapping', async () => {
     await createComponent(baseInput);
     expect(bodyOf().spec.componentType.name).toBe('deployment/integration-as-api');
