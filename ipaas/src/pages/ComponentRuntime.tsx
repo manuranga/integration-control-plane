@@ -74,8 +74,6 @@ export default function ComponentRuntime({ org, project, component }: ComponentS
 
   const podScope = useMemo(() => ({ projectId, releaseId, orgHandler: org, projectHandler: project, componentHandler: component }), [projectId, releaseId, org, project, component]);
 
-  // Landing straight on this page skips the Overview, which is where component-scoped
-  // permissions are normally loaded.
   const { hasPermission } = useAccessControl();
   const canManage = hasPermission(Permissions.INTEGRATION_MANAGE, projectId, componentId);
 

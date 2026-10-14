@@ -202,7 +202,7 @@ describe('cloud AuthProvider — settling the session', () => {
     signedInSdk();
     await render();
 
-    expect(auth).toMatchObject({ isAuthenticated: true, userId: 'u1', username: 'ada@example.com', displayName: 'Ada Lovelace', pictureUrl: 'https://img.example/ada.png' });
+    expect(auth).toMatchObject({ isAuthenticated: true, userId: 'u1', username: 'ada@example.com', displayName: 'Ada Lovelace', pictureUrl: 'https://img.example/ada.png', orgHandle: 'acme' });
     expect(localStorage.getItem('org_handle')).toBe('acme');
     expect(getOrgUuidFromToken()).toBe('org-uuid');
   });
@@ -313,7 +313,7 @@ describe('cloud AuthProvider — actions', () => {
   it('completeSignIn returns the signed-in user', async () => {
     signedInSdk();
     await render();
-    await expect(auth?.completeSignIn(new URLSearchParams())).resolves.toEqual({ userId: 'u1' });
+    await expect(auth?.completeSignIn(new URLSearchParams())).resolves.toEqual({ userId: 'u1', orgHandle: 'acme' });
   });
 
   it('completeSignIn reports an error the IdP returned', async () => {

@@ -83,8 +83,6 @@ export default function Component(scope: ComponentScope): JSX.Element {
 
   const [selectedArtifact, setSelectedArtifact] = useState<SelectedArtifact | null>(null);
 
-  // Load component permissions using the UUID - only when component is loaded
-
   const queryClient = useQueryClient();
   const { data: buildDeployments = [] } = useDeploymentStatus(component?.id ?? '', versionId);
   const isBuildInProgress = buildDeployments[0]?.status === 'in_progress';

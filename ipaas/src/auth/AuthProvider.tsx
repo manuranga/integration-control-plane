@@ -183,7 +183,7 @@ function CloudSessionProvider({ children }: { children: ReactNode }): JSX.Elemen
       const oidcError = params.get('error');
       if (oidcError) throw new Error(`Authentication failed: ${params.get('error_description') || oidcError}`);
       if (status.kind !== 'signedIn') throw new Error(status.kind === 'signedOut' && status.error ? status.error : 'Sign-in did not complete. Please try logging in again.');
-      return { userId: status.session.user.userId };
+      return { userId: status.session.user.userId, orgHandle: status.session.orgHandle };
     },
     [status],
   );
@@ -205,6 +205,7 @@ function CloudSessionProvider({ children }: { children: ReactNode }): JSX.Elemen
       username: user.username,
       displayName: user.displayName,
       pictureUrl: user.pictureUrl,
+      orgHandle: status.kind === 'signedIn' ? status.session.orgHandle : '',
       loginWithOIDC,
       completeSignIn,
       logout,

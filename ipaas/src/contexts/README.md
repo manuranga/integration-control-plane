@@ -11,26 +11,22 @@
 
 ### Purpose
 
-This context manages **permission state** for the current user session across three scopes: organisation, project, and integration. It provides a unified querying interface so any component in the tree can check whether the user holds a given permission without knowing which scope granted it.
+This context holds the **permissions of the signed-in user** and lets any component in the tree check them. The access token is scoped to one organization and carries no finer scope, so permissions are granted for the whole organization: `ProtectedRoute` grants every permission while a session is active and clears them when it ends.
 
-State held (as `Set<string>` collections):
+State held:
 
-- `orgPerms` — permissions that apply across the whole organisation
-- `projectPermsMap` — per-project permission sets, keyed by project ID
-- `componentPermsMap` — per-integration permission sets, keyed by component ID
+- `orgPerms` — a `Set<string>` of the user's permissions in the organization
 
 Key query methods:
 
-- `hasPermission(permission, projectId?, componentId?)` — returns `true` if the permission exists at any matching scope
+- `hasPermission(permission, projectId?, componentId?)` — returns `true` if the user holds the permission. The project and integration ids are accepted so call sites can state the scope they act in; they do not narrow the check.
 - `hasAllPermissions` / `hasAnyPermission` — convenience wrappers for bulk checks
-- `isOrgPermissionsLoaded` — lets consumers defer rendering until org-level permissions have been fetched
-
-Scoped `clear*` methods (`clearPermissions`, `clearProjectPermissions`, `clearComponentPermissions`) allow targeted invalidation when the user navigates away from a project or integration without wiping unrelated permission state.
+- `isOrgPermissionsLoaded` — lets consumers defer rendering until permissions have been set
 
 #### Why Context
 
 > [!IMPORTANT]
-> Permission data is needed by many unrelated parts of the UI (nav items, action buttons, page guards) with no natural parent-child relationship between them. Context distributes this shared read-only state efficiently without requiring a global state library. All mutating callbacks are stabilised with `useCallback` and the value object with `useMemo`, so consumers only re-render when the underlying permission sets actually change.
+> Permission data is needed by many unrelated parts of the UI (nav items, action buttons, page guards) with no natural parent-child relationship between them. Context distributes this shared read-only state efficiently without requiring a global state library. Callbacks are stabilised with `useCallback` and the value object with `useMemo`, so consumers only re-render when the permission set actually changes.
 
 `useAccessControl()` throws if called outside the provider, enforcing correct usage at the call site rather than silently returning empty results.
 

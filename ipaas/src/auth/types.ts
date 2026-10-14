@@ -23,11 +23,13 @@ export interface AuthContextValue {
   username: string;
   displayName: string;
   pictureUrl?: string;
+  /** The organization the session is scoped to, chosen at sign-in. Empty when signed out. */
+  orgHandle: string;
   loginWithOIDC: (fidp?: string) => Promise<void>;
   /**
    * Finishes sign-in on /signin from the query the IdP returned. Throws with a
    * message for the user when sign-in did not succeed.
    */
-  completeSignIn: (params: URLSearchParams) => Promise<{ userId: string }>;
+  completeSignIn: (params: URLSearchParams) => Promise<{ userId: string; orgHandle: string }>;
   logout: () => Promise<void>;
 }

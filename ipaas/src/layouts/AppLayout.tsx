@@ -91,7 +91,7 @@ export default function AppLayout(): JSX.Element {
   const { pathname } = useLocation();
   const scope = useScope();
 
-  const { username, displayName, pictureUrl, logout, userId } = useAuth();
+  const { username, displayName, pictureUrl, logout, userId, orgHandle: sessionOrg } = useAuth();
   const userName = displayName || username || 'User';
   // Oxygen falls back to one letter when a picture fails, so it only gets the picture once it has loaded.
   const loadedPicture = useLoadedImage(pictureUrl);
@@ -217,8 +217,7 @@ export default function AppLayout(): JSX.Element {
 
   // The session is scoped to the org chosen at sign-in and can't be switched, so a link to any
   // other org shows "no access" with a way back to the user's own org.
-  const sessionOrg = localStorage.getItem('org_handle') ?? '';
-  const orgAccessDenied = !!scope.org && !!sessionOrg && scope.org !== sessionOrg;
+  const orgAccessDenied = !!scope.org && scope.org !== sessionOrg;
 
   // Find component UUID for permission checks
   const currentComponent = hasComponent(scope) ? components.find((c) => c.handler === scope.component) : undefined;

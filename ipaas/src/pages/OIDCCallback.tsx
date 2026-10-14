@@ -52,8 +52,8 @@ export default function OIDCCallback(): JSX.Element {
       }
 
       try {
-        // Thunder provisions the org at sign-up, so a signed-in user always has one.
-        const { userId } = await completeSignIn(searchParams);
+        // Thunder provisions the org at sign-up, so a signed-in session always carries one.
+        const { userId, orgHandle } = await completeSignIn(searchParams);
 
         // Determine where to navigate post-login
         const savedUrl = getAndClearRedirectUrl();
@@ -73,36 +73,30 @@ export default function OIDCCallback(): JSX.Element {
           // User was trying to access a specific page — go back there
           window.location.href = savedUrl;
         } else {
-          const rawOrgHandle = localStorage.getItem('org_handle');
-          // 'default' is a placeholder — never treat it as a real org handle
-          const orgHandle = rawOrgHandle && rawOrgHandle !== 'default' ? rawOrgHandle : null;
-
           // Try to navigate to the last visited project (for existing users)
           let navigatedToLastProject = false;
           try {
-            if (orgHandle) {
-              // 1. Try the last-visited project stored by AppLayout
-              const lastProjectRaw = localStorage.getItem(`last_project:${userId}`);
-              if (lastProjectRaw) {
-                const { org, project } = JSON.parse(lastProjectRaw) as { org: string; project: string };
-                if (org === orgHandle && project) {
-                  // Mark ToS accepted — this user has already been through onboarding
-                  localStorage.setItem(`tos_accepted:${userId}:${orgHandle}`, 'true');
-                  navigate(projectHomeUrl(orgHandle, project), { replace: true });
-                  navigatedToLastProject = true;
-                }
+            // 1. Try the last-visited project stored by AppLayout
+            const lastProjectRaw = localStorage.getItem(`last_project:${userId}`);
+            if (lastProjectRaw) {
+              const { org, project } = JSON.parse(lastProjectRaw) as { org: string; project: string };
+              if (org === orgHandle && project) {
+                // Mark ToS accepted — this user has already been through onboarding
+                localStorage.setItem(`tos_accepted:${userId}:${orgHandle}`, 'true');
+                navigate(projectHomeUrl(orgHandle, project), { replace: true });
+                navigatedToLastProject = true;
               }
+            }
 
-              // 2. No stored last project — fetch from API and use the most recently updated one.
-              if (!navigatedToLastProject) {
-                const projects = (await fetchProjectsApi()).filter((p) => p.handler);
-                if (projects.length > 0) {
-                  const recent = projects.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0];
-                  // Mark ToS accepted — this user already has projects, they've been through onboarding
-                  localStorage.setItem(`tos_accepted:${userId}:${orgHandle}`, 'true');
-                  navigate(projectHomeUrl(orgHandle, recent.handler), { replace: true });
-                  navigatedToLastProject = true;
-                }
+            // 2. No stored last project — fetch from API and use the most recently updated one.
+            if (!navigatedToLastProject) {
+              const projects = (await fetchProjectsApi()).filter((p) => p.handler);
+              if (projects.length > 0) {
+                const recent = projects.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0];
+                // Mark ToS accepted — this user already has projects, they've been through onboarding
+                localStorage.setItem(`tos_accepted:${userId}:${orgHandle}`, 'true');
+                navigate(projectHomeUrl(orgHandle, recent.handler), { replace: true });
+                navigatedToLastProject = true;
               }
             }
           } catch {
@@ -111,8 +105,7 @@ export default function OIDCCallback(): JSX.Element {
 
           if (!navigatedToLastProject) {
             // Redirect to the projects/redirect route which shows the ToS welcome dialog.
-            // There is an org handle here: completeSignIn refuses a token without one.
-            navigate(orgHandle ? projectsRedirectUrl(orgHandle) : loginUrl(), { replace: true });
+            navigate(projectsRedirectUrl(orgHandle), { replace: true });
           }
         }
       } catch (err) {

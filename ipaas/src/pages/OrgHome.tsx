@@ -71,8 +71,7 @@ export default function OrgHome(): JSX.Element {
   const createProjectMutation = useCreateProject();
 
   // A user with projects goes straight to the most recently updated one, so they land in a
-  // project view instead of the org-home spinner; a new org gets its Default project. The org
-  // scope comes from the token, so fetchProjects ignores its org-id argument.
+  // project view instead of the org-home spinner; a new org gets its Default project.
   useEffect(() => {
     if (step !== 'checking') return;
     fetchProjectsApi()

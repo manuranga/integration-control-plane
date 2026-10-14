@@ -23,29 +23,24 @@ import { useAuth } from '../auth';
 import { orgHomeUrl, projectHomeUrl } from '../paths';
 
 export default function PublicLayout(): JSX.Element {
-  const { isAuthenticated, userId } = useAuth();
+  const { isAuthenticated, userId, orgHandle } = useAuth();
 
-  const storedOrg = localStorage.getItem('org_handle');
-  const org = storedOrg && storedOrg !== 'default' ? storedOrg : null;
-
-  // A signed-in user has an org (Thunder provisions one at sign-up), so the public pages hand over to it.
-  if (isAuthenticated && org) {
-    // Restore the last visited project if it matches the stored org
-    if (userId) {
-      try {
-        const lastProjectRaw = localStorage.getItem(`last_project:${userId}`);
-        if (lastProjectRaw) {
-          const { org: lastOrg, project } = JSON.parse(lastProjectRaw) as { org: string; project: string };
-          if (lastOrg === org && project) {
-            return <Navigate to={projectHomeUrl(org, project)} replace />;
-          }
+  // A signed-in session always carries its org, so the public pages hand over to it.
+  if (isAuthenticated) {
+    // Restore the last visited project if it belongs to the session's org
+    try {
+      const lastProjectRaw = localStorage.getItem(`last_project:${userId}`);
+      if (lastProjectRaw) {
+        const { org: lastOrg, project } = JSON.parse(lastProjectRaw) as { org: string; project: string };
+        if (lastOrg === orgHandle && project) {
+          return <Navigate to={projectHomeUrl(orgHandle, project)} replace />;
         }
-      } catch {
-        /* ignore malformed data */
       }
+    } catch {
+      /* ignore malformed data */
     }
 
-    return <Navigate to={orgHomeUrl(org)} replace />;
+    return <Navigate to={orgHomeUrl(orgHandle)} replace />;
   }
 
   return (
