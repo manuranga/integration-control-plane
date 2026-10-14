@@ -107,12 +107,11 @@ export default function ProjectCdPipelines(scope: ProjectScope): JSX.Element {
                       Set as default
                     </Button>
                   )}
-                  <Tooltip title={pipeline.is_project_default ? 'The default pipeline cannot be removed' : 'Remove'}>
-                    <span>
+                  {!pipeline.is_project_default && (
+                    <Tooltip title="Remove">
                       <IconButton
                         size="small"
                         color="error"
-                        disabled={pipeline.is_project_default}
                         aria-label={`Remove ${pipeline.name}`}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -120,8 +119,8 @@ export default function ProjectCdPipelines(scope: ProjectScope): JSX.Element {
                         }}>
                         <Trash2 size={16} />
                       </IconButton>
-                    </span>
-                  </Tooltip>
+                    </Tooltip>
+                  )}
                 </>
               }
             />

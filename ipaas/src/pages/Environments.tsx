@@ -17,8 +17,10 @@
  */
 
 import { Alert, Box, Button, Chip, CircularProgress, IconButton, ListingTable, PageContent, PageTitle, Stack, TablePagination, Tooltip, Typography } from '@wso2/oxygen-ui';
+import { CARD_TABLE_SX } from '../constants/styles';
+import SearchField from '../components/SearchField';
 import TextField from '../components/common/TextField';
-import { Clock, Layers, Plus, Trash2, AlertTriangle } from '@wso2/oxygen-ui-icons-react';
+import { Layers, Plus, Trash2, AlertTriangle } from '@wso2/oxygen-ui-icons-react';
 import { useState, useMemo, useEffect, type JSX } from 'react';
 import { useLocation } from 'react-router';
 import { useAppNavigate } from '../hooks/useAppNavigate';
@@ -29,7 +31,7 @@ import { useOrgUuid } from '../hooks/useOrgUuid';
 import type { EnvironmentTemplate } from '../types/environment';
 import EmptyListing from '../components/EmptyListing';
 import { formatDistanceToNow } from '../utils/time';
-import { newEnvironmentUrl, type OrgScope, type ProjectScope } from '../nav';
+import { editEnvironmentUrl, newEnvironmentUrl, type OrgScope, type ProjectScope } from '../nav';
 import { useAccessControl } from '../contexts/AccessControlContext';
 import { Permissions } from '../constants/permissions';
 import Authorized from '../components/Authorized';
@@ -127,9 +129,12 @@ export default function Environments(scope: OrgScope | ProjectScope): JSX.Elemen
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
-    const state = location.state as { success?: boolean; environmentName?: string } | null;
+    const state = location.state as { success?: boolean; environmentName?: string; updated?: boolean; name?: string } | null;
     if (state?.success && state.environmentName) {
       setAlert({ type: 'success', message: `Environment '${state.environmentName}' created successfully.` });
+      navigate(location.pathname, { replace: true, state: null });
+    } else if (state?.updated && state.name) {
+      setAlert({ type: 'success', message: `Environment '${state.name}' updated successfully.` });
       navigate(location.pathname, { replace: true, state: null });
     }
   }, [location, navigate]);
@@ -149,6 +154,7 @@ export default function Environments(scope: OrgScope | ProjectScope): JSX.Elemen
     <PageContent>
       <PageTitle>
         <PageTitle.Header>Environments</PageTitle.Header>
+        <PageTitle.SubHeader>Deployment targets for integrations, shared by every project in this organization.</PageTitle.SubHeader>
       </PageTitle>
 
       {isLoading ? (
@@ -169,83 +175,87 @@ export default function Environments(scope: OrgScope | ProjectScope): JSX.Elemen
         <EmptyListing icon={<Layers size={48} />} title="No environments found" description={EMPTY_DESCRIPTION} showAction={canManageEnv} actionLabel="Create Environment" onAction={() => navigate(newEnvironmentUrl(scope))} />
       ) : (
         <>
+          <Stack direction="row" gap={1} alignItems="center" sx={{ mb: 3 }}>
+            <SearchField value={search} onChange={setSearch} placeholder="Search environments..." fullWidth />
+            <Authorized permissions={Permissions.ENVIRONMENT_MANAGE}>
+              <Button variant="contained" startIcon={<Plus size={16} />} onClick={() => navigate(newEnvironmentUrl(scope))} sx={{ whiteSpace: 'nowrap', flexShrink: 0, px: 2.5 }}>
+                Create Environment
+              </Button>
+            </Authorized>
+          </Stack>
           {alert && (
-            <Alert severity={alert.type} onClose={() => setAlert(null)} sx={{ mb: 2 }}>
+            <Alert severity={alert.type} onClose={() => setAlert(null)} sx={{ mb: 3 }}>
               {alert.message}
             </Alert>
           )}
-          <ListingTable.Container>
-            <ListingTable.Toolbar
-              showSearch
-              searchValue={search}
-              onSearchChange={setSearch}
-              searchPlaceholder="Search environments..."
-              actions={
-                <Authorized permissions={Permissions.ENVIRONMENT_MANAGE}>
-                  <Button variant="contained" startIcon={<Plus size={20} />} onClick={() => navigate(newEnvironmentUrl(scope))}>
-                    Create Environment
-                  </Button>
-                </Authorized>
-              }
-            />
-            <ListingTable>
-              <ListingTable.Head>
-                <ListingTable.Row>
-                  <ListingTable.Cell>Name</ListingTable.Cell>
-                  <ListingTable.Cell>Type</ListingTable.Cell>
-                  <ListingTable.Cell>Created</ListingTable.Cell>
-                  <ListingTable.Cell align="right">Action</ListingTable.Cell>
-                </ListingTable.Row>
-              </ListingTable.Head>
-              <ListingTable.Body>
-                {filtered.length === 0 ? (
-                  <ListingTable.Row>
-                    <ListingTable.Cell colSpan={4} align="center">
-                      No records to display
-                    </ListingTable.Cell>
-                  </ListingTable.Row>
-                ) : (
-                  paginated.map((t) => (
-                    <ListingTable.Row key={t.id}>
-                      <ListingTable.Cell>
-                        <Typography variant="body2">{t.name}</Typography>
-                      </ListingTable.Cell>
-                      <ListingTable.Cell>
-                        <Chip size="small" variant="outlined" label={t.critical ? 'Critical' : 'Non-Critical'} />
-                      </ListingTable.Cell>
-                      <ListingTable.Cell>
-                        <Stack direction="row" alignItems="center" gap={0.5}>
-                          <Clock size={14} />
-                          {t.createdAt ? formatDistanceToNow(t.createdAt) : '—'}
-                        </Stack>
-                      </ListingTable.Cell>
-                      <Authorized permissions={Permissions.ENVIRONMENT_MANAGE} fallback={<ListingTable.Cell align="right" />}>
-                        <ListingTable.Cell align="right">
-                          <Tooltip title="Delete">
-                            <IconButton size="small" color="error" aria-label={`Delete ${t.name}`} onClick={() => setDeleting(t)}>
-                              <Trash2 size={16} />
-                            </IconButton>
-                          </Tooltip>
-                        </ListingTable.Cell>
-                      </Authorized>
+          {filtered.length === 0 ? (
+            <EmptyListing icon={<Layers size={48} />} title="No environments found" description="Try adjusting your search" showAction={false} />
+          ) : (
+            <>
+              <ListingTable.Container disablePaper>
+                <ListingTable variant="card" density="compact" sx={CARD_TABLE_SX}>
+                  <ListingTable.Head>
+                    <ListingTable.Row>
+                      <ListingTable.Cell width={300}>Environment</ListingTable.Cell>
+                      <ListingTable.Cell>Type</ListingTable.Cell>
+                      <ListingTable.Cell>Created</ListingTable.Cell>
+                      {canManageEnv && <ListingTable.Cell width={100}>Actions</ListingTable.Cell>}
                     </ListingTable.Row>
-                  ))
-                )}
-              </ListingTable.Body>
-            </ListingTable>
-            <TablePagination
-              component="div"
-              count={filtered.length}
-              page={safePage}
-              onPageChange={(_, p) => setPage(p)}
-              rowsPerPage={rowsPerPage}
-              onRowsPerPageChange={(e) => {
-                setRowsPerPage(parseInt(e.target.value, 10));
-                setPage(0);
-              }}
-              rowsPerPageOptions={[5, 10, 25, 50]}
-            />
-          </ListingTable.Container>
+                  </ListingTable.Head>
+                  <ListingTable.Body>
+                    {paginated.map((t) => (
+                      <ListingTable.Row key={t.id} variant="card" hover={canManageEnv} clickable={canManageEnv} onClick={canManageEnv ? () => navigate(editEnvironmentUrl(scope, t.id)) : undefined}>
+                        <ListingTable.Cell>
+                          <Typography variant="body2" fontWeight={600}>
+                            {t.name}
+                          </Typography>
+                        </ListingTable.Cell>
+                        <ListingTable.Cell>
+                          <Chip size="small" variant="outlined" color={t.critical ? 'error' : 'default'} label={t.critical ? 'Critical' : 'Non-Critical'} />
+                        </ListingTable.Cell>
+                        <ListingTable.Cell>
+                          <Typography variant="body2" color="text.secondary">
+                            {t.createdAt ? formatDistanceToNow(t.createdAt) : '—'}
+                          </Typography>
+                        </ListingTable.Cell>
+                        {canManageEnv && (
+                          <ListingTable.Cell>
+                            <Tooltip title="Delete">
+                              <IconButton
+                                size="small"
+                                color="error"
+                                aria-label={`Delete ${t.name}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDeleting(t);
+                                }}>
+                                <Trash2 size={16} />
+                              </IconButton>
+                            </Tooltip>
+                          </ListingTable.Cell>
+                        )}
+                      </ListingTable.Row>
+                    ))}
+                  </ListingTable.Body>
+                </ListingTable>
+              </ListingTable.Container>
+              {filtered.length > 10 && (
+                <TablePagination
+                  component="div"
+                  count={filtered.length}
+                  page={safePage}
+                  onPageChange={(_, p) => setPage(p)}
+                  rowsPerPage={rowsPerPage}
+                  onRowsPerPageChange={(e) => {
+                    setRowsPerPage(parseInt(e.target.value, 10));
+                    setPage(0);
+                  }}
+                  rowsPerPageOptions={[10, 20, 50]}
+                  sx={{ mt: 2 }}
+                />
+              )}
+            </>
+          )}
         </>
       )}
 
