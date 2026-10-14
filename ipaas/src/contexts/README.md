@@ -1,7 +1,7 @@
 # Contexts
 
 > [!NOTE]
-> This directory contains React Context providers used across the ICP application. Each context is purpose-built for a specific concern and is intentionally kept narrow in scope.
+> This directory contains React Context providers used across the console. Each context is purpose-built for a specific concern and is intentionally kept narrow in scope.
 
 ---
 
@@ -11,13 +11,13 @@
 
 ### Purpose
 
-This context manages **permission state** for the current user session across three scopes: organisation, project, and component. It provides a unified querying interface so any component in the tree can check whether the user holds a given permission without knowing which scope granted it.
+This context manages **permission state** for the current user session across three scopes: organisation, project, and integration. It provides a unified querying interface so any component in the tree can check whether the user holds a given permission without knowing which scope granted it.
 
 State held (as `Set<string>` collections):
 
 - `orgPerms` — permissions that apply across the whole organisation
 - `projectPermsMap` — per-project permission sets, keyed by project ID
-- `componentPermsMap` — per-component permission sets, keyed by component ID
+- `componentPermsMap` — per-integration permission sets, keyed by component ID
 
 Key query methods:
 
@@ -25,7 +25,7 @@ Key query methods:
 - `hasAllPermissions` / `hasAnyPermission` — convenience wrappers for bulk checks
 - `isOrgPermissionsLoaded` — lets consumers defer rendering until org-level permissions have been fetched
 
-Scoped `clear*` methods (`clearPermissions`, `clearProjectPermissions`, `clearComponentPermissions`) allow targeted invalidation when the user navigates away from a project or component without wiping unrelated permission state.
+Scoped `clear*` methods (`clearPermissions`, `clearProjectPermissions`, `clearComponentPermissions`) allow targeted invalidation when the user navigates away from a project or integration without wiping unrelated permission state.
 
 #### Why Context
 
@@ -63,14 +63,14 @@ State held:
 
 ### Purpose
 
-This context stores **temporary configuration state** during the prebuilt integration creation flow. The flow spans two routes — a setup page where the user fills in config values, and a deploy page that fires the actual API calls. Because the component does not exist in the database at the setup stage, configs cannot be persisted immediately; they must survive the route transition so the deploy page can submit them as part of a single creation request.
+This context stores **temporary configuration state** during the prebuilt integration creation flow. The flow spans two routes — a setup page where the user fills in config values, and a deploy page that fires the actual API calls. Because the integration does not exist in the database at the setup stage, configs cannot be persisted immediately; they must survive the route transition so the deploy page can submit them as part of a single creation request.
 
 State held:
 
 - `integration` — the selected `PrebuiltIntegration` object (display name, applications, component type, etc.)
 - `configValues` — the list of `SchemaConfigItem` values collected from the config form
 
-`clearAll()` is called once deployment succeeds, so the context is wiped before navigating to the new component's overview page.
+`clearAll()` is called once deployment succeeds, so the context is wiped before navigating to the new integration's overview page.
 
 #### Why Context
 

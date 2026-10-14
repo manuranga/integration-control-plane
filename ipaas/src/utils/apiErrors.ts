@@ -25,7 +25,7 @@ function messageOf(error: unknown): string {
 /**
  * HTTP status behind a rejected API call, or `NaN` when there is none.
  *
- * The BFF client rejects with an `HttpError`, which carries a typed `status` — read
+ * The BFF client rejects with a `BffError`, which carries a typed `status` — read
  * that in preference to the message. Plain fetches (prebuilt catalog, RAG retrieval)
  * throw an `Error` whose message holds `HTTP {status}`, and some callers pass a bare
  * string, so the text is the only signal there.
