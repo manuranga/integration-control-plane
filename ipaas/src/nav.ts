@@ -179,6 +179,10 @@ export function newEnvironmentUrl(scope: { org: string }): string {
   return `/organizations/${scope.org}/environments/new`;
 }
 
+export function editEnvironmentUrl(scope: { org: string }, envId: string): string {
+  return `/organizations/${scope.org}/environments/${envId}/edit`;
+}
+
 export function orgCdPipelinesUrl(scope: { org: string }): string {
   return `/organizations/${scope.org}/admin/cd-pipelines`;
 }
