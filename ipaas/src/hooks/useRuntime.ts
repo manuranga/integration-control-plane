@@ -34,14 +34,14 @@ export function useReleaseDetails(projectId: string, componentName: string, rele
   });
 }
 
-export function useComponentPods(projectId: string, componentName: string, releaseId: string) {
+export function useComponentPods(projectId: string, componentName: string, releaseId: string, pollMs: number = POLL_MS) {
   return useQuery({
     queryKey: [ROOT_KEY, 'pods', projectId, componentName, releaseId],
     queryFn: () => fetchComponentPods(projectId, componentName, releaseId),
     enabled: !!projectId && !!releaseId && !!componentName,
     retry: false,
-    staleTime: POLL_MS,
-    refetchInterval: POLL_MS,
+    staleTime: pollMs,
+    refetchInterval: pollMs,
     placeholderData: (prev) => prev,
   });
 }

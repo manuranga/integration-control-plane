@@ -18,8 +18,8 @@
 
 import { Alert, Box, Button, Chip, CircularProgress, Stack } from '@wso2/oxygen-ui';
 import { useEffect, useState, type JSX } from 'react';
-import RangeInput from '../Scaling/RangeInput';
-import { CLOUD_DP_MAX_REPLICAS } from '../../constants/scaling';
+import RangeInput from '../../../components/Scaling/RangeInput';
+import { CLOUD_DP_MAX_REPLICAS } from '../../../constants/scaling';
 import { useUpdateHpa } from '../../hooks/useScaling';
 import type { Hpa, ScalingPath } from '../../../types/scaling';
 

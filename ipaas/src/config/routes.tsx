@@ -64,6 +64,7 @@ const ProjectOverview = lazyPage(() => import('../pages/ProjectOverview'));
 const ComponentConfigs = lazyPage(() => import('../pages/ComponentConfigs'));
 const ComponentContainers = lazyPage(() => import('../pages/ComponentContainers'));
 const ComponentHealthChecks = lazyPage(() => import('../pages/ComponentHealthChecks'));
+const ComponentScaling = lazyPage(() => import('../pages/ComponentScaling'));
 const CdPipelineEditor = lazyPage(() => import('../pages/CdPipelineEditor'));
 const OrgSettings = lazyPage(() => import('../pages/OrgSettings'));
 const BrowseSamples = lazyPage(() => import('../pages/BrowseSamples'));
@@ -218,6 +219,10 @@ const routes: AppRoute[] = [
               {
                 path: 'organizations/:orgHandler/projects/:projectHandler/components/:componentHandler/admin/health-checks',
                 element: createElement(RouteErrorBoundary, null, createElement(withScope(ComponentHealthChecks, ['components']))),
+              },
+              {
+                path: 'organizations/:orgHandler/projects/:projectHandler/components/:componentHandler/admin/scaling',
+                element: createElement(RouteErrorBoundary, null, createElement(withScope(ComponentScaling, ['components']))),
               },
               // Unknown or retired pages (including the unported ones) go back to their level's home.
               { path: 'organizations/:orgHandler/*', element: <HiddenPageRedirect level="organizations" /> },

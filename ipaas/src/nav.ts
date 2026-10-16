@@ -299,12 +299,13 @@ const NAV: Record<Level, NavEntry[]> = {
     { key: 'containers', navId: 'containers', segment: 'admin/containers', parent: 'operate' },
     { key: 'configs-secrets', navId: 'configs-secrets', segment: 'admin/configs', parent: 'operate' },
     { key: 'health-checks', navId: 'health-checks', segment: 'admin/health-checks', parent: 'operate' },
+    { key: 'scaling', navId: 'scaling', segment: 'admin/scaling', parent: 'operate' },
   ],
 };
 
 // Keys that exist only for generic (deployable) service types — switching to a
 // non-generic integration must fall back to overview instead of a dead tab.
-export const GENERIC_ONLY_COMPONENT_KEYS = new Set(['health-checks']);
+export const GENERIC_ONLY_COMPONENT_KEYS = new Set(['health-checks', 'scaling']);
 
 /** The resource key a URL resolves to at its scope (for cross-scope guards). */
 export function resolveResourceKey(pathname: string, scope: Scope): string {

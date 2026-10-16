@@ -49,13 +49,38 @@ import { useNavigate, Outlet, NavLink, useLocation } from 'react-router';
 import { useAppNavigate } from '../hooks/useAppNavigate';
 import Logo from '../components/Logo';
 import NotFound from '../components/NotFound';
-import { Activity, Boxes, ChevronDown, ChevronRight, Cog, FileLock, FlaskConical, Gauge, Hammer, HeartPulse, Layers, LayoutDashboard, LogOut, Logs, Plus, Rocket, Search, Server, Settings2, SlidersHorizontal, Workflow, X } from '@wso2/oxygen-ui-icons-react';
+import {
+  Activity,
+  Boxes,
+  ChevronDown,
+  ChevronRight,
+  Cog,
+  FileLock,
+  FlaskConical,
+  Gauge,
+  Hammer,
+  HeartPulse,
+  Layers,
+  LayoutDashboard,
+  LogOut,
+  Logs,
+  Maximize2,
+  Plus,
+  Rocket,
+  Search,
+  Server,
+  Settings2,
+  SlidersHorizontal,
+  Workflow,
+  X,
+} from '@wso2/oxygen-ui-icons-react';
 import { useProject, useProjectByHandler, useProjects } from '../hooks/useProjects';
 import { useComponents } from '../hooks/useComponents';
 import { useFreshDefaultProject } from '../hooks/useFreshDefaultProject';
 import { useOrgs } from '../hooks/useOrg';
 import { useBillingOrg } from '../hooks/useBillingOrg';
 import { isSupportedIntegration, GENERIC_SERVICE_TYPES } from '../constants/integrations';
+import { BILLING_PRODUCT_CODE } from '../constants/subscription';
 import { identifyIntegration } from '../utils/identifyIntegration';
 import { useAuth } from '../auth';
 import {
@@ -99,7 +124,7 @@ export default function AppLayout(): JSX.Element {
   const { hasAnyPermission } = useAccessControl();
 
   // Billing trial indicator shown in the header.
-  const { org: billingOrg } = useBillingOrg('integration-platform');
+  const { org: billingOrg } = useBillingOrg(BILLING_PRODUCT_CODE);
   const billingTrial = billingOrg?.subscription?.status === 'trial' ? billingOrg.subscription.trial : null;
   const trialEndLabel = billingTrial?.trial_end ? `Trial ends ${new Date(billingTrial.trial_end).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}` : '';
 
@@ -836,6 +861,14 @@ export default function AppLayout(): JSX.Element {
                                   <HeartPulse size={20} />
                                 </Sidebar.ItemIcon>
                                 <Sidebar.ItemLabel>Health Checks</Sidebar.ItemLabel>
+                              </Sidebar.Item>
+                            )}
+                            {isGenericService && (
+                              <Sidebar.Item id="scaling">
+                                <Sidebar.ItemIcon>
+                                  <Maximize2 size={20} />
+                                </Sidebar.ItemIcon>
+                                <Sidebar.ItemLabel>Scaling</Sidebar.ItemLabel>
                               </Sidebar.Item>
                             )}
                           </Sidebar.Item>

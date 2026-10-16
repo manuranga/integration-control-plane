@@ -20,14 +20,14 @@ import { Alert, Box, Button, CircularProgress, Dialog, DialogActions, DialogCont
 import { useEffect, useMemo, useState, type JSX } from 'react';
 import { useAccessControl } from '../../contexts/AccessControlContext';
 import DeploymentTrackBar from '../../components/DeploymentTrackBar';
-import ScaleMethodCard from '../components/Scaling/ScaleMethodCard';
+import ScaleMethodCard from '../../components/Scaling/ScaleMethodCard';
 import ScaleToZeroConfig from '../components/Scaling/ScaleToZeroConfig';
 import HpaConfig from '../components/Scaling/HpaConfig';
 import ReplicasTable from '../components/Scaling/ReplicasTable';
 import ComingSoon from '../../pages/ComingSoon';
 import { Permissions } from '../../constants/permissions';
 import { GENERIC_SERVICE_TYPES } from '../../constants/integrations';
-import { CLOUD_DP_MAX_REPLICAS, HPA_CARD, SCALE_TO_ZERO_CARD } from '../constants/scaling';
+import { CLOUD_DP_MAX_REPLICAS, HPA_CARD, SCALE_TO_ZERO_CARD } from '../../constants/scaling';
 import { isScalingEnabled, useHpa, useHttpScaler, useScalingState, useSetScalingMethod } from '../hooks/useScaling';
 import { useComponentByHandler } from '../../hooks/useComponents';
 import { useComponentDeployment } from '../../hooks/useDeployments';
