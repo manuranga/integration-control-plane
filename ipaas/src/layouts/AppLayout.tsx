@@ -208,16 +208,16 @@ export default function AppLayout(): JSX.Element {
     return '';
   };
 
-  // Persist last visited project so post-login can navigate back to it
-  useEffect(() => {
-    if (userId && hasProject(scope)) {
-      localStorage.setItem(`last_project:${userId}`, JSON.stringify({ org: scope.org, project: scope.project }));
-    }
-  }, [userId, scope]);
-
   // The session is scoped to the org chosen at sign-in and can't be switched, so a link to any
   // other org shows "no access" with a way back to the user's own org.
   const orgAccessDenied = !!scope.org && scope.org !== sessionOrg;
+
+  // Persist last visited project so post-login can navigate back to it
+  useEffect(() => {
+    if (userId && hasProject(scope) && !orgAccessDenied) {
+      localStorage.setItem(`last_project:${userId}`, JSON.stringify({ org: scope.org, project: scope.project }));
+    }
+  }, [userId, scope, orgAccessDenied]);
 
   // Find component UUID for permission checks
   const currentComponent = hasComponent(scope) ? components.find((c) => c.handler === scope.component) : undefined;

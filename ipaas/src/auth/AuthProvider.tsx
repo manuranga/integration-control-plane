@@ -70,7 +70,8 @@ function toSession(accessToken: string, idClaims: Record<string, unknown> | null
   const orgHandle = stringClaim(access, 'ouHandle');
   const orgUuid = stringClaim(access, 'ouId');
   const userId = claim('sub');
-  if (!orgHandle || !orgUuid || !userId) return null;
+  // 'default' is the placeholder the routes treat as "no org" (ScopeResolver), never a real handle.
+  if (!orgHandle || orgHandle === 'default' || !orgUuid || !userId) return null;
 
   const username = claim('username') ?? claim('preferred_username') ?? claim('email') ?? userId;
   return {

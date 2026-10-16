@@ -10,6 +10,8 @@ The console reads its backend URLs from `/config.json` when it starts, so one bu
 
 `public/config.json` is copied to `dist/config.json` on build. It points at the local k3d stack. Each deployment mounts its own file over it. In wso2cloud-deployment that is the `config.json` in the ipaas-console `ReleaseBinding`.
 
+`pnpm dev` and `pnpm preview` cannot sign in against the local stack yet. They serve the console over https on `localhost:3000`, so the stack's plain-http Thunder and observability hosts are blocked as mixed content, and the local Thunder only accepts the deployed console's redirect URI. Try changes by deploying the console into the local stack instead.
+
 ## Keys
 
 Some key names come from earlier products (`CHOREO_*`, `ASGARDEO_*`, `VITE_*`). They stay as they are because the deployments set them.

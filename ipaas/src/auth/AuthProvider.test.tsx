@@ -235,6 +235,15 @@ describe('cloud AuthProvider — settling the session', () => {
     await expect(auth?.completeSignIn(new URLSearchParams())).rejects.toThrow('Missing organization context after sign-in. Please try logging in again.');
   });
 
+  it('refuses a token whose org is the placeholder default handle', async () => {
+    signedInSdk(accessToken({ ouHandle: 'default' }));
+    await render();
+
+    expect(auth?.isAuthenticated).toBe(false);
+    expect(sdk.get().clearSession).toHaveBeenCalled();
+    await expect(auth?.completeSignIn(new URLSearchParams())).rejects.toThrow('Missing organization context after sign-in. Please try logging in again.');
+  });
+
   it('waits while the SDK exchanges a code it asked for', async () => {
     window.history.replaceState({}, '', '/signin?code=abc&state=instance_0_request_0');
     sdkWith({ isLoading: true });
