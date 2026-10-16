@@ -58,12 +58,31 @@ describe('createComponent component-type mapping', () => {
   });
 
   it.each([
-    ['MCP', 'deployment/mcp-server'],
     ['ballerinaFileIntegration', 'deployment/file-integration'],
     ['miFileIntegration', 'deployment/mi-file-integration'],
   ])('leaves the %s sub-type on its own component type', async (subType, expected) => {
     await createComponent({ ...baseInput, componentSubType: subType } as CreateComponentInput);
     expect(bodyOf().spec.componentType.name).toBe(expected);
+  });
+
+  // deployment/mcp-server does not allow mi-image-builder; MI MCP servers need their own type.
+  it.each([
+    ['ballerinaService', 'deployment/mcp-server', 'ballerina-buildpack-builder'],
+    ['miApiService', 'deployment/mi-mcp-server', 'mi-image-builder'],
+  ])('creates a %s MCP server on %s with %s', async (displayType, componentType, workflow) => {
+    await createComponent({ ...baseInput, displayType, componentSubType: 'MCP' } as CreateComponentInput);
+    expect(bodyOf().spec.componentType.name).toBe(componentType);
+    expect(bodyOf().spec.workflow?.name).toBe(workflow);
+  });
+
+  it.each([
+    ['biService', 'ballerinaService'],
+    ['miService', 'miApiService'],
+  ])('reads a %s MCP server back as %s', async (bffDisplayType, displayType) => {
+    post.mockResolvedValue({ handler: 'mcp', componentType: 'mcpServer', displayType: bffDisplayType });
+    const created = await createComponent({ ...baseInput, componentSubType: 'MCP' } as CreateComponentInput);
+    expect(created.displayType).toBe(displayType);
+    expect(created.componentSubType).toBe('MCP');
   });
 
   it.each([

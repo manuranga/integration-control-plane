@@ -95,7 +95,12 @@ const isWebhookInput = (input: CreateComponentInput): boolean =>
 //
 // MI integrations use the mi-* ComponentTypes, which allow only mi-image-builder
 // and carry MI resource defaults (requests 100m / 512Mi, limits 500m / 1024Mi);
-// the shared types' 128Mi-256Mi defaults OOMKill the MI JVM.
+// the shared types' 128Mi-256Mi defaults OOMKill the MI JVM. Sub-types that
+// override the ComponentType (file integration, MCP server) pick the BI or MI
+// variant in resolveCreateMapping.
+const BI_WORKFLOW = 'ballerina-buildpack-builder';
+const MI_WORKFLOW = 'mi-image-builder';
+
 const DISPLAY_TYPE_MAP: Record<DisplayType, { componentType: string; workflow: string }> = {
   ballerinaService: { componentType: 'deployment/integration-as-api', workflow: 'ballerina-buildpack-builder' },
   scheduledTask: { componentType: 'cronjob/scheduled-task', workflow: 'ballerina-buildpack-builder' },
@@ -155,7 +160,13 @@ function resolveCreateMapping(input: CreateComponentInput): { componentType: str
   // The BFF routes create, build, deploy and delete to agent-manager on this type.
   // 'deployment/ai-agent' names the agents created before that move.
   if (input.componentSubType === 'aiAgent') return { ...mapping, componentType: 'proxy/agent-api' };
-  if (input.componentSubType === 'MCP') return { ...mapping, componentType: 'deployment/mcp-server' };
+  // MCP servers split by runtime like file integrations: deployment/mcp-server
+  // does not allow mi-image-builder, and deployment/mi-mcp-server allows only it.
+  // MI-ness comes from the displayType's mapping (every mi* displayType resolves
+  // to mi-image-builder).
+  if (input.componentSubType === 'MCP') {
+    return mapping.workflow === MI_WORKFLOW ? { componentType: 'deployment/mi-mcp-server', workflow: MI_WORKFLOW } : { componentType: 'deployment/mcp-server', workflow: BI_WORKFLOW };
+  }
   return mapping;
 }
 
