@@ -18,7 +18,7 @@
 
 import { Button, CircularProgress, Stack } from '@wso2/oxygen-ui';
 import { useEffect, useState, type JSX } from 'react';
-import { useCreateHpa, useHpaMetricMutations, useUpdateHpa } from '../../../hooks/useScaling';
+import { useCreateHpa, useHpaMetricMutations, useUpdateHpa } from '../../hooks/useScaling';
 import { CPU_THRESHOLD, MEMORY_THRESHOLD } from '../../../constants/scaling';
 import RangeInput from '../../../components/Scaling/RangeInput';
 import ThresholdSlider from '../../../components/Scaling/ThresholdSlider';

@@ -42,7 +42,7 @@ export const FOOTER_LINKS = [
 ] as const;
 
 export const CLOUD_SECTIONS = ['Package Registries'] as const;
-export const WIP_ONLY_SECTIONS = ['Access Control', 'Egress Control', 'Workflows', 'Credentials', 'On-Prem Keys', 'Application Security'] as const;
+export const UNPORTED_SECTIONS = ['Access Control', 'Egress Control', 'Workflows', 'Credentials', 'On-Prem Keys', 'Application Security'] as const;
 
 /** Deleting an integration is asynchronous: the row greys out, then goes. Observed at ~3 minutes on DEV. */
 export const REMOVAL_TIMEOUT_MS = 10 * 60_000;

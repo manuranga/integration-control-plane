@@ -43,7 +43,7 @@ export interface RuntimeReleaseDetails {
     namespace?: string;
   };
   containers?: ReleaseContainerSpec[];
-  /** OpenChoreo component UUID and deployed image ref (cloud only — not on the wip devops shape). */
+  /** OpenChoreo component UUID and deployed image ref. */
   componentId?: string;
   image?: string;
 }
@@ -108,8 +108,8 @@ export interface ComponentLevelMetrics {
 
 /**
  * Pod-level metrics plus an optional pre-aggregated total. OpenChoreo has no
- * pod-level metrics source, so cloud always sends `podLevelMetrics: []` and
- * relies on `componentLevelMetrics` instead; WIP only ever fills podLevelMetrics.
+ * pod-level metrics source, so the BFF always sends `podLevelMetrics: []` and
+ * relies on `componentLevelMetrics` instead.
  */
 export interface RuntimeMetrics {
   podLevelMetrics: PodMetrics[];
@@ -140,8 +140,6 @@ export interface PodConditionInfo {
 /** Everything the pod drawers need to query one pod and link back to its Integration. */
 export interface PodScope {
   projectId: string;
-  clusterId: string;
-  namespace: string;
   releaseId: string;
   orgHandler: string;
   projectHandler: string;

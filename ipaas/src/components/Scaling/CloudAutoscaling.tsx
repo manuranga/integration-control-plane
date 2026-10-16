@@ -18,7 +18,7 @@
 
 import { Alert, Box, Button, CircularProgress, Collapse, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Skeleton, Stack, Typography } from '@wso2/oxygen-ui';
 import { useEffect, useRef, useState, type JSX } from 'react';
-import { useAutoscaling, useUpdateAutoscaling } from '../../hooks/useScaling';
+import { useAutoscaling, useUpdateAutoscaling } from '../../hooks/useAutoscaling';
 import { useBillingOrg, useBillingPlan } from '../../hooks/useBillingOrg';
 import { BILLING_PRODUCT_CODE } from '../../constants/subscription';
 import { isPaidPlan } from '../../utils/billing';

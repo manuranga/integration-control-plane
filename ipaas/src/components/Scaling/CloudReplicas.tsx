@@ -21,7 +21,7 @@ import { useMemo, type JSX } from 'react';
 import PodInsightsTable from '../Runtime/PodInsightsTable';
 import ResourceUsageCards from '../Runtime/ResourceUsageCards';
 import { useComponentPodMetrics, useComponentPods, useReleaseDetails } from '../../hooks/useRuntime';
-import { useAutoscaling } from '../../hooks/useScaling';
+import { useAutoscaling } from '../../hooks/useAutoscaling';
 import { calculateAggregateUsage, usageFromComponentLevelMetrics } from '../../utils/podMetrics';
 
 const titleSx = { fontWeight: 600 } as const;
@@ -50,13 +50,11 @@ interface CloudReplicasProps {
  */
 export default function CloudReplicas({ projectId, componentId, componentHandler, releaseId, environmentId, orgHandler, projectHandler, canManage }: CloudReplicasProps): JSX.Element | null {
   // Same queries as the Runtime page, so both pages share one cache entry per release.
-  const { data: release } = useReleaseDetails(projectId, componentId, componentHandler, releaseId);
-  const clusterId = release?.environment?.environment_clusters?.[0]?.cluster_id ?? '';
-  const namespace = release?.environment?.namespace ?? '';
+  const { data: release } = useReleaseDetails(projectId, componentHandler, releaseId);
   const { data: autoscaling } = useAutoscaling(projectId, componentId, environmentId);
 
-  const pods = useComponentPods(projectId, componentHandler, clusterId, releaseId, namespace, autoscaling?.enabled ? AUTOSCALING_PODS_POLL_MS : undefined);
-  const metrics = useComponentPodMetrics(projectId, componentHandler, clusterId, releaseId, namespace);
+  const pods = useComponentPods(projectId, componentHandler, releaseId, autoscaling?.enabled ? AUTOSCALING_PODS_POLL_MS : undefined);
+  const metrics = useComponentPodMetrics(projectId, componentHandler, releaseId);
 
   const componentLevel = metrics.data?.componentLevelMetrics;
   const usage = useMemo(() => (componentLevel ? usageFromComponentLevelMetrics(componentLevel) : calculateAggregateUsage(pods.data ?? [], [])), [componentLevel, pods.data]);
@@ -74,7 +72,7 @@ export default function CloudReplicas({ projectId, componentId, componentHandler
     };
   }, [autoscaling]);
 
-  const scope = useMemo(() => ({ projectId, clusterId, namespace, releaseId, orgHandler, projectHandler, componentHandler }), [projectId, clusterId, namespace, releaseId, orgHandler, projectHandler, componentHandler]);
+  const scope = useMemo(() => ({ projectId, releaseId, orgHandler, projectHandler, componentHandler }), [projectId, releaseId, orgHandler, projectHandler, componentHandler]);
 
   if (release?.undeployed) return null;
 
@@ -82,7 +80,6 @@ export default function CloudReplicas({ projectId, componentId, componentHandler
     <>
       <PodInsightsTable
         pods={pods.data}
-        metrics={undefined}
         isLoading={pods.isLoading}
         isError={pods.isError}
         isFetching={pods.isFetching || metrics.isFetching}

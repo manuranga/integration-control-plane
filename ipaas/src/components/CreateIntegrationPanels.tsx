@@ -23,8 +23,7 @@ import { useAppNavigate } from '../hooks/useAppNavigate';
 import { useCreateComponent } from '../hooks/useComponents';
 import { isQuotaError } from '../utils/apiErrors';
 import { useChoreoSampleImages } from '../hooks/useRepository';
-import { generateAndSaveGitHubState, useAuth, validateAndClearGitHubState } from '#auth';
-import { IS_CLOUD } from '../features';
+import { generateAndSaveGitHubState, useAuth, validateAndClearGitHubState } from '../auth';
 import { providerComingSoonLabel } from '../constants/gitProviders';
 import { useOrgUuid } from '../hooks/useOrgUuid';
 import { useFeaturePreview } from '../contexts/FeaturePreviewContext';
@@ -129,11 +128,10 @@ export default function CreateIntegrationPanels({ scope, heading }: CreateIntegr
     if (creationBlocked) return;
     const { githubAppClientId, githubAppAuthRedirectUrl } = window.API_CONFIG;
     if (!githubAppClientId) {
-      // Cloud only: no GitHub App configured means private-repo authorization
-      // is impossible, so land the import page in public-URL mode instead of
-      // its default (private) mode with a dead Authorize button. Other
-      // variants keep the original navigation.
-      navigate(importUrl, IS_CLOUD ? { state: { mode: 'public' } } : undefined);
+      // No GitHub App configured means private-repo authorization is impossible,
+      // so land the import page in public-URL mode instead of its default
+      // (private) mode with a dead Authorize button.
+      navigate(importUrl, { state: { mode: 'public' } });
       return;
     }
     setIsImportAuthenticating(true);
@@ -344,26 +342,26 @@ export default function CreateIntegrationPanels({ scope, heading }: CreateIntegr
                           <GitHub size={aiBuilderEnabled ? 23 : 24} />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title={IS_CLOUD ? providerComingSoonLabel(GitProvider.GITLAB_SELF_MANAGED) : 'Import from GitLab'} placement="top">
+                      <Tooltip title={providerComingSoonLabel(GitProvider.GITLAB_SELF_MANAGED)} placement="top">
                         {/* A disabled IconButton fires no pointer events, so the Tooltip needs a live wrapper. */}
                         <Box component="span" sx={{ display: 'inline-flex' }}>
-                          <IconButton aria-label="Import from GitLab" disabled={IS_CLOUD} onClick={() => navigate(importUrl, { state: { provider: GitProvider.GITLAB_SELF_MANAGED } })} sx={PROVIDER_ICON_SX}>
+                          <IconButton aria-label="Import from GitLab" disabled sx={PROVIDER_ICON_SX}>
                             <GitLabIcon size={aiBuilderEnabled ? 21 : 22} />
                           </IconButton>
                         </Box>
                       </Tooltip>
-                      <Tooltip title={IS_CLOUD ? providerComingSoonLabel(GitProvider.BITBUCKET_CLOUD) : 'Import from Bitbucket'} placement="top">
+                      <Tooltip title={providerComingSoonLabel(GitProvider.BITBUCKET_CLOUD)} placement="top">
                         {/* A disabled IconButton fires no pointer events, so the Tooltip needs a live wrapper. */}
                         <Box component="span" sx={{ display: 'inline-flex' }}>
-                          <IconButton aria-label="Import from Bitbucket" disabled={IS_CLOUD} onClick={() => navigate(importUrl, { state: { provider: GitProvider.BITBUCKET_CLOUD } })} sx={PROVIDER_ICON_SX}>
+                          <IconButton aria-label="Import from Bitbucket" disabled sx={PROVIDER_ICON_SX}>
                             <BitbucketIcon size={aiBuilderEnabled ? 21 : 22} />
                           </IconButton>
                         </Box>
                       </Tooltip>
-                      <Tooltip title={IS_CLOUD ? providerComingSoonLabel(GitProvider.AZURE_DEVOPS) : 'Import from Azure'} placement="top">
+                      <Tooltip title={providerComingSoonLabel(GitProvider.AZURE_DEVOPS)} placement="top">
                         {/* A disabled IconButton fires no pointer events, so the Tooltip needs a live wrapper. */}
                         <Box component="span" sx={{ display: 'inline-flex' }}>
-                          <IconButton aria-label="Import from Azure" disabled={IS_CLOUD} onClick={() => navigate(importUrl, { state: { provider: GitProvider.AZURE_DEVOPS } })} sx={PROVIDER_ICON_SX}>
+                          <IconButton aria-label="Import from Azure" disabled sx={PROVIDER_ICON_SX}>
                             <AzureDevOpsIcon size={aiBuilderEnabled ? 21 : 22} />
                           </IconButton>
                         </Box>

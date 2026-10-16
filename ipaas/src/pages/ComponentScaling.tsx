@@ -29,7 +29,6 @@ import { useComponentByHandler } from '../hooks/useComponents';
 import { useComponentDeployment } from '../hooks/useDeployments';
 import { useRelease } from '../hooks/useDevopsConfigs';
 import { useEnvironments } from '../hooks/useEnvironments';
-import { useLoadComponentPermissions } from '../hooks/usePermissionLoader';
 import { useOrgUuid } from '../hooks/useOrgUuid';
 import { useProjectId } from '../hooks/useProjects';
 import { mainContainer } from '../utils/devopsConfigs';
@@ -40,9 +39,6 @@ export default function ComponentScaling({ org, project, component }: ComponentS
   const { projectId } = useProjectId(project);
   const { hasPermission } = useAccessControl();
   const { data: comp, isLoading } = useComponentByHandler(projectId, component);
-  // Landing straight on this page skips the Overview, which is where component-scoped
-  // permissions are normally loaded.
-  useLoadComponentPermissions(org, projectId, comp?.id ?? '');
   const canManage = hasPermission(Permissions.INTEGRATION_MANAGE, projectId, comp?.id);
 
   const tracks = useMemo(() => comp?.deploymentTracks ?? [], [comp?.deploymentTracks]);
@@ -74,7 +70,7 @@ export default function ComponentScaling({ org, project, component }: ComponentS
 
   return (
     <Box>
-      {tracks.length > 0 && <DeploymentTrackBar tracks={tracks} selectedId={trackId} onChange={setTrackId} orgHandler={org} projectHandler={project} componentHandler={component} versionView extra={envSelect} />}
+      {tracks.length > 0 && <DeploymentTrackBar extra={envSelect} />}
       <PageContent>
         {isLoading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 'calc(100vh - 120px)' }}>

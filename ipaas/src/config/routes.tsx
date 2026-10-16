@@ -17,9 +17,11 @@
  */
 
 import { type RouteProps, Navigate, Outlet } from 'react-router';
-import { cookiePolicyUrl, loginUrl, signupUrl, registerOrgUrl } from '../paths';
+import { cookiePolicyUrl, loginUrl, signupUrl } from '../paths';
 import { ScopeResolver, generateMatrixRoutes, withScope, type Matrix } from '../nav';
 import HiddenPageRedirect from '../components/HiddenPageRedirect';
+import UnknownRoute from '../components/UnknownRoute';
+import Logout from '../pages/Logout';
 import { createElement } from 'react';
 import { lazyPage } from './lazyPage';
 const PrebuiltIntegrationConfigProvider = lazyPage(() => import('../contexts/PrebuiltIntegrationConfigContext').then((m) => ({ default: m.PrebuiltIntegrationConfigProvider })));
@@ -28,7 +30,6 @@ const PrebuiltIntegrationConfigProvider = lazyPage(() => import('../contexts/Pre
 // shell (AppLayout) which must remain stable across route transitions.
 import PublicLayout from '../layouts/PublicLayout';
 import Login from '../pages/Login';
-import Signup from '../pages/Signup';
 import RouteErrorBoundary from '../components/RouteErrorBoundary';
 import AppLayout from '../layouts/AppLayout';
 
@@ -39,10 +40,8 @@ const OrgHomeRedirect = lazyPage(() => import('../components/OrgHomeRedirect'));
 
 const OIDCCallback = lazyPage(() => import('../pages/OIDCCallback'));
 const GitHubOAuthCallback = lazyPage(() => import('../pages/GitHubOAuthCallback'));
-const RegisterOrganization = lazyPage(() => import('../pages/RegisterOrganization'));
 const CookiePolicy = lazyPage(() => import('../pages/CookiePolicy'));
 const CloudEditorDeployment = lazyPage(() => import('../pages/CloudEditorDeployment'));
-const ForceChangePassword = lazyPage(() => import('../pages/ForceChangePassword'));
 const ProjectsRedirect = lazyPage(() => import('../pages/ProjectsRedirect'));
 const OrgHome = lazyPage(() => import('../pages/OrgHome'));
 const Projects = lazyPage(() => import('../pages/Projects'));
@@ -110,7 +109,8 @@ const routes: AppRoute[] = [
     element: <PublicLayout />,
     children: [
       { path: loginUrl(), element: <Login /> },
-      { path: signupUrl(), element: <Signup /> },
+      // Thunder hosts sign-up on the same page as sign-in.
+      { path: signupUrl(), element: <Navigate to={loginUrl()} replace /> },
     ],
   },
   {
@@ -118,13 +118,11 @@ const routes: AppRoute[] = [
     children: [{ path: cookiePolicyUrl(), element: <CookiePolicy /> }],
   },
   { path: '/signin', element: <OIDCCallback /> },
+  { path: '/logout', element: <Logout /> },
   { path: '/ghapp', element: <GitHubOAuthCallback /> },
   {
     element: <ProtectedRoute />,
     children: [
-      { path: registerOrgUrl(), element: <RegisterOrganization /> },
-      // WIP local login can require a password change; remove with the WIP auth.
-      { path: '/change-password', element: <ForceChangePassword /> },
       { path: '/editor', element: <CloudEditorDeployment /> },
       {
         element: <ScopeResolver />,
@@ -236,6 +234,8 @@ const routes: AppRoute[] = [
       },
     ],
   },
+  // Anything no route above claims: sign in when signed out, otherwise a not-found page.
+  { path: '*', element: <UnknownRoute /> },
 ];
 
 export default routes;
