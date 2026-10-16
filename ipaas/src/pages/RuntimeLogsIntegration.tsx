@@ -20,7 +20,7 @@ import { Box, CircularProgress, PageContent } from '@wso2/oxygen-ui';
 import { ScrollText } from '@wso2/oxygen-ui-icons-react';
 import { useCallback, useMemo, type JSX } from 'react';
 import { useOrgs } from '../hooks/useOrg';
-import { useProjectsByOrg } from '../hooks/useProjects';
+import { useProjects } from '../hooks/useProjects';
 import { useComponentByHandler } from '../hooks/useComponents';
 import { useEnvironments, useAllEnvironments } from '../hooks/useEnvironments';
 import { useInfiniteComponentLogs, useInfiniteGatewayLogsByEnvironment, useVisibleLogs, useResumeLiveOnAutoRefresh } from '../hooks/useLogs';
@@ -46,7 +46,7 @@ export default function RuntimeLogsIntegration(scope: ComponentScope): JSX.Eleme
   const { envFilter, endpointFilter, levelFilter, sortDir, searchPhrase, autoFetch, startTime, endTime, sourceFilter, hideHealthChecks } = filters;
 
   const { data: orgs, isLoading: loadingOrgs } = useOrgs();
-  const { data: projects, isLoading: loadingProjects } = useProjectsByOrg(scope.org);
+  const { data: projects, isLoading: loadingProjects } = useProjects();
 
   const project = projects?.find((p) => p.id === scope.project || p.handler === scope.project);
   const projectId = project?.id ?? '';

@@ -19,7 +19,7 @@
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { AuthContextValue } from '../contract';
+import type { AuthContextValue } from './types';
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -66,7 +66,7 @@ vi.mock('@thunderid/react', async () => {
   };
 });
 
-vi.mock('../../components/PageLoader', () => ({
+vi.mock('../components/PageLoader', () => ({
   default: ({ label }: { label?: string }) => <div data-testid="loader">{label ?? 'loading'}</div>,
 }));
 
@@ -202,7 +202,7 @@ describe('cloud AuthProvider — settling the session', () => {
     signedInSdk();
     await render();
 
-    expect(auth).toMatchObject({ isAuthenticated: true, userId: 'u1', username: 'ada@example.com', displayName: 'Ada Lovelace', pictureUrl: 'https://img.example/ada.png', isOidcUser: true, requirePasswordChange: false });
+    expect(auth).toMatchObject({ isAuthenticated: true, userId: 'u1', username: 'ada@example.com', displayName: 'Ada Lovelace', pictureUrl: 'https://img.example/ada.png', orgHandle: 'acme' });
     expect(localStorage.getItem('org_handle')).toBe('acme');
     expect(getOrgUuidFromToken()).toBe('org-uuid');
   });
@@ -228,6 +228,15 @@ describe('cloud AuthProvider — settling the session', () => {
 
   it('refuses a token without org claims and says why on /signin', async () => {
     signedInSdk(accessToken({ ouHandle: undefined }));
+    await render();
+
+    expect(auth?.isAuthenticated).toBe(false);
+    expect(sdk.get().clearSession).toHaveBeenCalled();
+    await expect(auth?.completeSignIn(new URLSearchParams())).rejects.toThrow('Missing organization context after sign-in. Please try logging in again.');
+  });
+
+  it('refuses a token whose org is the placeholder default handle', async () => {
+    signedInSdk(accessToken({ ouHandle: 'default' }));
     await render();
 
     expect(auth?.isAuthenticated).toBe(false);
@@ -310,10 +319,10 @@ describe('cloud AuthProvider — settling the session', () => {
 });
 
 describe('cloud AuthProvider — actions', () => {
-  it('completeSignIn returns the signed-in user, never a new one', async () => {
+  it('completeSignIn returns the signed-in user', async () => {
     signedInSdk();
     await render();
-    await expect(auth?.completeSignIn(new URLSearchParams())).resolves.toEqual({ isNewUser: false, userId: 'u1' });
+    await expect(auth?.completeSignIn(new URLSearchParams())).resolves.toEqual({ userId: 'u1', orgHandle: 'acme' });
   });
 
   it('completeSignIn reports an error the IdP returned', async () => {
@@ -346,12 +355,5 @@ describe('cloud AuthProvider — actions', () => {
     expect(sdk.get().signOut).toHaveBeenCalledTimes(1);
     expect(localStorage.getItem('org_handle')).toBeNull();
     expect(getOrgUuidFromToken()).toBeNull();
-  });
-
-  it('has no password sign-in or org registration', async () => {
-    signedInSdk();
-    await render();
-    await expect(auth?.login('ada', 'secret')).rejects.toThrow(/not available in the cloud console/);
-    await expect(auth?.completeOrgRegistration('acme')).rejects.toThrow(/created in Thunder/);
   });
 });

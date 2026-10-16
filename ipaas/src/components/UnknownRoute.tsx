@@ -18,7 +18,7 @@
 
 import type { JSX } from 'react';
 import { Navigate } from 'react-router';
-import { useAuth } from '#auth';
+import { useAuth } from '../auth';
 import PageNotFound from '../pages/PageNotFound';
 import { loginUrl } from '../paths';
 

@@ -19,7 +19,7 @@
 import { useEffect, useState, type JSX } from 'react';
 import { Alert, Box } from '@wso2/oxygen-ui';
 import PageLoader from '../components/PageLoader';
-import { useAuth } from '#auth';
+import { useAuth } from '../auth';
 
 function friendlyError(err: unknown): string {
   const message = (err instanceof Error ? err.message : String(err)).toLowerCase();

@@ -17,11 +17,9 @@
  */
 
 import type {
-  UserPermissionsResponse,
   User,
   MessageResult,
   ChangePasswordInput,
-  ForceChangePasswordInput,
   ResetPasswordResult,
   CreateUserInput,
   UpdateUserInput,
@@ -48,13 +46,9 @@ import type {
 // TODO: implement using cloud APIs
 const ni = (name: string): Promise<never> => Promise.reject(new Error(`[cloud] auth.${name}: not implemented`));
 
-export const fetchOrgPermissions = (_orgHandle: string, _userId: string): Promise<UserPermissionsResponse> => ni('fetchOrgPermissions');
-export const fetchProjectPermissions = (_orgHandle: string, _userId: string, _projectId: string): Promise<UserPermissionsResponse> => ni('fetchProjectPermissions');
-export const fetchComponentPermissions = (_orgHandle: string, _userId: string, _projectId: string, _componentId: string): Promise<UserPermissionsResponse> => ni('fetchComponentPermissions');
 export const fetchCurrentUser = (_orgHandler: string, _userId: string): Promise<User> => ni('fetchCurrentUser');
 export const fetchUsers = (_orgHandler: string): Promise<User[]> => ni('fetchUsers');
 export const changePassword = (_input: ChangePasswordInput): Promise<MessageResult> => ni('changePassword');
-export const forceChangePassword = (_input: ForceChangePasswordInput): Promise<MessageResult> => ni('forceChangePassword');
 export const resetPassword = (_orgHandler: string, _userId: string): Promise<ResetPasswordResult> => ni('resetPassword');
 export const revokeUserTokens = (_orgHandler: string, _userId: string): Promise<MessageResult> => ni('revokeUserTokens');
 export const unlockAccount = (_orgHandler: string, _userId: string): Promise<MessageResult> => ni('unlockAccount');

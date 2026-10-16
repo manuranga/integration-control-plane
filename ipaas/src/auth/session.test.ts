@@ -17,7 +17,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
-import { authenticatedFetch, connect, disconnect, getAccessToken, getOrgUuidFromToken, switchOrgToken, type CloudSession } from './session';
+import { authenticatedFetch, connect, disconnect, getAccessToken, getOrgUuidFromToken, type CloudSession } from './session';
 
 const NOW = 1_800_000_000_000;
 const b64url = (value: unknown): string => btoa(JSON.stringify(value)).replace(/=+$/, '');
@@ -132,21 +132,5 @@ describe('getOrgUuidFromToken', () => {
     expect(getOrgUuidFromToken()).toBe('org-uuid');
     disconnect();
     expect(getOrgUuidFromToken()).toBeNull();
-  });
-});
-
-describe('switchOrgToken', () => {
-  it('resolves for the org the session is scoped to', async () => {
-    connectWith(LIVE);
-    await expect(switchOrgToken('acme')).resolves.toBeUndefined();
-  });
-
-  it('rejects any other org', async () => {
-    connectWith(LIVE);
-    await expect(switchOrgToken('other')).rejects.toThrow(/scoped to the organization chosen at sign-in/);
-  });
-
-  it('rejects when there is no session', async () => {
-    await expect(switchOrgToken('acme')).rejects.toThrow();
   });
 });

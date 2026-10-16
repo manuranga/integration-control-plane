@@ -20,45 +20,29 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { UUID_RE } from '../utils/string';
 import { fetchProjects, fetchProject, fetchProjectContributors, fetchProjectComponentLabels, fetchProjectHandlerAvailability, createProject, createMonoRepoProject, linkProjectRepository, updateProject, deleteProject } from '../api/projects';
 import type { Project, CreateProjectInput, CreateMonoRepoProjectInput, LinkProjectRepositoryInput, UpdateProjectInput } from '../types/project';
-import { useOrgs } from './useOrg';
 import { pollWhileDeleting } from '../utils/deletionPolling';
 
-function orgId(): number {
-  return window.API_CONFIG?.asgardeoOrgNumericId ?? 0;
-}
-
-const projectsQuery = (id: number) => ({
-  queryKey: ['projects', id],
-  queryFn: () => fetchProjects(id),
+const projectsQuery = {
+  queryKey: ['projects'],
+  queryFn: fetchProjects,
   refetchInterval: pollWhileDeleting,
-});
+};
 
 export function useProjects() {
-  return useQuery(projectsQuery(orgId()));
+  return useQuery(projectsQuery);
 }
 
 /**
  * Projects for pickers and navigation targets; `useProjects` keeps the finalizing ones that scope resolution and name-uniqueness checks need.
  */
 export function useActiveProjects() {
-  return useQuery({ ...projectsQuery(orgId()), select: (list: Project[]) => list.filter((p) => !p.deleting) });
-}
-
-export function useProjectsByOrg(orgHandle: string) {
-  const { data: orgs } = useOrgs();
-  const numericId = orgs?.find((o) => o.handle === orgHandle)?.numericId ?? 0;
-  return useQuery({
-    queryKey: ['projects', numericId],
-    queryFn: () => fetchProjects(numericId),
-    refetchInterval: pollWhileDeleting,
-  });
+  return useQuery({ ...projectsQuery, select: (list: Project[]) => list.filter((p) => !p.deleting) });
 }
 
 export function useProject(projectId: string) {
-  const id = orgId();
   return useQuery({
-    queryKey: ['project', projectId, id],
-    queryFn: () => fetchProject(id, projectId),
+    queryKey: ['project', projectId],
+    queryFn: () => fetchProject(projectId),
     enabled: !!projectId,
   });
 }
@@ -70,30 +54,27 @@ export function useProjectByHandler(handler: string) {
 }
 
 export function useProjectContributors(projectId: string) {
-  const id = orgId();
   return useQuery({
-    queryKey: ['projectContributors', projectId, id],
-    queryFn: () => fetchProjectContributors(id, projectId),
+    queryKey: ['projectContributors', projectId],
+    queryFn: () => fetchProjectContributors(projectId),
     enabled: !!projectId,
     staleTime: 5 * 60 * 1000,
   });
 }
 
 export function useProjectComponentLabels(projectId: string) {
-  const id = orgId();
   return useQuery({
-    queryKey: ['projectComponentLabels', projectId, id],
-    queryFn: () => fetchProjectComponentLabels(id, projectId),
+    queryKey: ['projectComponentLabels', projectId],
+    queryFn: () => fetchProjectComponentLabels(projectId),
     enabled: !!projectId,
     staleTime: 5 * 60 * 1000,
   });
 }
 
 export function useProjectHandlerAvailability(candidate: string, enabled: boolean) {
-  const id = orgId();
   return useQuery({
-    queryKey: ['projectHandlerAvailability', id, candidate],
-    queryFn: () => fetchProjectHandlerAvailability(id, candidate),
+    queryKey: ['projectHandlerAvailability', candidate],
+    queryFn: () => fetchProjectHandlerAvailability(candidate),
     enabled: enabled && !!candidate && candidate.length >= 2,
     staleTime: 0,
     retry: false,

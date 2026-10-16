@@ -20,10 +20,10 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import type { JSX, ReactNode } from 'react';
 import { ThunderIDProvider, useThunderID } from '@thunderid/react';
 import { hasAuthParamsInUrl, hasCalledForThisInstanceInUrl } from '@thunderid/browser';
-import PageLoader from '../../components/PageLoader';
-import { oidcCallbackUrl } from '../../paths';
-import { editorSignInForwardUrl } from '../../utils/vscodeCallback';
-import type { AuthContextValue } from '../contract';
+import PageLoader from '../components/PageLoader';
+import { oidcCallbackUrl } from '../paths';
+import { editorSignInForwardUrl } from '../utils/vscodeCallback';
+import type { AuthContextValue } from './types';
 import { decodeJwtPayload, isExpired, stringClaim } from './jwt';
 import { clearLegacySession } from './legacySession';
 import { connect, disconnect, type CloudSession, type CloudUser } from './session';
@@ -70,7 +70,8 @@ function toSession(accessToken: string, idClaims: Record<string, unknown> | null
   const orgHandle = stringClaim(access, 'ouHandle');
   const orgUuid = stringClaim(access, 'ouId');
   const userId = claim('sub');
-  if (!orgHandle || !orgUuid || !userId) return null;
+  // 'default' is the placeholder the routes treat as "no org" (ScopeResolver), never a real handle.
+  if (!orgHandle || orgHandle === 'default' || !orgUuid || !userId) return null;
 
   const username = claim('username') ?? claim('preferred_username') ?? claim('email') ?? userId;
   return {
@@ -183,8 +184,7 @@ function CloudSessionProvider({ children }: { children: ReactNode }): JSX.Elemen
       const oidcError = params.get('error');
       if (oidcError) throw new Error(`Authentication failed: ${params.get('error_description') || oidcError}`);
       if (status.kind !== 'signedIn') throw new Error(status.kind === 'signedOut' && status.error ? status.error : 'Sign-in did not complete. Please try logging in again.');
-      // Thunder provisions the org at sign-up, so no one arrives without one.
-      return { isNewUser: false, userId: status.session.user.userId };
+      return { userId: status.session.user.userId, orgHandle: status.session.orgHandle };
     },
     [status],
   );
@@ -206,14 +206,9 @@ function CloudSessionProvider({ children }: { children: ReactNode }): JSX.Elemen
       username: user.username,
       displayName: user.displayName,
       pictureUrl: user.pictureUrl,
-      isOidcUser: true,
-      // Thunder owns credentials; the console never asks for a password.
-      requirePasswordChange: false,
-      clearRequirePasswordChange: () => {},
-      login: () => Promise.reject(new Error('Password sign-in is not available in the cloud console.')),
+      orgHandle: status.kind === 'signedIn' ? status.session.orgHandle : '',
       loginWithOIDC,
       completeSignIn,
-      completeOrgRegistration: () => Promise.reject(new Error('Organizations are created in Thunder; the cloud console has no registration step.')),
       logout,
     };
   }, [status, loginWithOIDC, completeSignIn, logout]);

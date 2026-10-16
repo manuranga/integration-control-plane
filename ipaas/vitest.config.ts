@@ -16,21 +16,19 @@
  * under the License.
  */
 
-import path from 'path';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
     environment: 'happy-dom',
     include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'tests/e2e/helpers/*.test.ts'],
-  },
-  resolve: {
-    alias: {
-      // Tests use the WIP auth, a pairing no real build ships: cloud auth loads the Thunder
-      // provider and its UI, which plain Node can't import. The API tests either mock _client
-      // or only exercise pure mappers, so no test runs a request through WIP auth. Revisit if
-      // one starts to.
-      '#auth': path.resolve(__dirname, 'src/auth/wip'),
+    server: {
+      deps: {
+        // Tests that reach the auth module load the UI library: oxygen-ui imports prismjs files
+        // without an extension and MUI X imports CSS, both of which Node's ESM loader rejects.
+        // Letting Vite transform them resolves those imports the way the app build does.
+        inline: ['@wso2/oxygen-ui', /@mui\/x-/],
+      },
     },
   },
 });

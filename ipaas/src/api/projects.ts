@@ -22,21 +22,20 @@ import type { Project, ProjectContributor, ProjectHandlerAvailability, CreatePro
 import { bff, items, q, seg, type ListResponse } from './_client';
 import { fetchComponents } from './components';
 
-// _orgId is kept on the signatures for devant contract parity; cloud derives
-// the org from the access token instead of taking a numeric id from the caller.
+// The org comes from the access token, so these take no org id.
 
-export const fetchProjects = (_orgId: number): Promise<Project[]> => bff.get<ListResponse<Project>>('/projects').then(items);
+export const fetchProjects = (): Promise<Project[]> => bff.get<ListResponse<Project>>('/projects').then(items);
 
-export const fetchProject = (_orgId: number, projectId: string): Promise<Project> => bff.get<Project>(`/projects/${seg(projectId)}`);
+export const fetchProject = (projectId: string): Promise<Project> => bff.get<Project>(`/projects/${seg(projectId)}`);
 
-export const fetchProjectByHandler = (_orgId: number, projectHandler: string): Promise<Project> => bff.get<Project>(`/projects/${seg(projectHandler)}`);
+export const fetchProjectByHandler = (projectHandler: string): Promise<Project> => bff.get<Project>(`/projects/${seg(projectHandler)}`);
 
-export const fetchProjectContributors = (_orgId: number, projectId: string): Promise<ProjectContributor[]> => bff.get<ListResponse<ProjectContributor>>(`/projects/${seg(projectId)}/contributors`).then(items);
+export const fetchProjectContributors = (projectId: string): Promise<ProjectContributor[]> => bff.get<ListResponse<ProjectContributor>>(`/projects/${seg(projectId)}/contributors`).then(items);
 
 // Derived client-side rather than from GET /projects/{p}/labels: OpenChoreo has
 // no label index, so the BFF would have to list every component and union the
 // labels itself — exactly what this does, one hop later.
-export const fetchProjectComponentLabels = async (_orgId: number, projectId: string): Promise<string[]> => {
+export const fetchProjectComponentLabels = async (projectId: string): Promise<string[]> => {
   const components = await fetchComponents('', projectId);
   const labels = new Set<string>();
   for (const c of components) {
@@ -45,7 +44,7 @@ export const fetchProjectComponentLabels = async (_orgId: number, projectId: str
   return [...labels].sort();
 };
 
-export const fetchProjectHandlerAvailability = (_orgId: number, candidate: string): Promise<ProjectHandlerAvailability> => bff.get<ProjectHandlerAvailability>(`/projects/handler-availability${q({ candidate })}`);
+export const fetchProjectHandlerAvailability = (candidate: string): Promise<ProjectHandlerAvailability> => bff.get<ProjectHandlerAvailability>(`/projects/handler-availability${q({ candidate })}`);
 
 // OpenChoreo Project names are K8s resource names (RFC 1123: lowercase
 // alphanumeric, '-' or '.'). The frontend separates `name` (display label)

@@ -16,14 +16,20 @@
  * under the License.
  */
 
-/**
- * Compile-time assertion that this folder satisfies `src/auth/contract.ts`.
- * Never imported at runtime; the underscore local is exempt from `noUnusedLocals`.
- */
-
-import type { AuthModule } from '../contract';
-import * as cloud from './index';
-
-const _cloud: AuthModule = cloud;
-
-void _cloud;
+/** What `useAuth()` returns. */
+export interface AuthContextValue {
+  isAuthenticated: boolean;
+  userId: string;
+  username: string;
+  displayName: string;
+  pictureUrl?: string;
+  /** The organization the session is scoped to, chosen at sign-in. Empty when signed out. */
+  orgHandle: string;
+  loginWithOIDC: (fidp?: string) => Promise<void>;
+  /**
+   * Finishes sign-in on /signin from the query the IdP returned. Throws with a
+   * message for the user when sign-in did not succeed.
+   */
+  completeSignIn: (params: URLSearchParams) => Promise<{ userId: string; orgHandle: string }>;
+  logout: () => Promise<void>;
+}

@@ -18,7 +18,7 @@
 
 import { useEffect, type JSX } from 'react';
 import { Navigate } from 'react-router';
-import { useAuth } from '#auth';
+import { useAuth } from '../auth';
 import PageLoader from '../components/PageLoader';
 import { loginUrl } from '../paths';
 

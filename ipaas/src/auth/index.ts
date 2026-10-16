@@ -17,10 +17,10 @@
  */
 
 /**
- * Cloud auth, on the Thunder SDK. Resolved through `#auth`.
+ * Auth on the Thunder SDK. App code imports auth only from this module.
  */
 
 export { AuthProvider, useAuth } from './AuthProvider';
-export { authenticatedFetch, getAccessToken, getOrgUuidFromToken, switchOrgToken } from './session';
-export { saveRedirectUrl, getAndClearRedirectUrl } from '../shared/redirectUrl';
-export { generateAndSaveGitHubState, validateAndClearGitHubState } from '../shared/githubState';
+export { authenticatedFetch, getAccessToken, getOrgUuidFromToken } from './session';
+export { saveRedirectUrl, getAndClearRedirectUrl } from './redirectUrl';
+export { generateAndSaveGitHubState, validateAndClearGitHubState } from './githubState';

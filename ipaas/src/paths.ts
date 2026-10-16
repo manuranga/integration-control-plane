@@ -11,10 +11,6 @@ export function signupUrl(): string {
   return '/signup';
 }
 
-export function registerOrgUrl(): string {
-  return '/account-register';
-}
-
 export function projectsRedirectUrl(orgHandler: string): string {
   return `/organizations/${orgHandler}/projects/redirect`;
 }
@@ -37,10 +33,6 @@ export function termsOfUseUrl(): string {
 
 export function documentationUrl(): string {
   return 'https://wso2.com/integration-platform/docs/';
-}
-
-export function forceChangePasswordUrl(): string {
-  return '/change-password';
 }
 
 // ---------------------------------------------------------------------------

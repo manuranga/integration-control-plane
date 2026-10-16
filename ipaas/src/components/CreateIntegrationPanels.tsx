@@ -23,7 +23,7 @@ import { useAppNavigate } from '../hooks/useAppNavigate';
 import { useCreateComponent } from '../hooks/useComponents';
 import { isQuotaError } from '../utils/apiErrors';
 import { useChoreoSampleImages } from '../hooks/useRepository';
-import { generateAndSaveGitHubState, useAuth, validateAndClearGitHubState } from '#auth';
+import { generateAndSaveGitHubState, useAuth, validateAndClearGitHubState } from '../auth';
 import { providerComingSoonLabel } from '../constants/gitProviders';
 import { useOrgUuid } from '../hooks/useOrgUuid';
 import { useFeaturePreview } from '../contexts/FeaturePreviewContext';

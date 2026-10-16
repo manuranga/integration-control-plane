@@ -25,7 +25,6 @@ import { useAccessControl } from '../contexts/AccessControlContext';
 import { useComponentByHandler } from '../hooks/useComponents';
 import { useComponentDeployment } from '../hooks/useDeployments';
 import { useEnvironments } from '../hooks/useEnvironments';
-import { useLoadComponentPermissions } from '../hooks/usePermissionLoader';
 import { useOrgUuid } from '../hooks/useOrgUuid';
 import { useProjectId } from '../hooks/useProjects';
 import { Permissions } from '../constants/permissions';
@@ -75,9 +74,6 @@ export default function ComponentRuntime({ org, project, component }: ComponentS
 
   const podScope = useMemo(() => ({ projectId, releaseId, orgHandler: org, projectHandler: project, componentHandler: component }), [projectId, releaseId, org, project, component]);
 
-  // Landing straight on this page skips the Overview, which is where component-scoped
-  // permissions are normally loaded.
-  useLoadComponentPermissions(org, projectId, componentId);
   const { hasPermission } = useAccessControl();
   const canManage = hasPermission(Permissions.INTEGRATION_MANAGE, projectId, componentId);
 
