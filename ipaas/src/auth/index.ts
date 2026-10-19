@@ -24,6 +24,3 @@ export { AuthProvider, useAuth } from './AuthProvider';
 export { authenticatedFetch, getAccessToken, getOrgUuidFromToken } from './session';
 export { saveRedirectUrl, getAndClearRedirectUrl } from './redirectUrl';
 export { generateAndSaveGitHubState, validateAndClearGitHubState } from './githubState';
-
-// Not in the contract: only main.tsx calls it, before anything loads or mounts.
-export { relaySilentSignIn } from './silentSignIn';

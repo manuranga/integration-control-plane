@@ -19,7 +19,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { JSX, ReactNode } from 'react';
 import { ThunderIDProvider, useThunderID } from '@thunderid/react';
-import { hasAuthParamsInUrl, hasCalledForThisInstanceInUrl } from '@thunderid/browser';
+import { SILENT_SIGN_IN_STATE, hasAuthParamsInUrl, hasCalledForThisInstanceInUrl } from '@thunderid/browser';
 import PageLoader from '../components/PageLoader';
 import { oidcCallbackUrl } from '../paths';
 import { editorSignInForwardUrl } from '../utils/vscodeCallback';
@@ -35,9 +35,9 @@ const SIGNED_OUT_USER: CloudUser = { userId: '', username: '', displayName: '' }
 // How long a stored session may take to restore, including the SDK's startup refresh of an expired token.
 const REFRESH_WAIT_MS = 5_000;
 const RECHECK_MS = 250;
-// A working prompt=none answer takes about a second. The SDK waits 10s for an iframe that never
-// answers (e.g. framing blocked), so give up sooner and sign in interactively.
-const SILENT_SIGN_IN_TIMEOUT_MS = 3_000;
+// Set by logout() for the load it returns to. A Thunder session that outlives the sign-out (its
+// end-session failed, or the user came back to a cached page) must not sign the user straight back in.
+const SKIP_SILENT_KEY = 'ipaas:skip-silent-sign-in';
 
 // Before giving up on a session, one prompt=none attempt joins a Thunder session from another console.
 type Silent = 'idle' | 'trying' | 'done';
@@ -47,6 +47,15 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 function isSignInLanding(): boolean {
   return window.location.pathname === oidcCallbackUrl();
+}
+
+/**
+ * Whether this page is the SDK's silent sign-in iframe, landed back on /signin with Thunder's answer.
+ * The SDK provider relays that answer to the console around it; nothing of the app renders here,
+ * or its protected routes would start a sign-in inside the iframe.
+ */
+function isSilentSignInFrame(): boolean {
+  return window.self !== window.parent && isSignInLanding() && (new URLSearchParams(window.location.search).get('state')?.includes(SILENT_SIGN_IN_STATE) ?? false);
 }
 
 /** The editor to forward this load's sign-in result to, before the SDK can act on the code. */
@@ -106,19 +115,16 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
   // The SDK never mounts for an editor's sign-in, so its code is forwarded untouched.
   if (editorUrl) return <PageLoader viewport label="Completing sign in…" />;
 
-  return (
-    <ThunderIDProvider {...config}>
-      <CloudSessionProvider>{children}</CloudSessionProvider>
-    </ThunderIDProvider>
-  );
+  return <ThunderIDProvider {...config}>{isSilentSignInFrame() ? null : <CloudSessionProvider>{children}</CloudSessionProvider>}</ThunderIDProvider>;
 }
 
 function CloudSessionProvider({ children }: { children: ReactNode }): JSX.Element {
   const { isInitialized, isLoading, isSignedIn, getAccessToken, getDecodedIdToken, clearSession, signIn, signInSilently, signOut } = useThunderID();
   const [hasCode] = useState(sdkHasCode);
   const [status, setStatus] = useState<Status>({ kind: 'pending' });
-  // A sign-in landing already carries Thunder's answer, a code or an error.
-  const [silent, setSilent] = useState<Silent>(() => (hasCode || isSignInLanding() ? 'done' : 'idle'));
+  // A sign-in landing already carries Thunder's answer, a code or an error; a load right after a
+  // sign-out must not rejoin the session it left.
+  const [silent, setSilent] = useState<Silent>(() => (isSignInLanding() || sessionStorage.getItem(SKIP_SILENT_KEY) ? 'done' : 'idle'));
   const silentStarted = useRef(false);
   const [waitFrom, setWaitFrom] = useState(Date.now);
   const [recheck, setRecheck] = useState(0);
@@ -181,20 +187,25 @@ function CloudSessionProvider({ children }: { children: ReactNode }): JSX.Elemen
     };
   }, [status.kind, hasCode, silent, isInitialized, isLoading, isSignedIn, recheck, waitFrom, getAccessToken, getDecodedIdToken, endSession]);
 
+  // Read once in the initialiser above; cleared here, not there, so StrictMode's second call agrees.
+  useEffect(() => {
+    sessionStorage.removeItem(SKIP_SILENT_KEY);
+  }, []);
+
   // Thunder answers prompt=none without its sign-in page: a code when it holds a session, else
-  // login_required. Either way it is tried once; with no session, /login signs in interactively.
+  // login_required. Either way it is tried once, within the SDK's silentSignIn timeout; with no
+  // session, /login signs in interactively.
   useEffect(() => {
     if (silent !== 'trying' || silentStarted.current) return;
     silentStarted.current = true;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const timeout = new Promise<false>((resolve) => {
-      timer = setTimeout(() => resolve(false), SILENT_SIGN_IN_TIMEOUT_MS);
-    });
-    Promise.race([signInSilently(signInParams()), timeout])
-      .catch(() => false)
+    signInSilently(signInParams())
+      .catch((error: unknown) => {
+        // Framing blocked, the IdP unreachable: the interactive sign-in still works.
+        console.debug('Silent sign-in failed; signing in interactively.', error);
+      })
       .finally(() => {
-        clearTimeout(timer);
-        // The SDK confirms the new session on its next poll; give it the usual wait from here.
+        // The token is stored by now, but the SDK's isSignedIn catches up only on its next poll;
+        // give it the usual wait from here.
         setWaitFrom(Date.now());
         setSilent('done');
       });
@@ -220,6 +231,7 @@ function CloudSessionProvider({ children }: { children: ReactNode }): JSX.Elemen
   const logout = useCallback(async () => {
     disconnect();
     localStorage.removeItem(ORG_HANDLE_KEY);
+    sessionStorage.setItem(SKIP_SILENT_KEY, '1');
     // Clears the local session, then leaves for Thunder's end-session endpoint.
     await signOut();
     // Callers don't navigate over the redirect.

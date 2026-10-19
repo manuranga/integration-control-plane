@@ -131,6 +131,7 @@ const screen = (): string => container.textContent ?? '';
 beforeEach(() => {
   vi.useFakeTimers({ now: NOW });
   localStorage.clear();
+  sessionStorage.clear();
   window.history.replaceState({}, '', '/organizations/acme/home');
   window.API_CONFIG = {
     authBaseUrl: 'https://idp.example',
@@ -150,6 +151,7 @@ beforeEach(() => {
 afterEach(() => {
   act(() => root.unmount());
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
   vi.useRealTimers();
 });
 
@@ -347,20 +349,57 @@ describe('cloud AuthProvider — joining a Thunder session', () => {
     expect(sdk.get().signIn).not.toHaveBeenCalled();
   });
 
-  it('settles signed out when the silent attempt fails', async () => {
-    sdkWith({ signInSilently: vi.fn(async () => Promise.reject(new Error('iframe gone'))) });
+  it('settles signed out when the silent attempt fails, and logs why', async () => {
+    const debug = vi.spyOn(console, 'debug').mockImplementation(() => {});
+    const error = new Error('iframe gone');
+    sdkWith({ signInSilently: vi.fn(async () => Promise.reject(error)) });
     await render();
     expect(screen()).toBe('signed-out');
+    expect(sdk.get().signInSilently).toHaveBeenCalledTimes(1);
+    expect(debug).toHaveBeenCalledWith(expect.any(String), error);
+  });
+
+  it('does not ask on the load right after a sign-out, and asks again on the next', async () => {
+    signedInSdk();
+    await render();
+    void auth?.logout();
+    await settle();
+    act(() => root.unmount());
+
+    sdkWith();
+    root = createRoot(container);
+    await render();
+    expect(sdk.get().signInSilently).not.toHaveBeenCalled();
+    expect(screen()).toBe('signed-out');
+    act(() => root.unmount());
+
+    root = createRoot(container);
+    await render();
     expect(sdk.get().signInSilently).toHaveBeenCalledTimes(1);
   });
 
-  it('settles signed out when Thunder does not answer within 3s', async () => {
-    sdkWith({ signInSilently: vi.fn(() => new Promise<boolean>(() => {})) });
+  it('renders nothing of the app inside the SDK’s silent sign-in iframe', async () => {
+    vi.spyOn(window, 'parent', 'get').mockReturnValue({} as Window);
+    window.history.replaceState({}, '', '/signin?code=abc&state=instance_0_sign-in-silently_request_0');
+    sdkWith();
     await render();
-    expect(screen()).toBe('loading');
-    await settle(3_000);
-    expect(screen()).toBe('signed-out');
-    expect(sdk.get().signInSilently).toHaveBeenCalledTimes(1);
+    expect(sdk.mounts).toBeGreaterThan(0);
+    expect(screen()).toBe('');
+    expect(sdk.get().signInSilently).not.toHaveBeenCalled();
+  });
+
+  it('renders the app for a silent state outside an iframe or off /signin', async () => {
+    window.history.replaceState({}, '', '/signin?code=abc&state=instance_0_sign-in-silently_request_0');
+    sdkWith();
+    await render();
+    expect(screen()).not.toBe('');
+    act(() => root.unmount());
+
+    vi.spyOn(window, 'parent', 'get').mockReturnValue({} as Window);
+    window.history.replaceState({}, '', '/organizations/acme/home?state=instance_0_sign-in-silently_request_0');
+    root = createRoot(container);
+    await render();
+    expect(screen()).not.toBe('');
   });
 
   it('does not ask on a sign-in landing, which carries Thunder’s answer', async () => {
