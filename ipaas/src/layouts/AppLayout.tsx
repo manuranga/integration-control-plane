@@ -52,6 +52,7 @@ import NotFound from '../components/NotFound';
 import {
   Activity,
   Boxes,
+  ChartColumn,
   ChevronDown,
   ChevronRight,
   Cog,
@@ -701,6 +702,13 @@ export default function AppLayout(): JSX.Element {
                           <FlaskConical size={20} />
                         </Sidebar.ItemIcon>
                         <Sidebar.ItemLabel>Test</Sidebar.ItemLabel>
+                      </Sidebar.Item>
+
+                      <Sidebar.Item id="org-insights">
+                        <Sidebar.ItemIcon>
+                          <ChartColumn size={20} />
+                        </Sidebar.ItemIcon>
+                        <Sidebar.ItemLabel>API Insights</Sidebar.ItemLabel>
                       </Sidebar.Item>
 
                       <Sidebar.Item id="org-observability">
