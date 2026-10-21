@@ -19,14 +19,14 @@
 import { useState } from 'react';
 import { Alert, PageContent, PageTitle, Stack } from '@wso2/oxygen-ui';
 import type { OrgScope } from '../nav';
-import { moesifOrigin } from '../utils/moesif';
+import { configuredMoesifOrigin } from '../utils/moesif';
 import MoesifEmbed from '../components/Insights/MoesifEmbed';
 
 const pageStyle = { height: 'calc(100dvh - 13rem)', minHeight: 480 } as const;
 
 export default function ApiInsights({ org }: OrgScope) {
   const [attempt, setAttempt] = useState(0);
-  const origin = moesifOrigin(window.API_CONFIG?.moesifAppUrl);
+  const origin = configuredMoesifOrigin();
   const apiBase = window.API_CONFIG?.choreoBaseApiUrl;
   return (
     <PageContent>

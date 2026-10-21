@@ -27,3 +27,6 @@ export function moesifOrigin(configured: string | undefined): string | null {
     return null;
   }
 }
+
+/** The deployment's Moesif origin, or null when API Insights is not configured. */
+export const configuredMoesifOrigin = (): string | null => moesifOrigin(window.API_CONFIG?.moesifAppUrl);

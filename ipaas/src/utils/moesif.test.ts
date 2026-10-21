@@ -16,12 +16,29 @@
  * under the License.
  */
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
+import type { ApiConfig } from '../config/runtimeConfig';
 import { moesifInsightsUrl } from '../paths';
-import { moesifOrigin } from './moesif';
+import { configuredMoesifOrigin, moesifOrigin } from './moesif';
 describe('Moesif origin validation', () => {
   it.each(['https://www.moesif.com', 'https://web-dev.moesif.com'])('accepts %s', (origin) => expect(moesifOrigin(origin)).toBe(origin));
   it.each([undefined, '', 'invalid', 'http://www.moesif.com', 'https://www.moesif.com.evil.test', 'https://user:pass@www.moesif.com', 'https://www.moesif.com:444'])('rejects %s', (origin) => expect(moesifOrigin(origin)).toBeNull());
+});
+
+describe('API Insights configuration', () => {
+  const config = window.API_CONFIG;
+  afterEach(() => {
+    window.API_CONFIG = config;
+  });
+  it.each([
+    [undefined, null],
+    ['', null],
+    ['https://web.moesif.com', null],
+    ['https://www.moesif.com/', 'https://www.moesif.com'],
+  ])('reads MOESIF_APP_URL %j as %j', (moesifAppUrl, expected) => {
+    window.API_CONFIG = { moesifAppUrl } as ApiConfig;
+    expect(configuredMoesifOrigin()).toBe(expected);
+  });
 });
 
 it('builds a postMessage-authenticated embed URL without credentials', () => {
