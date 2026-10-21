@@ -25,6 +25,8 @@ import {
   AGENT_REPO_URL,
   AGENT_TYPE,
   AUTOMATION,
+  AUTOMATION_REPO_URL,
+  AUTOMATION_SUB_PATH,
   CLOUD_SECTIONS,
   CONSUMER,
   DEPLOY_TIMEOUT_MS,
@@ -35,6 +37,7 @@ import {
   EXECUTIONS_TARGET,
   EXECUTIONS_WATCH_MS,
   FOOTER_LINKS,
+  MI_SAMPLE_TECHNOLOGY,
   MI_TECHNOLOGY,
   NO_CONSUMERS,
   NO_SCHEDULE,
@@ -377,7 +380,7 @@ test.describe('03 browse samples @smoke', () => {
     for (const section of ['Type', 'Technology', 'Tags']) {
       await expect(page.getByRole('button', { name: section, exact: true })).toBeVisible();
     }
-    await expect(page.getByRole('checkbox', { name: MI_TECHNOLOGY, exact: true }), 'the Technology filter offers no MI samples').toBeVisible();
+    await expect(page.getByRole('checkbox', { name: MI_SAMPLE_TECHNOLOGY, exact: true }), 'the Technology filter offers no MI samples').toBeVisible();
   });
 
   test('TC_IP_SMPL_005 a search with no matches shows the empty-result message', async () => {
@@ -617,10 +620,12 @@ test.describe('04c test console @smoke', () => {
   });
 });
 
-// 04d — the MI automation sample, deployed from Browse Samples: schedule it, then watch it run
+// 04d — an MI automation imported from a public repository: schedule it, then watch it run
 
-// The title carries the technology in brackets (SampleGridCard.tsx), since display names repeat across technologies.
-const AUTOMATION_CARD_TITLE = `${AUTOMATION} (${MI_TECHNOLOGY})`;
+async function stopSchedule(page: Page): Promise<void> {
+  await envCard(page).getByRole('button', { name: 'Stop Schedule' }).click();
+  await expect(envCard(page).getByRole('button', { name: 'Schedule', exact: true }), 'the schedule is still live').toBeVisible({ timeout: 2 * 60_000 });
+}
 
 test.describe('04d schedule an automation @smoke', () => {
   test.describe.configure({ mode: 'serial' });
@@ -635,27 +640,66 @@ test.describe('04d schedule an automation @smoke', () => {
     if (alreadyDeployed) await openIntegration(page, AUTOMATION);
   });
 
-  test('TC_IP_AUTO_001 Browse Samples, filtered to MI, lists Periodical Scheduled Tasks as an Automation', async () => {
-    test.skip(alreadyDeployed, `${AUTOMATION} is already in the project`);
-    await reachCreateControl(page, samplesTab(page));
-    await samplesTab(page).click();
-    await page.getByRole('button', { name: 'Explore more samples' }).click();
-    await expect(page.getByRole('heading', { name: 'Browse Samples' })).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByText('Failed to load samples. Please try again later.'), 'The samples service is down — this is a backend failure, not a UI regression').not.toBeVisible();
+  // Serial mode skips TC_IP_AUTO_007 once an earlier test fails, and a live one-minute schedule would keep firing on the shared org.
+  test.afterAll(async () => {
+    await dismissStrayDialog(page);
+    if (!(await page.getByRole('heading', { name: AUTOMATION }).isVisible().catch(() => false))) {
+      await enterProject(page, orgHandler);
+      await waitForIntegrationsToLoad(page);
+      if (!(await isPresent(page, AUTOMATION))) return;
+      await openIntegration(page, AUTOMATION);
+    } else {
+      // Reseeded: the failed watch may have outlived its token.
+      await reseedHere(page);
+    }
 
-    // Filtered, not paged through: nine cards a page leaves the sample's page up to the catalogue's order.
-    await page.getByRole('checkbox', { name: MI_TECHNOLOGY, exact: true }).check();
-    const title = page.getByText(AUTOMATION_CARD_TITLE, { exact: true });
-    await expect(title, `${AUTOMATION} is not offered as an MI sample`).toBeVisible({ timeout: 30_000 });
-    const card = title.locator('xpath=ancestor::*[.//button[normalize-space()="Quick Deploy"]][1]');
-    await expect(card.getByText('Automation', { exact: true }), `${AUTOMATION} is not offered as an Automation`).toBeVisible();
+    const schedule = envCard(page).getByRole('button', { name: 'Schedule', exact: true });
+    const stop = envCard(page).getByRole('button', { name: 'Stop Schedule' });
+    // isVisible() does not wait, and the card renders after the reload.
+    const rendered = await schedule
+      .or(stop)
+      .first()
+      .waitFor({ state: 'visible', timeout: 60_000 })
+      .then(() => true)
+      .catch(() => false);
+    if (!rendered) return;
+    if (await stop.isVisible()) await stopSchedule(page);
   });
 
-  test('TC_IP_AUTO_002 Quick Deploy provisions the automation and lands on its overview', async () => {
+  test('TC_IP_AUTO_001 the import form resolves the repository and its MI sub path', async () => {
+    test.setTimeout(3 * 60_000);
+    test.skip(alreadyDeployed, `${AUTOMATION} is already in the project`);
+    const importButton = page.getByRole('button', { name: 'Import from a Public Repository' });
+    await reachCreateControl(page, importButton);
+    await importButton.click();
+    await expect(page.getByRole('heading', { name: 'Import an Integration' })).toBeVisible({ timeout: 30_000 });
+
+    await page.getByRole('textbox', { name: 'Repository URL' }).fill(AUTOMATION_REPO_URL);
+    await expect(page.getByRole('combobox', { name: /^Branch/ }), 'the repository did not resolve into a branch — GitHub public API rate limit is the usual cause').toContainText('main', { timeout: 60_000 });
+
+    await page.getByRole('textbox', { name: 'Repository Sub Path' }).click();
+    const picker = page.getByRole('dialog').filter({ hasText: 'Repository Sub Path' });
+    // Prefix match: an expanded folder's name would also carry its children's.
+    await picker.getByRole('treeitem', { name: new RegExp(`^${AUTOMATION_SUB_PATH}`) }).click();
+    await picker.getByRole('button', { name: 'Continue', exact: true }).click();
+
+    await expect(page.getByRole('textbox', { name: 'Repository Sub Path' })).toHaveValue(`/${AUTOMATION_SUB_PATH}`);
+    await expect(page.getByRole('textbox', { name: 'Integration Name' })).toHaveValue(AUTOMATION);
+  });
+
+  test('TC_IP_AUTO_002 WSO2 Integrator: MI is selected and importing provisions the automation', async () => {
     test.setTimeout(4 * 60_000);
     test.skip(alreadyDeployed, `${AUTOMATION} is already in the project`);
-    await cardFor(page, AUTOMATION_CARD_TITLE, 'Quick Deploy').click();
-    await expect(page.getByRole('heading', { name: AUTOMATION })).toBeVisible({ timeout: 2 * 60_000 });
+
+    await expect(page.getByText(MI_TECHNOLOGY, { exact: true })).toBeVisible({ timeout: 60_000 });
+    await page.getByRole('button', { name: /^Automation/ }).click();
+
+    // The cards expose no selected state; detection disables the other card, so an enabled submit proves MI.
+    const submit = page.getByRole('button', { name: 'Import Integration' });
+    await expect(submit, 'Import Integration stayed disabled — technology detection did not select WSO2 Integrator: MI').toBeEnabled({ timeout: 60_000 });
+    await submit.click();
+
+    await expect(page.getByRole('heading', { name: AUTOMATION }), 'the import did not land on the automation overview').toBeVisible({ timeout: 2 * 60_000 });
   });
 
   test('TC_IP_AUTO_003 the build completed and the automation offers Schedule and Test', async () => {
@@ -704,8 +748,7 @@ test.describe('04d schedule an automation @smoke', () => {
   });
 
   test('TC_IP_AUTO_007 the schedule is stopped again', async () => {
-    await envCard(page).getByRole('button', { name: 'Stop Schedule' }).click();
-    await expect(envCard(page).getByRole('button', { name: 'Schedule', exact: true }), 'the schedule is still live').toBeVisible({ timeout: 2 * 60_000 });
+    await stopSchedule(page);
   });
 });
 
