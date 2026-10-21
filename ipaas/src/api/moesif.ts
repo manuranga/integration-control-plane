@@ -17,10 +17,10 @@
  */
 
 import { authenticatedFetch } from '../auth';
-import { cloudViewerTokenUrl } from '../paths';
+import { analyticsViewerTokenUrl } from '../paths';
 
 export async function fetchMoesifViewerToken(base: string, signal: AbortSignal): Promise<string> {
-  const response = await authenticatedFetch(cloudViewerTokenUrl(base), {
+  const response = await authenticatedFetch(analyticsViewerTokenUrl(base), {
     signal,
     cache: 'no-store',
     headers: { Accept: 'application/json' },

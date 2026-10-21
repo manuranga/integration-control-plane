@@ -25,8 +25,8 @@ const signal = new AbortController().signal;
 describe('Moesif viewer token', () => {
   it('uses authenticated transport, cancellation and no-store without an org override', async () => {
     vi.mocked(authenticatedFetch).mockResolvedValue(new Response(JSON.stringify({ token: 'viewer' })));
-    expect(await fetchMoesifViewerToken('https://cloud.example/proxy/', signal)).toBe('viewer');
-    expect(authenticatedFetch).toHaveBeenCalledWith('https://cloud.example/proxy/cloud/analytics/id-token', { signal, cache: 'no-store', headers: { Accept: 'application/json' } });
+    expect(await fetchMoesifViewerToken('https://cloud.example/proxy', signal)).toBe('viewer');
+    expect(authenticatedFetch).toHaveBeenCalledWith('https://cloud.example/proxy/analytics/id-token', { signal, cache: 'no-store', headers: { Accept: 'application/json' } });
   });
   it.each([null, {}, { token: '' }, { token: 123 }, { token: ' ' }])('rejects malformed tokens %j', async (payload) => {
     vi.mocked(authenticatedFetch).mockResolvedValue(new Response(JSON.stringify(payload)));

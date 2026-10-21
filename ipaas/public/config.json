@@ -16,6 +16,5 @@
   "INTEGRATION_BUILDER_LLM_MODEL": "claude-sonnet-4-6",
   "INTEGRATION_BUILDER_MAX_TOKENS": "1024",
   "INTEGRATION_BUILDER_CENTRAL_GRAPHQL_URL": "https://api.dev-central.ballerina.io/2.0/graphql",
-  "MOESIF_APP_URL": "https://web-dev.moesif.com",
-  "CLOUD_ANALYTICS_API_BASE_URL": "http://development-wso2cloud.openchoreoapis.localhost:19080/ipaas-service-ipaas-api-endpoint"
+  "MOESIF_APP_URL": "https://web-dev.moesif.com"
 }

@@ -27,7 +27,7 @@ const pageStyle = { height: 'calc(100dvh - 13rem)', minHeight: 480 } as const;
 export default function ApiInsights({ org }: OrgScope) {
   const [attempt, setAttempt] = useState(0);
   const origin = moesifOrigin(window.API_CONFIG?.moesifAppUrl);
-  const apiBase = window.API_CONFIG?.cloudAnalyticsApiBaseUrl;
+  const apiBase = window.API_CONFIG?.choreoBaseApiUrl;
   return (
     <PageContent>
       <Stack spacing={3} sx={pageStyle}>
