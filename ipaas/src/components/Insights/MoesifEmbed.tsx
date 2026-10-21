@@ -24,6 +24,9 @@ import * as styles from './MoesifEmbed.styles';
 
 export const HANDSHAKE_TIMEOUT_MS = 120_000;
 export const TOKEN_REFRESH_MS = 50 * 60 * 1000;
+/** A failed refresh keeps the current token and retries, doubling the delay up to the cap. */
+export const REFRESH_RETRY_MS = 5_000;
+export const REFRESH_RETRY_MAX_MS = 5 * 60 * 1000;
 
 /** Remounted by the page on org changes or retry; tokens never survive that boundary. */
 export default function MoesifEmbed({ origin, apiBase, onRetry }: { origin: string; apiBase: string; onRetry: () => void }) {
@@ -38,7 +41,9 @@ export default function MoesifEmbed({ origin, apiBase, onRetry }: { origin: stri
     let token: string | null = null;
     let refreshing = false;
     let sent = false;
+    let refreshFailures = 0;
     let requestTimeout: number | undefined;
+    let refreshRetry: number | undefined;
 
     const stop = () => {
       active = false;
@@ -48,6 +53,7 @@ export default function MoesifEmbed({ origin, apiBase, onRetry }: { origin: stri
       window.clearInterval(refreshTimer);
       window.clearTimeout(timeout);
       window.clearTimeout(requestTimeout);
+      window.clearTimeout(refreshRetry);
     };
     const fail = (message: string) => {
       if (!active) return;
@@ -64,18 +70,36 @@ export default function MoesifEmbed({ origin, apiBase, onRetry }: { origin: stri
     const mint = async () => {
       if (!active || refreshing) return;
       refreshing = true;
+      window.clearTimeout(refreshRetry);
+      const request = new AbortController();
+      const abort = () => request.abort();
+      controller.signal.addEventListener('abort', abort);
+      let timedOut = false;
       // Bound refresh requests as well as the initial handshake.
-      requestTimeout = window.setTimeout(() => fail('API Insights took too long to respond. Please try again.'), HANDSHAKE_TIMEOUT_MS);
+      requestTimeout = window.setTimeout(() => {
+        timedOut = true;
+        request.abort();
+      }, HANDSHAKE_TIMEOUT_MS);
       try {
-        const nextToken = await fetchMoesifViewerToken(apiBase, controller.signal);
+        const nextToken = await fetchMoesifViewerToken(apiBase, request.signal);
         if (!active) return;
         token = nextToken;
+        refreshFailures = 0;
         send();
       } catch (cause) {
-        if (active) fail(cause instanceof Error ? cause.message : 'Unable to load API Insights.');
+        if (!active) return;
+        // Only the first token is fatal; after that the loaded dashboard stays up while we retry.
+        if (token) {
+          refreshRetry = window.setTimeout(() => void mint(), Math.min(REFRESH_RETRY_MS * 2 ** refreshFailures++, REFRESH_RETRY_MAX_MS));
+        } else if (timedOut) {
+          fail('API Insights took too long to respond. Please try again.');
+        } else {
+          fail(cause instanceof Error ? cause.message : 'Unable to load API Insights.');
+        }
       } finally {
         refreshing = false;
         window.clearTimeout(requestTimeout);
+        controller.signal.removeEventListener('abort', abort);
       }
     };
     const receive = (event: MessageEvent) => {

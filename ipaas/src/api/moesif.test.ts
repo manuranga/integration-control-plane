@@ -32,6 +32,14 @@ describe('Moesif viewer token', () => {
     vi.mocked(authenticatedFetch).mockResolvedValue(new Response(JSON.stringify(payload)));
     await expect(fetchMoesifViewerToken('https://cloud.example', signal)).rejects.toThrow('invalid viewer token');
   });
+  it('reports a deployment without the upstream as not configured', async () => {
+    vi.mocked(authenticatedFetch).mockResolvedValue(new Response('{"error":"Service Unavailable","message":"API Insights not configured"}', { status: 503 }));
+    await expect(fetchMoesifViewerToken('https://cloud.example', signal)).rejects.toThrow('not configured for this deployment');
+  });
+  it('treats other 503s as transient', async () => {
+    vi.mocked(authenticatedFetch).mockResolvedValue(new Response('upstream connect error', { status: 503 }));
+    await expect(fetchMoesifViewerToken('https://cloud.example', signal)).rejects.toThrow('temporarily unavailable');
+  });
   it.each([401, 403, 404, 503])('does not expose server response content for %s', async (status) => {
     vi.mocked(authenticatedFetch).mockResolvedValue(new Response('sensitive upstream error', { status }));
     await expect(fetchMoesifViewerToken('https://cloud.example', signal)).rejects.not.toThrow('sensitive');

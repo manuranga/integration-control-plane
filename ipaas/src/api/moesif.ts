@@ -28,6 +28,8 @@ export async function fetchMoesifViewerToken(base: string, signal: AbortSignal):
   if (!response.ok) {
     if (response.status === 401 || response.status === 403) throw new Error('You do not have permission to view API Insights for this organization.');
     if (response.status === 404) throw new Error('API Insights is not available for this organization yet.');
+    // ipaas-service answers 503 "API Insights not configured" when it has no upstream; other 503s are transient.
+    if (response.status === 503 && (await response.text().catch(() => '')).includes('not configured')) throw new Error('API Insights is not configured for this deployment. Contact your administrator to enable it.');
     throw new Error('API Insights is temporarily unavailable. Please try again.');
   }
   const payload: unknown = await response.json().catch(() => null);

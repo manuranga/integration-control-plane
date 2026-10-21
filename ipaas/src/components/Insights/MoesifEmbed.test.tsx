@@ -19,7 +19,7 @@
 import { act, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import MoesifEmbed, { HANDSHAKE_TIMEOUT_MS, TOKEN_REFRESH_MS } from './MoesifEmbed';
+import MoesifEmbed, { HANDSHAKE_TIMEOUT_MS, REFRESH_RETRY_MS, TOKEN_REFRESH_MS } from './MoesifEmbed';
 import { fetchMoesifViewerToken } from '../../api/moesif';
 // Keep unit tests offline; exercise the real URL builder separately.
 vi.mock('../../paths', () => ({ moesifInsightsUrl: () => 'about:blank' }));
@@ -109,13 +109,51 @@ describe('Moesif embed lifecycle', () => {
     expect(retry).toHaveBeenCalledOnce();
     expect(container.querySelector('iframe')).toBeNull();
   });
-  it('hides the embed if refreshing the token fails', async () => {
-    await render();
-    await message('ORG_LOAD_FINISHED');
+  it('fails with retry when the first token cannot be fetched', async () => {
     vi.mocked(fetchMoesifViewerToken).mockRejectedValue(new Error('Unavailable'));
-    await message('REFRESH_TOKEN');
+    await render();
     expect(container.querySelector('iframe')).toBeNull();
     expect(container.textContent).toContain('Unavailable');
+  });
+  it('keeps the loaded dashboard and retries with backoff when a refresh fails', async () => {
+    await render();
+    await message('ORG_LOAD_FINISHED');
+    const post = vi.spyOn(frame().contentWindow!, 'postMessage');
+    vi.mocked(fetchMoesifViewerToken).mockRejectedValue(new Error('Unavailable'));
+    await message('REFRESH_TOKEN');
+    expect(frame().style.display).toBe('block');
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+    await act(async () => {
+      vi.advanceTimersByTime(REFRESH_RETRY_MS);
+    });
+    expect(fetchMoesifViewerToken).toHaveBeenCalledTimes(3);
+    vi.mocked(fetchMoesifViewerToken).mockResolvedValue('refreshed');
+    await act(async () => {
+      vi.advanceTimersByTime(REFRESH_RETRY_MS * 2 - 1);
+    });
+    expect(fetchMoesifViewerToken).toHaveBeenCalledTimes(3);
+    await act(async () => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(fetchMoesifViewerToken).toHaveBeenCalledTimes(4);
+    expect(post).toHaveBeenLastCalledWith({ type: 'SET_TOKEN', token: 'refreshed' }, origin);
+    expect(frame().style.display).toBe('block');
+  });
+  it('aborts a hung refresh and retries without hiding the dashboard', async () => {
+    await render();
+    await message('ORG_LOAD_FINISHED');
+    vi.mocked(fetchMoesifViewerToken).mockImplementationOnce((_base, signal) => new Promise((_resolve, reject) => signal.addEventListener('abort', () => reject(new Error('aborted')))));
+    await message('REFRESH_TOKEN');
+    const refreshSignal = vi.mocked(fetchMoesifViewerToken).mock.calls[1][1];
+    await act(async () => {
+      vi.advanceTimersByTime(HANDSHAKE_TIMEOUT_MS);
+    });
+    expect(refreshSignal.aborted).toBe(true);
+    expect(frame().style.display).toBe('block');
+    await act(async () => {
+      vi.advanceTimersByTime(REFRESH_RETRY_MS);
+    });
+    expect(fetchMoesifViewerToken).toHaveBeenCalledTimes(3);
   });
   it('aborts previous org requests and ignores their late results', async () => {
     let resolveOld!: (value: string) => void;
