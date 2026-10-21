@@ -62,6 +62,13 @@ export default function BrowseSamples(scope: ProjectScope): JSX.Element {
     });
   };
 
+  const hasFilters = selectedTypes.size > 0 || selectedBuildPacks.size > 0 || selectedTags.size > 0;
+  const clearFilters = () => {
+    setSelectedTypes(new Set());
+    setSelectedBuildPacks(new Set());
+    setSelectedTags(new Set());
+  };
+
   const createComponent = useCreateComponent();
 
   const handleDeploy = (sample: Sample) => {
@@ -202,7 +209,14 @@ export default function BrowseSamples(scope: ProjectScope): JSX.Element {
 
         {/* Grid */}
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          {filtered.length === 0 ? (
+          {filtered.length === 0 && hasFilters ? (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography color="text.secondary">No samples match the selected filters.</Typography>
+              <Button size="small" onClick={clearFilters}>
+                Clear filters
+              </Button>
+            </Box>
+          ) : filtered.length === 0 ? (
             <Typography color="text.secondary">No samples match your search.</Typography>
           ) : (
             <>
