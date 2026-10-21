@@ -26,7 +26,7 @@ import { isQuotaError } from '../utils/apiErrors';
 import FilterSection from '../components/FilterSection';
 import SampleGridCard from '../components/SampleGridCard';
 import IntegrationCreationLoader from '../components/IntegrationCreationLoader';
-import { componentSubTypeFromSample, displayTypeFromSample, formatComponentType, normalizeComponentType } from '../constants/integrations';
+import { componentSubTypeFromSample, displayTypeFromSample, formatBuildPack, formatComponentType, normalizeComponentType } from '../constants/integrations';
 import { PAGE_SIZE } from '../constants/samples';
 import { useSamples } from '../hooks/useSamples';
 import { resourceUrl, narrow, newComponentUrl, type ProjectScope } from '../nav';
@@ -34,19 +34,24 @@ import type { Sample } from '../types/samples';
 import { toHandler } from '../utils/string';
 import { useProjectId } from '../hooks/useProjects';
 
+// Display names repeat across technologies (Hello World Service is both Ballerina and MI).
+const sampleKey = (sample: Sample): string => `${sample.buildPack}:${sample.componentPath}`;
+
 export default function BrowseSamples(scope: ProjectScope): JSX.Element {
   const navigate = useAppNavigate();
   const { projectId } = useProjectId(scope.project);
   const { data: samplesData, isLoading: isSamplesLoading, isError: isSamplesError } = useSamples();
 
   const uniqueTypes = samplesData?.uniqueTypes ?? [];
+  const uniqueBuildPacks = samplesData?.uniqueBuildPacks ?? [];
   const uniqueTags = samplesData?.uniqueTags ?? [];
 
   const [search, setSearch] = useState('');
   const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set());
+  const [selectedBuildPacks, setSelectedBuildPacks] = useState<Set<string>>(new Set());
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(1);
-  const [deployingSample, setDeployingSample] = useState<string | null>(null);
+  const [deployingSample, setDeployingSample] = useState<Sample | null>(null);
 
   const toggleFilter = (setter: React.Dispatch<React.SetStateAction<Set<string>>>) => (value: string) => {
     setter((prev) => {
@@ -61,7 +66,7 @@ export default function BrowseSamples(scope: ProjectScope): JSX.Element {
 
   const handleDeploy = (sample: Sample) => {
     if (!projectId) return;
-    setDeployingSample(sample.displayName);
+    setDeployingSample(sample);
     createComponent.mutate(
       {
         displayName: sample.displayName,
@@ -89,11 +94,12 @@ export default function BrowseSamples(scope: ProjectScope): JSX.Element {
     const q = search.toLowerCase();
     return samples.filter((s) => {
       const matchesType = selectedTypes.size === 0 || selectedTypes.has(normalizeComponentType(s.componentType));
+      const matchesBuildPack = selectedBuildPacks.size === 0 || selectedBuildPacks.has(s.buildPack);
       const matchesTags = selectedTags.size === 0 || s.tags.some((t) => selectedTags.has(t));
       const matchesSearch = !q || s.displayName.toLowerCase().includes(q) || s.description.toLowerCase().includes(q) || s.tags.some((t) => t.toLowerCase().includes(q));
-      return matchesType && matchesTags && matchesSearch;
+      return matchesType && matchesBuildPack && matchesTags && matchesSearch;
     });
-  }, [samplesData?.samples, search, selectedTypes, selectedTags]);
+  }, [samplesData?.samples, search, selectedTypes, selectedBuildPacks, selectedTags]);
 
   // Reset to page 1 whenever filters change
   useEffect(() => {
@@ -127,7 +133,7 @@ export default function BrowseSamples(scope: ProjectScope): JSX.Element {
       <PageContent sx={{ pt: 5, display: 'flex', flexDirection: 'column', flex: 1 }}>
         <IntegrationCreationLoader
           label="Integration"
-          subLabel={deployingSample || undefined}
+          subLabel={deployingSample?.displayName}
           isPending={createComponent.isPending}
           isSuccess={createComponent.isSuccess}
           error={createComponent.isError ? (createComponent.error?.message ?? 'Something went wrong. Please try again.') : null}
@@ -187,6 +193,10 @@ export default function BrowseSamples(scope: ProjectScope): JSX.Element {
 
           <Box sx={{ borderTop: '1px solid', borderColor: 'divider', my: 1 }} />
 
+          <FilterSection title="Technology" items={uniqueBuildPacks} selected={selectedBuildPacks} onToggle={toggleFilter(setSelectedBuildPacks)} labelFn={formatBuildPack} />
+
+          <Box sx={{ borderTop: '1px solid', borderColor: 'divider', my: 1 }} />
+
           <FilterSection title="Tags" items={uniqueTags} selected={selectedTags} onToggle={toggleFilter(setSelectedTags)} />
         </Box>
 
@@ -208,7 +218,7 @@ export default function BrowseSamples(scope: ProjectScope): JSX.Element {
                   gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
                 }}>
                 {paginated.map((sample) => (
-                  <SampleGridCard key={sample.displayName} sample={sample} onDeploy={() => handleDeploy(sample)} isDeploying={deployingSample === sample.displayName} />
+                  <SampleGridCard key={sampleKey(sample)} sample={sample} onDeploy={() => handleDeploy(sample)} isDeploying={deployingSample === sample} />
                 ))}
               </Box>
 
