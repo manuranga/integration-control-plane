@@ -53,8 +53,9 @@ export const UNPORTED_SECTIONS = ['Access Control', 'Egress Control', 'Workflows
 export const REMOVAL_TIMEOUT_MS = 10 * 60_000;
 /** A project goes only once its integrations are gone, so it is given longer than any one of them. */
 export const PROJECT_REMOVAL_TIMEOUT_MS = 15 * 60_000;
-/** MI builds and their deployments run longer than Ballerina ones. */
-export const DEPLOY_TIMEOUT_MS = 10 * 60_000;
+export const DEPLOY_TIMEOUT_MS = 7 * 60_000;
+/** MI deployments run longer than Ballerina ones. */
+export const MI_DEPLOY_TIMEOUT_MS = 10 * 60_000;
 /** The card reports the previous deployment for a moment after Apply, so the status waits it out. */
 export const REDEPLOY_SETTLE_MS = 60_000;
 export const AGENT_REPLY_TIMEOUT_MS = 90_000;

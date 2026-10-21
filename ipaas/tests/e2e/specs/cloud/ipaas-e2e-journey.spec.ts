@@ -37,6 +37,7 @@ import {
   EXECUTIONS_TARGET,
   EXECUTIONS_WATCH_MS,
   FOOTER_LINKS,
+  MI_DEPLOY_TIMEOUT_MS,
   MI_SAMPLE_TECHNOLOGY,
   MI_TECHNOLOGY,
   NO_CONSUMERS,
@@ -649,7 +650,7 @@ test.describe('04d schedule an automation @smoke', () => {
       if (!(await isPresent(page, AUTOMATION))) return;
       await openIntegration(page, AUTOMATION);
     } else {
-      // Reseeded: the failed watch may have outlived its token.
+      // Already on the overview, but the failed watch may have outlived its token, so reload it with a fresh one.
       await reseedHere(page);
     }
 
@@ -694,7 +695,7 @@ test.describe('04d schedule an automation @smoke', () => {
     await expect(page.getByText(MI_TECHNOLOGY, { exact: true })).toBeVisible({ timeout: 60_000 });
     await page.getByRole('button', { name: /^Automation/ }).click();
 
-    // The cards expose no selected state; detection disables the other card, so an enabled submit proves MI.
+    // The cards expose no selected state, so an enabled submit (it needs a technology) is the closest check that detection picked one.
     const submit = page.getByRole('button', { name: 'Import Integration' });
     await expect(submit, 'Import Integration stayed disabled — technology detection did not select WSO2 Integrator: MI').toBeEnabled({ timeout: 60_000 });
     await submit.click();
@@ -703,7 +704,7 @@ test.describe('04d schedule an automation @smoke', () => {
   });
 
   test('TC_IP_AUTO_003 the build completed and the automation offers Schedule and Test', async () => {
-    test.setTimeout(BUILD_TIMEOUT_MS + DEPLOY_TIMEOUT_MS + 2 * 60_000);
+    test.setTimeout(BUILD_TIMEOUT_MS + MI_DEPLOY_TIMEOUT_MS + 2 * 60_000);
     await requireAutomationReady(page);
   });
 

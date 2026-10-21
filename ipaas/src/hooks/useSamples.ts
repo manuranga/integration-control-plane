@@ -34,7 +34,7 @@ export function useSamples() {
         samples,
         featuredSamples: samples.slice(0, 3),
         uniqueTypes: Array.from(new Set(samples.map((s) => normalizeComponentType(s.componentType)))),
-        uniqueBuildPacks: Array.from(new Set(samples.map((s) => s.buildPack))),
+        uniqueBuildPacks: Array.from(new Set(samples.map((s) => s.buildPack))).sort(),
         uniqueTags: Array.from(new Set(samples.flatMap((s) => s.tags))).sort(),
       };
     },

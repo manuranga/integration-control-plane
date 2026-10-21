@@ -27,15 +27,12 @@ import FilterSection from '../components/FilterSection';
 import SampleGridCard from '../components/SampleGridCard';
 import IntegrationCreationLoader from '../components/IntegrationCreationLoader';
 import { componentSubTypeFromSample, displayTypeFromSample, formatBuildPack, formatComponentType, normalizeComponentType } from '../constants/integrations';
-import { PAGE_SIZE } from '../constants/samples';
+import { PAGE_SIZE, sampleKey } from '../constants/samples';
 import { useSamples } from '../hooks/useSamples';
 import { resourceUrl, narrow, newComponentUrl, type ProjectScope } from '../nav';
 import type { Sample } from '../types/samples';
 import { toHandler } from '../utils/string';
 import { useProjectId } from '../hooks/useProjects';
-
-// Display names repeat across technologies (Hello World Service is both Ballerina and MI).
-const sampleKey = (sample: Sample): string => `${sample.buildPack}:${sample.componentPath}`;
 
 export default function BrowseSamples(scope: ProjectScope): JSX.Element {
   const navigate = useAppNavigate();
@@ -64,6 +61,7 @@ export default function BrowseSamples(scope: ProjectScope): JSX.Element {
 
   const hasFilters = selectedTypes.size > 0 || selectedBuildPacks.size > 0 || selectedTags.size > 0;
   const clearFilters = () => {
+    setSearch('');
     setSelectedTypes(new Set());
     setSelectedBuildPacks(new Set());
     setSelectedTags(new Set());
@@ -211,7 +209,7 @@ export default function BrowseSamples(scope: ProjectScope): JSX.Element {
         <Box sx={{ flex: 1, minWidth: 0 }}>
           {filtered.length === 0 && hasFilters ? (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography color="text.secondary">No samples match the selected filters.</Typography>
+              <Typography color="text.secondary">{search ? 'No samples match your search and the selected filters.' : 'No samples match the selected filters.'}</Typography>
               <Button size="small" onClick={clearFilters}>
                 Clear filters
               </Button>
@@ -232,7 +230,7 @@ export default function BrowseSamples(scope: ProjectScope): JSX.Element {
                   gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
                 }}>
                 {paginated.map((sample) => (
-                  <SampleGridCard key={sampleKey(sample)} sample={sample} onDeploy={() => handleDeploy(sample)} isDeploying={deployingSample === sample} />
+                  <SampleGridCard key={sampleKey(sample)} sample={sample} onDeploy={() => handleDeploy(sample)} isDeploying={deployingSample ? sampleKey(deployingSample) === sampleKey(sample) : false} />
                 ))}
               </Box>
 
