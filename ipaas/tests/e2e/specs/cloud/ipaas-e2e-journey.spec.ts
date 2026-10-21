@@ -35,6 +35,7 @@ import {
   EXECUTIONS_TARGET,
   EXECUTIONS_WATCH_MS,
   FOOTER_LINKS,
+  MI_TECHNOLOGY,
   NO_CONSUMERS,
   NO_SCHEDULE,
   PROBE_TIMEOUT_MS,
@@ -372,10 +373,11 @@ test.describe('03 browse samples @smoke', () => {
     await expect(page.getByPlaceholder('Search samples…')).toBeVisible();
   });
 
-  test('TC_IP_SMPL_004 shows the Type and Tags filter sections, and hides Technology', async () => {
-    await expect(page.getByRole('button', { name: 'Type', exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Tags', exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Technology', exact: true })).not.toBeVisible();
+  test('TC_IP_SMPL_004 shows the Type, Technology and Tags filter sections', async () => {
+    for (const section of ['Type', 'Technology', 'Tags']) {
+      await expect(page.getByRole('button', { name: section, exact: true })).toBeVisible();
+    }
+    await expect(page.getByRole('checkbox', { name: MI_TECHNOLOGY, exact: true }), 'the Technology filter offers no MI samples').toBeVisible();
   });
 
   test('TC_IP_SMPL_005 a search with no matches shows the empty-result message', async () => {
@@ -615,7 +617,10 @@ test.describe('04c test console @smoke', () => {
   });
 });
 
-// 04d — the automation sample: schedule it, then watch it run
+// 04d — the MI automation sample, deployed from Browse Samples: schedule it, then watch it run
+
+// The title carries the technology in brackets (SampleGridCard.tsx), since display names repeat across technologies.
+const AUTOMATION_CARD_TITLE = `${AUTOMATION} (${MI_TECHNOLOGY})`;
 
 test.describe('04d schedule an automation @smoke', () => {
   test.describe.configure({ mode: 'serial' });
@@ -630,18 +635,26 @@ test.describe('04d schedule an automation @smoke', () => {
     if (alreadyDeployed) await openIntegration(page, AUTOMATION);
   });
 
-  test('TC_IP_AUTO_001 the Samples tab lists Scheduled Logger as an Automation', async () => {
+  test('TC_IP_AUTO_001 Browse Samples, filtered to MI, lists Periodical Scheduled Tasks as an Automation', async () => {
     test.skip(alreadyDeployed, `${AUTOMATION} is already in the project`);
     await reachCreateControl(page, samplesTab(page));
     await samplesTab(page).click();
-    await expect(page.getByText(AUTOMATION, { exact: true })).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByText('Automation', { exact: true }).first(), `${AUTOMATION} is not offered as an Automation`).toBeVisible();
+    await page.getByRole('button', { name: 'Explore more samples' }).click();
+    await expect(page.getByRole('heading', { name: 'Browse Samples' })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText('Failed to load samples. Please try again later.'), 'The samples service is down — this is a backend failure, not a UI regression').not.toBeVisible();
+
+    // Filtered, not paged through: nine cards a page leaves the sample's page up to the catalogue's order.
+    await page.getByRole('checkbox', { name: MI_TECHNOLOGY, exact: true }).check();
+    const title = page.getByText(AUTOMATION_CARD_TITLE, { exact: true });
+    await expect(title, `${AUTOMATION} is not offered as an MI sample`).toBeVisible({ timeout: 30_000 });
+    const card = title.locator('xpath=ancestor::*[.//button[normalize-space()="Quick Deploy"]][1]');
+    await expect(card.getByText('Automation', { exact: true }), `${AUTOMATION} is not offered as an Automation`).toBeVisible();
   });
 
-  test('TC_IP_AUTO_002 Deploy provisions the automation and lands on its overview', async () => {
+  test('TC_IP_AUTO_002 Quick Deploy provisions the automation and lands on its overview', async () => {
     test.setTimeout(4 * 60_000);
     test.skip(alreadyDeployed, `${AUTOMATION} is already in the project`);
-    await cardFor(page, AUTOMATION, 'Deploy').click();
+    await cardFor(page, AUTOMATION_CARD_TITLE, 'Quick Deploy').click();
     await expect(page.getByRole('heading', { name: AUTOMATION })).toBeVisible({ timeout: 2 * 60_000 });
   });
 

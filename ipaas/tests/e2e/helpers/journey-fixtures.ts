@@ -20,7 +20,9 @@
 
 export const PROJECT = 'IPAAS-E2E';
 export const SAMPLE = 'Hello World Service';
-export const AUTOMATION = 'Scheduled Logger';
+export const AUTOMATION = 'Periodical Scheduled Tasks';
+/** The Browse Samples Technology filter's label for MI samples (BUILDPACK_LABELS in constants/integrations.ts). */
+export const MI_TECHNOLOGY = 'WSO2 MI';
 export const AGENT_TYPE = 'AI Agent';
 export const ENV = 'Development';
 
