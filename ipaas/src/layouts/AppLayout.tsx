@@ -52,6 +52,7 @@ import NotFound from '../components/NotFound';
 import {
   Activity,
   Boxes,
+  ChartColumn,
   ChevronDown,
   ChevronRight,
   Cog,
@@ -110,6 +111,7 @@ import { useAccessControl } from '../contexts/AccessControlContext';
 import { useLoadedImage } from '../hooks/useLoadedImage';
 import { DB_TRADEMARK_NOTICE } from '../constants/platformServices';
 import { UUID_RE, userInitials } from '../utils/string';
+import { configuredMoesifOrigin } from '../utils/moesif';
 
 export default function AppLayout(): JSX.Element {
   const navigate = useNavigate();
@@ -122,6 +124,7 @@ export default function AppLayout(): JSX.Element {
   const loadedPicture = useLoadedImage(pictureUrl);
   const userAvatar = loadedPicture ?? userInitials(userName);
   const { hasAnyPermission } = useAccessControl();
+  const apiInsightsEnabled = configuredMoesifOrigin() !== null;
 
   // Billing trial indicator shown in the header.
   const { org: billingOrg } = useBillingOrg(BILLING_PRODUCT_CODE);
@@ -702,6 +705,15 @@ export default function AppLayout(): JSX.Element {
                         </Sidebar.ItemIcon>
                         <Sidebar.ItemLabel>Test</Sidebar.ItemLabel>
                       </Sidebar.Item>
+
+                      {apiInsightsEnabled && (
+                        <Sidebar.Item id="org-insights">
+                          <Sidebar.ItemIcon>
+                            <ChartColumn size={20} />
+                          </Sidebar.ItemIcon>
+                          <Sidebar.ItemLabel>API Insights</Sidebar.ItemLabel>
+                        </Sidebar.Item>
+                      )}
 
                       <Sidebar.Item id="org-observability">
                         <Sidebar.ItemIcon>
