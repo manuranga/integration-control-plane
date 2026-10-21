@@ -23,6 +23,7 @@ import { moesifInsightsUrl } from '../../paths';
 import * as styles from './MoesifEmbed.styles';
 
 export const HANDSHAKE_TIMEOUT_MS = 120_000;
+// platform-api mints 1-hour Moesif viewer tokens and does not return the expiry; refresh 10 minutes early.
 export const TOKEN_REFRESH_MS = 50 * 60 * 1000;
 /** A failed refresh keeps the current token and retries, doubling the delay up to the cap. */
 export const REFRESH_RETRY_MS = 5_000;
@@ -152,7 +153,7 @@ export default function MoesifEmbed({ origin, apiBase, onRetry }: { origin: stri
         referrerPolicy="strict-origin-when-cross-origin"
         allowFullScreen
         onLoad={() => sendToken.current()}
-        style={{ ...styles.frame, display: ready ? 'block' : 'none' }}
+        style={{ ...styles.frame, visibility: ready ? 'visible' : 'hidden' }}
       />
     </Box>
   );

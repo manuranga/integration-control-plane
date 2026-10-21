@@ -75,11 +75,11 @@ describe('Moesif embed lifecycle', () => {
     await render();
     expect(frame().src).not.toContain('viewer-token');
     await message('ORG_LOAD_FINISHED', window);
-    expect(frame().style.display).toBe('none');
+    expect(frame().style.visibility).toBe('hidden');
     await message('ORG_LOAD_FINISHED', frame().contentWindow, 'https://web-dev.moesif.com');
-    expect(frame().style.display).toBe('none');
+    expect(frame().style.visibility).toBe('hidden');
     await message('SCHEMA_GEN_FINISHED');
-    expect(frame().style.display).toBe('block');
+    expect(frame().style.visibility).toBe('visible');
   });
   it('delivers tokens only to the configured origin and refreshes on trusted request', async () => {
     await render();
@@ -121,7 +121,7 @@ describe('Moesif embed lifecycle', () => {
     const post = vi.spyOn(frame().contentWindow!, 'postMessage');
     vi.mocked(fetchMoesifViewerToken).mockRejectedValue(new Error('Unavailable'));
     await message('REFRESH_TOKEN');
-    expect(frame().style.display).toBe('block');
+    expect(frame().style.visibility).toBe('visible');
     expect(container.querySelector('[role="alert"]')).toBeNull();
     await act(async () => {
       vi.advanceTimersByTime(REFRESH_RETRY_MS);
@@ -137,7 +137,7 @@ describe('Moesif embed lifecycle', () => {
     });
     expect(fetchMoesifViewerToken).toHaveBeenCalledTimes(4);
     expect(post).toHaveBeenLastCalledWith({ type: 'SET_TOKEN', token: 'refreshed' }, origin);
-    expect(frame().style.display).toBe('block');
+    expect(frame().style.visibility).toBe('visible');
   });
   it('aborts a hung refresh and retries without hiding the dashboard', async () => {
     await render();
@@ -149,7 +149,7 @@ describe('Moesif embed lifecycle', () => {
       vi.advanceTimersByTime(HANDSHAKE_TIMEOUT_MS);
     });
     expect(refreshSignal.aborted).toBe(true);
-    expect(frame().style.display).toBe('block');
+    expect(frame().style.visibility).toBe('visible');
     await act(async () => {
       vi.advanceTimersByTime(REFRESH_RETRY_MS);
     });
