@@ -25,6 +25,11 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
 
 COPY . .
 
+# Path prefix the console is served under (e.g. /integration-platform on a shared host); the
+# root by default. Sets Vite's asset base here and the nginx rewrite below.
+ARG BASE_PATH=/
+ENV BASE_PATH=${BASE_PATH}
+
 # Cache mount for vite/swc transform output so incremental builds are faster.
 RUN --mount=type=cache,target=/app/node_modules/.vite \
     pnpm build
@@ -75,6 +80,13 @@ http {
         server_name _;
         root /usr/share/nginx/html;
         index index.html;
+        # Relative Location headers, so redirects keep the edge's scheme and host.
+        absolute_redirect off;
+
+        # Under a base path the Dockerfile replaces this marker with a redirect
+        # of the bare prefix to prefix/ and a rewrite that strips the prefix, so
+        # every location below serves both /x and <prefix>/x.
+        # __BASE_PATH_REWRITE__
 
         # Health endpoint used by the Dockerfile HEALTHCHECK and probes.
         location = /health {
@@ -119,6 +131,13 @@ http {
     }
 }
 EOF
+
+ARG BASE_PATH=/
+RUN set -eu; \
+    bp="$(printf '%s' "${BASE_PATH}" | sed -e 's#^/*#/#' -e 's#/*$##')"; \
+    if [ -n "${bp}" ] && [ "${bp}" != "/" ]; then \
+      sed -i "s|# __BASE_PATH_REWRITE__|rewrite ^${bp}\$ ${bp}/ permanent;\n        rewrite ^${bp}/(.*)\$ /\$1 last;|" /etc/nginx/nginx.conf; \
+    fi
 
 # --chown on the COPY sets ownership; no need to chown -R the same path again.
 COPY --from=builder --chown=10001:10001 /app/dist /usr/share/nginx/html

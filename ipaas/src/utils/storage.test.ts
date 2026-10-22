@@ -1,0 +1,83 @@
+/**
+ * Copyright (c) 2026, WSO2 LLC. (https://www.wso2.com).
+ *
+ * WSO2 LLC. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+import { beforeEach, describe, expect, it } from 'vitest';
+import { local, prefixed, session } from './storage';
+
+beforeEach(() => {
+  localStorage.clear();
+  sessionStorage.clear();
+});
+
+describe('prefixed', () => {
+  it('keeps this console’s keys out of the other consoles’ slots on a shared origin', () => {
+    expect(prefixed('org_handle')).toBe('icp:org_handle');
+  });
+});
+
+describe('local', () => {
+  it('stores under the prefix', () => {
+    local.set('org_handle', 'acme');
+    expect(localStorage.getItem('icp:org_handle')).toBe('acme');
+    expect(localStorage.getItem('org_handle')).toBeNull();
+  });
+
+  it('reads back what it stored', () => {
+    local.set('org_handle', 'acme');
+    expect(local.get('org_handle')).toBe('acme');
+  });
+
+  it('is null for a key that was never set', () => {
+    expect(local.get('org_handle')).toBeNull();
+  });
+
+  it('adopts a value left by a build from before the prefix, once', () => {
+    localStorage.setItem('org_handle', 'acme');
+    expect(local.get('org_handle')).toBe('acme');
+    expect(localStorage.getItem('icp:org_handle')).toBe('acme');
+    expect(localStorage.getItem('org_handle')).toBeNull();
+  });
+
+  it('prefers its own value over a stale unprefixed one', () => {
+    localStorage.setItem('icp:org_handle', 'acme');
+    localStorage.setItem('org_handle', 'stale');
+    expect(local.get('org_handle')).toBe('acme');
+  });
+
+  it('removes both the prefixed key and any unprefixed leftover', () => {
+    localStorage.setItem('org_handle', 'stale');
+    local.set('org_handle', 'acme');
+    local.remove('org_handle');
+    expect(localStorage.getItem('icp:org_handle')).toBeNull();
+    expect(localStorage.getItem('org_handle')).toBeNull();
+  });
+});
+
+describe('session', () => {
+  it('stores under the prefix in sessionStorage, not localStorage', () => {
+    session.set('github_oauth_state', 'state-1');
+    expect(sessionStorage.getItem('icp:github_oauth_state')).toBe('state-1');
+    expect(localStorage.getItem('icp:github_oauth_state')).toBeNull();
+  });
+
+  it('adopts a value left by a build from before the prefix', () => {
+    sessionStorage.setItem('github_oauth_state', 'state-1');
+    expect(session.get('github_oauth_state')).toBe('state-1');
+    expect(sessionStorage.getItem('github_oauth_state')).toBeNull();
+  });
+});
