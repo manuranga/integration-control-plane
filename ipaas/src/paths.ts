@@ -287,7 +287,7 @@ export function buildGitHubAppInstallUrl(slug: string): string {
 
 /** Moesif dashboard and the ipaas-service viewer-token endpoint. */
 export const MOESIF_ORIGINS = ['https://www.moesif.com', 'https://web-dev.moesif.com'] as const;
-// TODO: switch to Moesif's API-only overview (the reverse of isAiOnly) once it exists, to drop the
-// LLM, MCP and A2A traffic cards: https://github.com/wso2-enterprise/moesif-internal/issues/32
-export const moesifInsightsUrl = (origin: string): string => `${origin}/wrap/basic#auth=post`;
+// The isolated APIs section leaves out the LLM, MCP and A2A traffic cards:
+// https://github.com/wso2-enterprise/moesif-internal/issues/32
+export const moesifInsightsUrl = (origin: string): string => `${origin}/wrap/basic/apis?embedded_ui=true&isolated_section=true#auth=post`;
 export const analyticsViewerTokenUrl = (base: string): string => `${base}/analytics/id-token`;
