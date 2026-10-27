@@ -135,6 +135,9 @@ EOF
 ARG BASE_PATH=/
 RUN set -eu; \
     bp="$(printf '%s' "${BASE_PATH}" | sed -e 's#^/*#/#' -e 's#/*$##')"; \
+    # The prefix is interpolated into a regex and a sed replacement, so reject anything that
+    # could change their meaning rather than silently building a broken rewrite.
+    case "${bp}" in *[!A-Za-z0-9/_-]*) echo "BASE_PATH may contain only letters, digits, '/', '_' and '-': ${BASE_PATH}" >&2; exit 1 ;; esac; \
     if [ -n "${bp}" ] && [ "${bp}" != "/" ]; then \
       sed -i "s|# __BASE_PATH_REWRITE__|rewrite ^${bp}\$ ${bp}/ permanent;\n        rewrite ^${bp}/(.*)\$ /\$1 last;|" /etc/nginx/nginx.conf; \
     fi

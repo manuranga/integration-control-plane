@@ -46,11 +46,28 @@ describe('local', () => {
     expect(local.get('org_handle')).toBeNull();
   });
 
-  it('adopts a value left by a build from before the prefix, once', () => {
+  it('removes only its own copy, never the unprefixed slot', () => {
+    localStorage.setItem('org_handle', 'someone-elses');
+    local.set('org_handle', 'acme');
+    local.remove('org_handle');
+    expect(localStorage.getItem('icp:org_handle')).toBeNull();
+    expect(localStorage.getItem('org_handle')).toBe('someone-elses');
+  });
+});
+
+describe('local — values left by a build from before the prefix', () => {
+  it('copies a migratable value forward and leaves the original in place', () => {
     localStorage.setItem('org_handle', 'acme');
     expect(local.get('org_handle')).toBe('acme');
     expect(localStorage.getItem('icp:org_handle')).toBe('acme');
-    expect(localStorage.getItem('org_handle')).toBeNull();
+    expect(localStorage.getItem('org_handle')).toBe('acme');
+  });
+
+  it('copies the keyed forms too', () => {
+    localStorage.setItem('last_project:u1', '{"org":"acme"}');
+    localStorage.setItem('persona:u1:acme', 'developer');
+    expect(local.get('last_project:u1')).toBe('{"org":"acme"}');
+    expect(local.get('persona:u1:acme')).toBe('developer');
   });
 
   it('prefers its own value over a stale unprefixed one', () => {
@@ -59,12 +76,10 @@ describe('local', () => {
     expect(local.get('org_handle')).toBe('acme');
   });
 
-  it('removes both the prefixed key and any unprefixed leftover', () => {
-    localStorage.setItem('org_handle', 'stale');
-    local.set('org_handle', 'acme');
-    local.remove('org_handle');
-    expect(localStorage.getItem('icp:org_handle')).toBeNull();
-    expect(localStorage.getItem('org_handle')).toBeNull();
+  it.each(['redirect_url', 'tos_accepted:u1:acme', 'github_oauth_state', 'skip-silent-sign-in'])('does not adopt %s, which may be another console’s', (key) => {
+    localStorage.setItem(key, 'from-another-console');
+    expect(local.get(key)).toBeNull();
+    expect(localStorage.getItem(prefixed(key))).toBeNull();
   });
 });
 
@@ -75,9 +90,9 @@ describe('session', () => {
     expect(localStorage.getItem('icp:github_oauth_state')).toBeNull();
   });
 
-  it('adopts a value left by a build from before the prefix', () => {
-    sessionStorage.setItem('github_oauth_state', 'state-1');
-    expect(session.get('github_oauth_state')).toBe('state-1');
-    expect(sessionStorage.getItem('github_oauth_state')).toBeNull();
+  it('adopts nothing: a one-shot flag is worthless after one load', () => {
+    sessionStorage.setItem('github_oauth_state', 'from-another-console');
+    expect(session.get('github_oauth_state')).toBeNull();
+    expect(sessionStorage.getItem('github_oauth_state')).toBe('from-another-console');
   });
 });
