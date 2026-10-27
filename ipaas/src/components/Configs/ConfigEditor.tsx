@@ -22,7 +22,7 @@ import { ArrowLeft, Trash2, Upload } from '@wso2/oxygen-ui-icons-react';
 import BusyFields from '../common/BusyFields';
 import { useEffect, useRef, useState, type JSX } from 'react';
 import { useConfigMapDetails, useSaveConfig } from '../../hooks/useDevopsConfigs';
-import { parseDotEnv, validateConfigKey, validateDisplayName, validateMountPath } from '../../utils/devopsConfigs';
+import { parseDotEnv, validateConfigKey, validateDisplayName, validateMountPath, validateNewEnvGroupName } from '../../utils/devopsConfigs';
 import type { ConfigKind, ConfigRow } from '../../types/devopsConfigs';
 
 /** The component/release/env target a config is created against. */
@@ -105,7 +105,8 @@ export default function ConfigEditor({ ctx, existing, onBack, onSaved, onError }
     else setRows(Object.entries(details.data).map(([key, value]) => ({ key, value })));
   }, [details, existing?.kind]);
 
-  const nameErr = validateDisplayName(name);
+  // An edit keeps the group's stored name, so only a new env-var group is held to the reserved prefix.
+  const nameErr = !isEdit && kind === 'envVars' ? validateNewEnvGroupName(name) : validateDisplayName(name);
   const draftKeyErr = draftKey ? validateConfigKey(draftKey) : '';
   const pathErr = validateMountPath(mountPath);
   // A new secret needs a value; a stored one left blank keeps its current value.
