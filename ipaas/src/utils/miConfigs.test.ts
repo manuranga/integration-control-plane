@@ -90,6 +90,14 @@ describe('planMiConfigSave', () => {
     expect(plan.secretsToPut).toEqual([]);
   });
 
+  it('rewrites the env-var group when a duplicated draft key hides a removed one', () => {
+    const plan = planMiConfigSave(
+      { envVars: [{ key: 'HOST', value: 'a' }, { key: 'PORT', value: '80' }], secrets: [] },
+      { envVars: [{ key: 'HOST', value: 'a' }, { key: 'HOST', value: 'a' }], secrets: [] },
+    );
+    expect(plan.envVars).toEqual({ HOST: 'a' });
+  });
+
   it('deletes the env-var group when every variable is removed', () => {
     const plan = planMiConfigSave(stored, { envVars: [], secrets: [{ key: 'TOKEN', value: '' }] });
     expect(plan.envVars).toBeNull();

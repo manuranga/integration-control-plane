@@ -77,9 +77,12 @@ export function validateMiConfigDraft(draft: MiConfigDraft, storedSecrets: strin
 
 /** The writes that take `stored` to `draft`. */
 export function planMiConfigSave(stored: MiConfig, draft: MiConfigDraft): MiConfigSavePlan {
-  const sameEnvVars = stored.envVars.length === draft.envVars.length && draft.envVars.every((e) => stored.envVars.some((s) => s.key === e.key && s.value === e.value));
+  // Compared as maps: a length check plus membership counts a duplicated draft key twice.
+  const storedEnvVars = new Map(stored.envVars.map((e) => [e.key, e.value]));
+  const draftEnvVars = new Map(draft.envVars.map((e) => [e.key, e.value]));
+  const sameEnvVars = storedEnvVars.size === draftEnvVars.size && [...draftEnvVars].every(([key, value]) => storedEnvVars.get(key) === value);
   let envVars: MiConfigSavePlan['envVars'];
-  if (!sameEnvVars) envVars = draft.envVars.length ? Object.fromEntries(draft.envVars.map((e) => [e.key, e.value])) : null;
+  if (!sameEnvVars) envVars = draftEnvVars.size ? Object.fromEntries(draftEnvVars) : null;
 
   const draftKeys = new Set(draft.secrets.map((s) => s.key));
   // A blank value keeps a stored secret; a renamed key is a new secret.

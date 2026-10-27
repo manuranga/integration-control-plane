@@ -207,7 +207,9 @@ export default function DeployEnvironmentCard({
   const envTemplateId = env.templateId ?? env.id;
   // Pre-warm cache so ConfigureDrawer opens instantly (result consumed there via shared query key).
   useGetConfigMgt(orgHandler, projectId, componentId, flags.isAutomation ? envTemplateId : env.id, versionId, componentName, configCommitHash, !!configCommitHash && !flags.isAutomation && !isMI);
-  useSchemaConfig(isMI ? '' : projectId, componentId, envTemplateId, versionId, configCommitHash);
+  useSchemaConfig(projectId, componentId, envTemplateId, versionId, configCommitHash, !isMI);
+  // The full MI config, values included, though the count needs only keys: like the
+  // Ballerina pre-warm above, it shares its query key with MiConfigureDrawer, which then opens instantly.
   const { data: miConfig } = useMiConfig(projectId, componentId, env.id, isMI && !!releaseId);
   const configurablesCount = isMI ? (miConfig ? miConfigCount(miConfig) : undefined) : (rawDeployment?.configCount ?? 0);
 

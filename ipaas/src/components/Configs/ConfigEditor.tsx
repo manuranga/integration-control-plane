@@ -150,7 +150,7 @@ export default function ConfigEditor({ ctx, existing, onBack, onSaved, onError }
     if (!canSave) return;
     // Stored secrets left blank are kept as they are, not re-sent.
     const kept = rows.filter((r) => r.stored && r.value === '');
-    const sent = rows.filter((r) => !kept.includes(r));
+    const sent = rows.filter((r) => !(r.stored && r.value === ''));
     const data = kind === 'envVars' ? Object.fromEntries(sent.map((r) => [r.key, r.value])) : { data: fileContent };
     save.mutate(
       {
