@@ -27,7 +27,7 @@ import type { EnvEndpoint } from '../../types/component';
 import type { SchemaConfigItem, CertGroup, CertMapping, CertMappingConfig } from '../../types/configuration';
 import { useGenerateComponentEndpoints } from '../../hooks/useComponents';
 import { useSaveSchemaConfig, usePostCertificateMappings, useResourceLinks } from '../../hooks/useConfiguration';
-import { LinkResourcePicker } from './LinkResourcePicker';
+import { LinkSuggestions } from './LinkSuggestions';
 import { useDeployDeploymentTrack } from '../../hooks/useDeployments';
 import ApiSettingsDrawer from '../Overview/integration-as-api/ApiSettingsDrawer';
 import { toEndpointOptions } from '../../utils/endpoints';
@@ -1047,7 +1047,7 @@ function GenericServiceConfigureDrawer({
     }
     return (
       <>
-        <LinkResourcePicker projectId={projectId} componentId={componentId} open={open} linkedTypes={new Set(links.map((l) => l.resourceType))} />
+        <LinkSuggestions projectId={projectId} componentId={componentId} open={open} links={links} />
         <ConfigForm
           schema={parsedSchema}
           valueMap={valueMap}

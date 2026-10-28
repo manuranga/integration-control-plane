@@ -27,7 +27,7 @@ import {
   postConfigMgt,
   postCertificateMappings,
   fetchResourceLinks,
-  fetchResourceLinkOptions,
+  fetchResourceLinkSuggestions,
   createResourceLink,
 } from '../api/configuration';
 import type { CertMapping, SchemaConfigItem, SaveSchemaConfigInput, PostConfigMgtInput, CreateResourceLinkInput } from '../types/configuration';
@@ -122,10 +122,10 @@ export function useResourceLinks(projectId: string, componentId: string, enabled
   });
 }
 
-export function useResourceLinkOptions(projectId: string, componentId: string, enabled: boolean) {
+export function useResourceLinkSuggestions(projectId: string, componentId: string, enabled: boolean) {
   return useQuery({
-    queryKey: ['resourceLinkOptions', projectId, componentId],
-    queryFn: () => fetchResourceLinkOptions(projectId, componentId),
+    queryKey: ['resourceLinkSuggestions', projectId, componentId],
+    queryFn: () => fetchResourceLinkSuggestions(projectId, componentId),
     enabled: enabled && !!projectId && !!componentId,
     retry: false,
   });

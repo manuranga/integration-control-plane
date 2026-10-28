@@ -25,7 +25,7 @@
  */
 
 import { bff, q, seg } from './_client';
-import type { CertGroup, CertMapping, SchemaConfigData, ConfigMgtData, SchemaConfigItem, SaveSchemaConfigInput, ConfigMgtSaveItem, ResourceLink, ResourceLinkOption, CreateResourceLinkInput } from '../types/configuration';
+import type { CertGroup, CertMapping, SchemaConfigData, ConfigMgtData, SchemaConfigItem, SaveSchemaConfigInput, ConfigMgtSaveItem, ResourceLink, ResourceLinkSuggestion, CreateResourceLinkInput } from '../types/configuration';
 
 export interface PostConfigMgtInput {
   orgHandler: string;
@@ -51,7 +51,7 @@ export const saveSchemaConfig = (input: SaveSchemaConfigInput): Promise<{ config
 
 export const fetchResourceLinks = (projectId: string, componentId: string): Promise<ResourceLink[]> => bff.get<ResourceLink[]>(`/components/${seg(componentId)}/links${q({ projectName: projectId })}`);
 
-export const fetchResourceLinkOptions = (projectId: string, componentId: string): Promise<ResourceLinkOption[]> => bff.get<ResourceLinkOption[]>(`/components/${seg(componentId)}/link-options${q({ projectName: projectId })}`);
+export const fetchResourceLinkSuggestions = (projectId: string, componentId: string): Promise<ResourceLinkSuggestion[]> => bff.get<ResourceLinkSuggestion[]>(`/components/${seg(componentId)}/link-suggestions${q({ projectName: projectId })}`);
 
 export const createResourceLink = ({ projectId, componentId, resourceType, connection }: CreateResourceLinkInput): Promise<ResourceLink> =>
   bff.post<ResourceLink>(`/components/${seg(componentId)}/links${q({ projectName: projectId })}`, { resourceType, connection });
