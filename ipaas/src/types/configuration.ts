@@ -136,10 +136,14 @@ export interface ResourceLink {
   configurables: Record<string, string>;
 }
 
-/** A resource the integration could link, with the connections (config key prefixes) named after its keys, best match first. */
-export interface ResourceLinkOption {
+/**
+ * A resource the integration's latest build calls for: registered from the preset variant of a Ballerina
+ * package it imports (`package`), with the connections (config key prefixes) named after its keys, best match first.
+ */
+export interface ResourceLinkSuggestion {
   resourceType: string;
   displayName: string;
+  package: string;
   connections: string[];
 }
 
