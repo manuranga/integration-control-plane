@@ -51,6 +51,8 @@ export const saveSchemaConfig = (input: SaveSchemaConfigInput): Promise<{ config
 
 export const fetchResourceLinks = (projectId: string, componentId: string): Promise<ResourceLink[]> => bff.get<ResourceLink[]>(`/components/${seg(componentId)}/links${q({ projectName: projectId })}`);
 
+export const refreshResourceLinks = (projectId: string, componentId: string): Promise<ResourceLink[]> => bff.post<ResourceLink[]>(`/components/${seg(componentId)}/links/refresh${q({ projectName: projectId })}`);
+
 export const fetchResourceLinkSuggestions = (projectId: string, componentId: string): Promise<ResourceLinkSuggestion[]> => bff.get<ResourceLinkSuggestion[]>(`/components/${seg(componentId)}/link-suggestions${q({ projectName: projectId })}`);
 
 export const createResourceLink = ({ projectId, componentId, resourceType, connection }: CreateResourceLinkInput): Promise<ResourceLink> =>

@@ -47,6 +47,7 @@ import type { JSX } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useDeployDeploymentTrack } from '../../hooks/useDeployments';
 import { useUpdateAutoDeployEnabled } from '../../hooks/useComponents';
+import { useRefreshResourceLinks } from '../../hooks/useConfiguration';
 import { useComponentDeployment, useDeploymentStatus, useDeploymentTrackImages } from '../../hooks/useDeployments';
 import type { DeploymentTrackImage } from '../../types/deployment';
 import ConfigureDrawer from '../EnvironmentCard/ConfigureDrawer';
@@ -101,12 +102,15 @@ export default function BuildArea({
   const prevIsBuildPendingRef = useRef(isBuildPending);
 
   const qc = useQueryClient();
+  const { mutate: refreshLinks } = useRefreshResourceLinks();
   const deployTrack = useDeployDeploymentTrack();
   const updateAutoDeploy = useUpdateAutoDeployEnabled();
 
-  // When build completes, trigger an immediate image refetch and show skeleton while it loads
+  // When build completes, trigger an immediate image refetch and show skeleton while it loads,
+  // and bring the integration's links up to the new build.
   useEffect(() => {
     if (prevIsBuildPendingRef.current && !isBuildPending) {
+      refreshLinks({ projectId, componentId });
       setIsPostBuildFetching(true);
       qc.refetchQueries({ queryKey: ['deploymentTrackImages', componentId, versionId] })
         .then(() => {
@@ -117,7 +121,7 @@ export default function BuildArea({
         });
     }
     prevIsBuildPendingRef.current = isBuildPending;
-  }, [isBuildPending, componentId, versionId, qc]);
+  }, [isBuildPending, componentId, versionId, qc, projectId, refreshLinks]);
 
   // Keep selectedImage in sync with the latest image on normal loads
   useEffect(() => {
