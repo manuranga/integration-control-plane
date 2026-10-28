@@ -26,7 +26,8 @@ import { useSchemaConfig, useCertificateGroups, useCertificateMappings, useConfi
 import type { EnvEndpoint } from '../../types/component';
 import type { SchemaConfigItem, CertGroup, CertMapping, CertMappingConfig } from '../../types/configuration';
 import { useGenerateComponentEndpoints } from '../../hooks/useComponents';
-import { useSaveSchemaConfig, usePostCertificateMappings } from '../../hooks/useConfiguration';
+import { useSaveSchemaConfig, usePostCertificateMappings, useResourceLinks } from '../../hooks/useConfiguration';
+import { LinkResourcePicker } from './LinkResourcePicker';
 import { useDeployDeploymentTrack } from '../../hooks/useDeployments';
 import ApiSettingsDrawer from '../Overview/integration-as-api/ApiSettingsDrawer';
 import { toEndpointOptions } from '../../utils/endpoints';
@@ -772,6 +773,8 @@ function GenericServiceConfigureDrawer({
   const { data: existingCertMappings } = useCertificateMappings(projectId, componentId, schemaEnvId, versionId, open);
   const { data: configGroups } = useConfigGroups(projectId, componentId, open);
   const { data: endpoints = [] } = useEnvEndpoints(open && !hideEndpoints ? componentId : '', open && !hideEndpoints ? versionId : '', open && !hideEndpoints && releaseId ? releaseId : '');
+  const { data: links = [] } = useResourceLinks(projectId, componentId, open);
+  const linkedFrom = useMemo(() => new Map(links.flatMap((l) => Object.keys(l.configurables).map((key) => [key, l.resourceType] as const))), [links]);
   const save = useSaveSchemaConfig();
   const saveCertMappings = usePostCertificateMappings();
   const generateEp = useGenerateComponentEndpoints();
@@ -913,6 +916,8 @@ function GenericServiceConfigureDrawer({
     setSaveError(null);
     const configurations: SchemaConfigItem[] = [];
     valueMap.forEach((value, key) => {
+      // A link supplies it; a value of the form's own would compete with the link's.
+      if (linkedFrom.has(key)) return;
       if (value !== '' && value !== undefined && value !== null) {
         const linking = linkingMap.get(key);
         const isSensitive = sensitiveMap.get(key) || false;
@@ -1042,6 +1047,7 @@ function GenericServiceConfigureDrawer({
     }
     return (
       <>
+        <LinkResourcePicker projectId={projectId} componentId={componentId} open={open} linkedTypes={new Set(links.map((l) => l.resourceType))} />
         <ConfigForm
           schema={parsedSchema}
           valueMap={valueMap}
@@ -1053,6 +1059,7 @@ function GenericServiceConfigureDrawer({
           configGroups={configGroups}
           handleValueChange={handleValueChange}
           handleValidationChange={handleValidationChange}
+          linkedFrom={linkedFrom}
         />
         {saveError && (
           <Alert severity="error" sx={{ mt: 1 }}>
@@ -1089,7 +1096,8 @@ function GenericServiceConfigureDrawer({
 
   const stepContent = step === 1 ? renderConfigurations() : step === 2 ? renderCertificateMount() : renderEndpoints();
   const hasSchema = !isLoading && !isError && data !== null && !!data?.jsonSchema && !!parsedSchema;
-  const hasValidationErrors = Array.from(validationMap.values()).some((v) => !v);
+  // A field marked invalid before its link loaded is no longer the form's to fill.
+  const hasValidationErrors = Array.from(validationMap).some(([key, valid]) => !valid && !linkedFrom.has(key));
   const hasCertPathErrors = linkedCerts.some((c) => c.mountPath && !c.mountPath.startsWith('/'));
   const isApplying = save.isPending || saveCertMappings.isPending;
   const prevLabel = step === 1 ? 'Cancel' : 'Back';
