@@ -46,7 +46,8 @@ export default function PromoteButton({ orgHandler, componentId, versionId, depl
   const deploymentsLoading = sourceLoading || targetLoading;
   const buildId = sourceDeployment?.build?.buildId;
   const sourceReleaseId = sourceDeployment?.releaseId;
-  const alreadyPromoted = !deploymentsLoading && !!buildId && buildId === targetDeployment?.build?.buildId;
+  // The release, not the build: a ComponentType update gives the same build a new release.
+  const alreadyPromoted = !deploymentsLoading && !!sourceReleaseId && sourceReleaseId === targetDeployment?.releaseId;
 
   const missingPipeline = !deploymentPipelineId;
   const canPromote = !!buildId && !!sourceReleaseId && !missingPipeline && !alreadyPromoted;
