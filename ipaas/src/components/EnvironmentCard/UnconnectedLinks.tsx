@@ -36,7 +36,7 @@ const monoSx = { fontFamily: 'monospace' } as const;
  * clear once every environment runs the latest build; the user picks the connection when several are free.
  */
 export function UnconnectedLinks({ projectId, componentId, links }: UnconnectedLinksProps) {
-  const unconnected = links.filter((l) => l.connections);
+  const unconnected = links.filter((l) => Object.keys(l.configurables).length === 0);
   const connect = useConnectResourceLink();
   if (unconnected.length === 0) return null;
 

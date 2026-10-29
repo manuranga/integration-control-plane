@@ -88,8 +88,8 @@ describe('UnconnectedLinks', () => {
     expect(mutate).toHaveBeenCalledWith(expect.objectContaining({ connection: 'wso2.sfdemo.support.sfDesk' }));
   });
 
-  it('says so when no connection matches, with nothing to press', async () => {
-    await render([{ resourceType: 'salesforce-sales', configurables: {}, connections: [] }]);
+  it.each(['[{"resourceType":"salesforce-sales","configurables":{},"connections":[]}]', '[{"resourceType":"salesforce-sales","configurables":{}}]'])('says so when no connection matches, with nothing to press: %s', async (body) => {
+    await render(JSON.parse(body));
     expect(container.textContent).toContain('No connection in this integration is named after its keys.');
     expect(connectButton()).toBeNull();
   });
