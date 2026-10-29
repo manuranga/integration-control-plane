@@ -16,7 +16,7 @@
  * under the License.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   fetchCertificateGroups,
@@ -33,7 +33,7 @@ import {
   refreshResourceLinks,
   connectResourceLink,
 } from '../api/configuration';
-import type { CertMapping, SchemaConfigItem, SaveSchemaConfigInput, PostConfigMgtInput, CreateResourceLinkInput, ConnectResourceLinkInput } from '../types/configuration';
+import type { CertMapping, SchemaConfigItem, SaveSchemaConfigInput, PostConfigMgtInput, CreateResourceLinkInput, ConnectResourceLinkInput, ResourceLink } from '../types/configuration';
 import type { ComponentDeployment } from '../types/deployment';
 
 export function useCertificateGroups(projectId: string, componentId: string, enabled: boolean) {
@@ -196,3 +196,23 @@ export function useRefreshResourceLinks() {
     },
   });
 }
+
+const noLinks: ResourceLink[] = [];
+
+/**
+ * The links of an open Configure form, refreshed as it opens, and the configurables they supply
+ * (config key → resource type).
+ */
+export function useFormLinks(projectId: string, componentId: string, open: boolean) {
+  const { data: links = noLinks } = useResourceLinks(projectId, componentId, open);
+  const { mutate: refreshLinks } = useRefreshResourceLinks();
+  useEffect(() => {
+    if (open && projectId && componentId) refreshLinks({ projectId, componentId });
+  }, [open, projectId, componentId, refreshLinks]);
+  useReloadLinksOnDeploymentChange(projectId, componentId, open);
+  const linkedFrom = useMemo(() => linkedConfigurables(links), [links]);
+  return { links, linkedFrom };
+}
+
+/** Config key → the resource type whose link supplies the configurable. */
+export const linkedConfigurables = (links: ResourceLink[]): Map<string, string> => new Map(links.flatMap((l) => Object.keys(l.configurables).map((key) => [key, l.resourceType] as const)));
