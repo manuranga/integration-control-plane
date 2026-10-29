@@ -28,6 +28,7 @@ import type { SchemaConfigItem, CertGroup, CertMapping, CertMappingConfig } from
 import { useGenerateComponentEndpoints } from '../../hooks/useComponents';
 import { useSaveSchemaConfig, usePostCertificateMappings, useRefreshResourceLinks, useResourceLinks } from '../../hooks/useConfiguration';
 import { LinkSuggestions } from './LinkSuggestions';
+import { UnconnectedLinks } from './UnconnectedLinks';
 import { useDeployDeploymentTrack } from '../../hooks/useDeployments';
 import ApiSettingsDrawer from '../Overview/integration-as-api/ApiSettingsDrawer';
 import { toEndpointOptions } from '../../utils/endpoints';
@@ -1051,6 +1052,7 @@ function GenericServiceConfigureDrawer({
     }
     return (
       <>
+        <UnconnectedLinks projectId={projectId} componentId={componentId} links={links} />
         <LinkSuggestions projectId={projectId} componentId={componentId} open={open} links={links} />
         <ConfigForm
           schema={parsedSchema}
