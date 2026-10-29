@@ -69,11 +69,11 @@ describe('UnconnectedLinks', () => {
     expect(container.textContent).toBe('');
   });
 
-  it('connects through the one clear connection', async () => {
+  it('leaves the one clear connection to the links refresh, with nothing to press', async () => {
     await render([{ resourceType: 'salesforce-sales', configurables: {}, connections: ['wso2.sfdemo.sfSales'] }]);
+    expect(container.textContent).toContain('Connects through wso2.sfdemo.sfSales once every environment runs the latest build.');
     expect(container.querySelector('select')).toBeNull();
-    await act(async () => connectButton()!.click());
-    expect(mutate).toHaveBeenCalledWith({ projectId: 'default', componentId: 'sfdemo', resourceType: 'salesforce-sales', connection: 'wso2.sfdemo.sfSales' });
+    expect(connectButton()).toBeNull();
   });
 
   it('asks which connection when several are free', async () => {

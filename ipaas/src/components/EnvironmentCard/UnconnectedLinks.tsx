@@ -31,7 +31,10 @@ const boxSx = { mb: 1.5, p: 1.5, border: '1px solid', borderColor: 'warning.main
 const rowSx = { py: 0.75, borderTop: '1px solid', borderColor: 'divider' } as const;
 const monoSx = { fontFamily: 'monospace' } as const;
 
-/** Links that supply no configurable, such as those made on WSO2 Cloud, each with the connection to give it. */
+/**
+ * Links that supply no configurable, such as those made on WSO2 Cloud. The links refresh connects one whose connection is
+ * clear once every environment runs the latest build; the user picks the connection when several are free.
+ */
 export function UnconnectedLinks({ projectId, componentId, links }: UnconnectedLinksProps) {
   const unconnected = links.filter((l) => l.connections);
   const connect = useConnectResourceLink();
@@ -65,7 +68,7 @@ export function UnconnectedLinks({ projectId, componentId, links }: UnconnectedL
 
 function LinkRow({ link, busy, pending, onConnect }: { link: ResourceLink; busy: boolean; pending: boolean; onConnect: (connection: string) => void }) {
   const connections = link.connections ?? [];
-  const [picked, setPicked] = useState(connections.length === 1 ? connections[0] : '');
+  const [picked, setPicked] = useState('');
 
   return (
     <Stack direction="row" alignItems="center" gap={1} sx={rowSx}>
@@ -77,8 +80,12 @@ function LinkRow({ link, busy, pending, onConnect }: { link: ResourceLink; busy:
           </Typography>
         )}
         {connections.length === 1 && (
-          <Typography variant="caption" color="text.secondary" sx={monoSx}>
-            {connections[0]}
+          <Typography variant="caption" color="text.secondary">
+            Connects through{' '}
+            <Box component="span" sx={monoSx}>
+              {connections[0]}
+            </Box>{' '}
+            once every environment runs the latest build.
           </Typography>
         )}
         {connections.length > 1 && (
@@ -91,7 +98,7 @@ function LinkRow({ link, busy, pending, onConnect }: { link: ResourceLink; busy:
           </TextField>
         )}
       </Box>
-      {connections.length > 0 && (
+      {connections.length > 1 && (
         <Button size="small" variant="outlined" aria-label={`Connect ${link.resourceType}`} startIcon={pending ? <CircularProgress size={14} /> : undefined} disabled={busy || !picked} onClick={() => onConnect(picked)}>
           Connect
         </Button>
