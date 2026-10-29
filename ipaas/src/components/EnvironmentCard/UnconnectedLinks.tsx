@@ -33,8 +33,9 @@ const rowSx = { py: 0.75, borderTop: '1px solid', borderColor: 'divider' } as co
 const monoSx = { fontFamily: 'monospace' } as const;
 
 /**
- * Links that supply no configurable, such as those made on WSO2 Cloud. The links refresh connects one whose connection is
- * clear once every environment runs the latest build; the user picks the connection when several are free.
+ * Links that supply no configurable: made without a connection, such as on WSO2 Cloud, or through a connection a later
+ * build removed. The links refresh connects one it can by itself once every environment runs the latest build; the user
+ * connects the others.
  */
 export function UnconnectedLinks({ projectId, componentId, links }: UnconnectedLinksProps) {
   const unconnected = links.filter((l) => Object.keys(l.configurables).length === 0);
@@ -50,7 +51,7 @@ export function UnconnectedLinks({ projectId, componentId, links }: UnconnectedL
           Linked resources not connected
         </Typography>
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-          Linked on WSO2 Cloud: their keys reach the integration under their own names, which no configurable reads. Connecting one supplies a connection&apos;s configurables from it in every environment and redeploys the integration.
+          These links aren&apos;t connected to any connection in this integration, so no configurable reads their keys. Connecting one supplies a connection&apos;s configurables from it in every environment and redeploys the integration.
         </Typography>
         {unconnected.map((l) => (
           <LinkRow
@@ -74,6 +75,8 @@ export function UnconnectedLinks({ projectId, componentId, links }: UnconnectedL
 function LinkRow({ link, busy, pending, onConnect }: { link: ResourceLink; busy: boolean; pending: boolean; onConnect: (connection: string) => void }) {
   const connections = link.connections ?? [];
   const [picked, setPicked] = useState('');
+  const choice = connections.length === 1 ? connections[0] : picked;
+  const manual = !link.connectsOnRefresh && connections.length > 0;
 
   return (
     <Stack direction="row" alignItems="center" gap={1} sx={rowSx}>
@@ -84,7 +87,7 @@ function LinkRow({ link, busy, pending, onConnect }: { link: ResourceLink; busy:
             No connection in this integration is named after its keys.
           </Typography>
         )}
-        {connections.length === 1 && (
+        {link.connectsOnRefresh && (
           <Typography variant="caption" color="text.secondary">
             Connects through{' '}
             <Box component="span" sx={monoSx}>
@@ -93,7 +96,12 @@ function LinkRow({ link, busy, pending, onConnect }: { link: ResourceLink; busy:
             once every environment runs the latest build.
           </Typography>
         )}
-        {connections.length > 1 && (
+        {manual && connections.length === 1 && (
+          <Typography variant="caption" color="text.secondary" sx={monoSx}>
+            {connections[0]}
+          </Typography>
+        )}
+        {manual && connections.length > 1 && (
           <TextField select size="small" fullWidth label="Connection" value={picked} onChange={(e) => setPicked(e.target.value)} sx={{ mt: 1 }}>
             {connections.map((c) => (
               <MenuItem key={c} value={c} sx={monoSx}>
@@ -103,8 +111,8 @@ function LinkRow({ link, busy, pending, onConnect }: { link: ResourceLink; busy:
           </TextField>
         )}
       </Box>
-      {connections.length > 1 && (
-        <Button size="small" variant="outlined" aria-label={`Connect ${link.resourceType}`} startIcon={pending ? <CircularProgress size={14} /> : undefined} disabled={busy || !picked} onClick={() => onConnect(picked)}>
+      {manual && (
+        <Button size="small" variant="outlined" aria-label={`Connect ${link.resourceType}`} startIcon={pending ? <CircularProgress size={14} /> : undefined} disabled={busy || !choice} onClick={() => onConnect(choice)}>
           Connect
         </Button>
       )}

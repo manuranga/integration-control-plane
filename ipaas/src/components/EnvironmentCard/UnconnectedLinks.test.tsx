@@ -71,11 +71,20 @@ describe('UnconnectedLinks', () => {
     expect(container.textContent).toBe('');
   });
 
-  it('leaves the one clear connection to the links refresh, with nothing to press', async () => {
-    await render([{ resourceType: 'salesforce-sales', configurables: {}, connections: ['wso2.sfdemo.sfSales'] }]);
+  it('leaves a link the refresh connects by itself to the refresh, with nothing to press', async () => {
+    await render(JSON.parse('[{"resourceType":"salesforce-sales","configurables":{},"connections":["wso2.sfdemo.sfSales"],"connectsOnRefresh":true}]'));
     expect(container.textContent).toContain('Connects through wso2.sfdemo.sfSales once every environment runs the latest build.');
+    expect(container.textContent).not.toContain('WSO2 Cloud');
     expect(container.querySelector('select')).toBeNull();
     expect(connectButton()).toBeNull();
+  });
+
+  it('offers Connect through the one free connection when the refresh leaves the link alone, as after its connection was deleted', async () => {
+    await render(JSON.parse('[{"resourceType":"salesforce-sales","configurables":{},"connections":["wso2.sfdemo.sfDesk"]}]'));
+    expect(container.textContent).not.toContain('once every environment runs the latest build');
+    expect(container.textContent).toContain("These links aren't connected to any connection in this integration");
+    await act(async () => connectButton()!.click());
+    expect(mutate).toHaveBeenCalledWith(expect.objectContaining({ resourceType: 'salesforce-sales', connection: 'wso2.sfdemo.sfDesk' }));
   });
 
   it('says where Connect failed, after the link has left the list', async () => {

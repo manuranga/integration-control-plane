@@ -135,10 +135,12 @@ export interface ResourceLink {
   resourceType: string;
   configurables: Record<string, string>;
   /**
-   * A link that supplies no configurable (made on WSO2 Cloud, its keys arrive under their own names):
-   * the connections it can go through. One when the choice is clear; several for the user to choose.
+   * A link that supplies no configurable (made without a connection, such as on WSO2 Cloud, or whose connection a
+   * later build removed): the free connections named after its keys, which it can be connected through.
    */
   connections?: string[];
+  /** An unconnected link that the links refresh connects by itself, through its one connection. */
+  connectsOnRefresh?: boolean;
 }
 
 /** What a link write did in one environment: `failed` leaves the environment as it was (`error` says why). */
