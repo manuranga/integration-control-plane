@@ -134,6 +134,11 @@ export interface PostConfigMgtInput {
 export interface ResourceLink {
   resourceType: string;
   configurables: Record<string, string>;
+  /**
+   * A link that supplies no configurable (made on WSO2 Cloud, its keys arrive under their own names):
+   * the connections it can go through. One when the choice is clear; several for the user to choose.
+   */
+  connections?: string[];
 }
 
 /**
@@ -145,6 +150,13 @@ export interface ResourceLinkSuggestion {
   displayName: string;
   package: string;
   connections: string[];
+}
+
+export interface ConnectResourceLinkInput {
+  projectId: string;
+  componentId: string;
+  resourceType: string;
+  connection: string;
 }
 
 export interface CreateResourceLinkInput {

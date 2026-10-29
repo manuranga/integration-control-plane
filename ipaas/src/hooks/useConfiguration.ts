@@ -30,8 +30,9 @@ import {
   fetchResourceLinkSuggestions,
   createResourceLink,
   refreshResourceLinks,
+  connectResourceLink,
 } from '../api/configuration';
-import type { CertMapping, SchemaConfigItem, SaveSchemaConfigInput, PostConfigMgtInput, CreateResourceLinkInput } from '../types/configuration';
+import type { CertMapping, SchemaConfigItem, SaveSchemaConfigInput, PostConfigMgtInput, CreateResourceLinkInput, ConnectResourceLinkInput } from '../types/configuration';
 
 export function useCertificateGroups(projectId: string, componentId: string, enabled: boolean) {
   return useQuery({
@@ -139,6 +140,18 @@ export function useCreateResourceLink() {
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ['resourceLinks', vars.projectId, vars.componentId] });
       // Linking rolls the integration out in every environment.
+      qc.invalidateQueries({ queryKey: ['componentDeployment'] });
+    },
+  });
+}
+
+/** Connects a link that supplies no configurable through one of its connections. */
+export function useConnectResourceLink() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: ConnectResourceLinkInput) => connectResourceLink(input),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['resourceLinks', vars.projectId, vars.componentId] });
       qc.invalidateQueries({ queryKey: ['componentDeployment'] });
     },
   });
