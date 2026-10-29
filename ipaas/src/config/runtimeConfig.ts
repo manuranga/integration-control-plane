@@ -16,6 +16,8 @@
  * under the License.
  */
 
+import { withBase } from '../utils/basePath';
+
 interface RuntimeConfig {
   VITE_AUTH_BASE_URL?: string;
   VITE_OBSERVABILITY_URL?: string;
@@ -131,14 +133,14 @@ const DEFAULT_CONFIG: ApiConfig = {
   authBaseUrl: 'https://localhost:9445/auth',
   observabilityUrl: 'https://localhost:9448/icp/observability',
   asgardeoClientId: '',
-  asgardeoSignInRedirectUrl: `${window.location.origin}/signin`,
+  asgardeoSignInRedirectUrl: `${window.location.origin}${withBase('/signin')}`,
   asgardeoScope: 'openid profile email groups',
   choreoBaseApiUrl: 'https://apis.preview-dv.choreo.dev',
   choreoOrgApiUrl: 'https://apis.preview-dv.choreo.dev/orgs/1.0.0',
   systemApisBaseUrl: '',
   sysApiPrefix: '783c6c4d-8b9b-4190-b70a-e717ab1ee739-systemapis',
   githubAppClientId: '',
-  githubAppAuthRedirectUrl: `${window.location.origin}/ghapp`,
+  githubAppAuthRedirectUrl: `${window.location.origin}${withBase('/ghapp')}`,
   githubAppSlug: '',
   billingApiBaseUrl: '',
   aiCopilotUrlSuffix: '',
@@ -156,7 +158,7 @@ const DEFAULT_CONFIG: ApiConfig = {
  */
 export async function loadConfig(): Promise<void> {
   try {
-    const response = await fetch('/config.json');
+    const response = await fetch(`${import.meta.env.BASE_URL}config.json`);
     if (!response.ok) {
       throw new Error(`Failed to load config.json: ${response.status}`);
     }

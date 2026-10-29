@@ -27,6 +27,7 @@ import { loadConfig } from './config/runtimeConfig';
 import { AccessControlProvider } from './contexts/AccessControlContext';
 import { FeaturePreviewProvider } from './contexts/FeaturePreviewContext';
 import './index.css';
+import { basePath } from './utils/basePath';
 
 const queryClient = new QueryClient();
 
@@ -36,7 +37,7 @@ loadConfig().then(() => {
     <StrictMode>
       <OxygenUIThemeProvider themes={[{ key: 'acrylicOrange', label: 'Acrylic Orange Theme', theme: AcrylicOrangeTheme }]} initialTheme="acrylicOrange">
         <QueryClientProvider client={queryClient}>
-          <BrowserRouter>
+          <BrowserRouter basename={basePath || '/'}>
             <AuthProvider>
               <AccessControlProvider>
                 <FeaturePreviewProvider>

@@ -112,6 +112,7 @@ import { useLoadedImage } from '../hooks/useLoadedImage';
 import { DB_TRADEMARK_NOTICE } from '../constants/platformServices';
 import { UUID_RE, userInitials } from '../utils/string';
 import { configuredMoesifOrigin } from '../utils/moesif';
+import { local } from '../utils/storage';
 
 export default function AppLayout(): JSX.Element {
   const navigate = useNavigate();
@@ -134,11 +135,11 @@ export default function AppLayout(): JSX.Element {
   // useAppShell's internal mobile-collapse effect keys off this options object's identity —
   // a fresh literal here re-triggers it (and its setState) on every render, which on a
   // sub-'md'-breakpoint viewport becomes an infinite render loop.
-  const appShellOptions = useMemo(() => ({ initialCollapsed: localStorage.getItem('sidebar:collapsed') !== 'false' }), []);
+  const appShellOptions = useMemo(() => ({ initialCollapsed: local.get('sidebar:collapsed') !== 'false' }), []);
   const { state: shell, actions } = useAppShell(appShellOptions);
 
   const handleToggleSidebar = () => {
-    localStorage.setItem('sidebar:collapsed', String(!shell.sidebarCollapsed));
+    local.set('sidebar:collapsed', String(!shell.sidebarCollapsed));
     actions.toggleSidebar();
   };
 
@@ -243,7 +244,7 @@ export default function AppLayout(): JSX.Element {
   // Persist last visited project so post-login can navigate back to it
   useEffect(() => {
     if (userId && hasProject(scope) && !orgAccessDenied) {
-      localStorage.setItem(`last_project:${userId}`, JSON.stringify({ org: scope.org, project: scope.project }));
+      local.set(`last_project:${userId}`, JSON.stringify({ org: scope.org, project: scope.project }));
     }
   }, [userId, scope, orgAccessDenied]);
 
