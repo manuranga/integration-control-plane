@@ -16,8 +16,10 @@
  * under the License.
  */
 
+import { useMemo } from 'react';
 import { getRequiredPathsAtLevel } from '../../SchemaConfigForm/schemaUtils';
-import type { SchemaConfigData } from '../../../types/configuration';
+import { useResourceLinks } from '../../../hooks/useConfiguration';
+import type { ResourceLink, SchemaConfigData } from '../../../types/configuration';
 
 /**
  * True when the schema declares required configuration keys that have no value
@@ -25,17 +27,24 @@ import type { SchemaConfigData } from '../../../types/configuration';
  * automation, file/event integrations — so the rule lives in one place; each
  * caller fetches `useSchemaConfig` (de-duplicated by react-query) and passes
  * the result here. Drives the Configure button colour/label ("Configure to
- * Continue") and the disabling of Run/Schedule actions.
+ * Continue") and the disabling of Run/Schedule actions. A configurable a link
+ * supplies counts as filled.
  */
-export function hasMissingRequiredConfigs(schemaConfig: SchemaConfigData | null | undefined): boolean {
+export function hasMissingRequiredConfigs(schemaConfig: SchemaConfigData | null | undefined, links: ResourceLink[] = []): boolean {
   if (!schemaConfig?.jsonSchema) return false;
   try {
     const schema = JSON.parse(atob(schemaConfig.jsonSchema));
     const allRequired = getRequiredPathsAtLevel(schema).filter((p) => !p.includes('[*]') && !p.includes('.*'));
     if (allRequired.length === 0) return false;
-    const filledKeys = new Set((schemaConfig.configurations ?? []).filter((c) => c.values?.[0]?.value).map((c) => c.key));
+    const filledKeys = new Set([...(schemaConfig.configurations ?? []).filter((c) => c.values?.[0]?.value).map((c) => c.key), ...links.flatMap((l) => Object.keys(l.configurables))]);
     return allRequired.some((k) => !filledKeys.has(k));
   } catch {
     return false;
   }
+}
+
+/** `hasMissingRequiredConfigs` with the integration's links, read once the schema has configurables. */
+export function useMissingRequiredConfigs(schemaConfig: SchemaConfigData | null | undefined, projectId: string, componentId: string): boolean {
+  const { data: links } = useResourceLinks(projectId, componentId, !!schemaConfig?.jsonSchema);
+  return useMemo(() => hasMissingRequiredConfigs(schemaConfig, links), [schemaConfig, links]);
 }
