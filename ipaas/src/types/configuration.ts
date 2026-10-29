@@ -136,6 +136,18 @@ export interface ResourceLink {
   configurables: Record<string, string>;
 }
 
+/** What a link write did in one environment: `failed` leaves the environment as it was (`error` says why). */
+export interface LinkEnvironmentOutcome {
+  environment: string;
+  state: string;
+  error?: string;
+}
+
+/** A link write's result: the link, and what the write did in each environment. */
+export interface ResourceLinkWrite extends ResourceLink {
+  report?: LinkEnvironmentOutcome[];
+}
+
 /**
  * A resource the integration's latest build calls for: registered from the preset variant of a Ballerina
  * package it imports (`package`), with the connections (config key prefixes) named after its keys, best match first.

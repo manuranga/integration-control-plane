@@ -21,6 +21,7 @@ import { Link } from '@wso2/oxygen-ui-icons-react';
 import { useCreateResourceLink, useResourceLinkSuggestions } from '../../hooks/useConfiguration';
 import type { ResourceLink } from '../../types/configuration';
 import { linkSuggestionRows } from '../../utils/linkSuggestions';
+import { LinkOutcome } from './LinkOutcome';
 
 interface LinkSuggestionsProps {
   projectId: string;
@@ -39,46 +40,50 @@ export function LinkSuggestions({ projectId, componentId, open, links }: LinkSug
   const create = useCreateResourceLink();
 
   const rows = linkSuggestionRows(suggestions, links);
-  if (rows.length === 0) return null;
+  const outcome = create.data && <LinkOutcome resourceType={create.variables.resourceType} done="linked" report={create.data.report} />;
+  if (rows.length === 0) return outcome || null;
 
   return (
-    <Box sx={boxSx}>
-      <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-        Suggested resources
-      </Typography>
-      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-        Resources for the connectors this integration imports. Linking one supplies its connection&apos;s configurables in every environment and redeploys the integration.
-      </Typography>
-      {rows.map((r) => {
-        const pending = create.isPending && create.variables?.resourceType === r.resourceType && create.variables.connection === r.connection;
-        return (
-          <Stack key={`${r.resourceType} ${r.connection}`} direction="row" alignItems="center" gap={1} sx={rowSx}>
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Stack direction="row" alignItems="center" gap={0.75}>
-                <Typography variant="body2">{r.displayName || r.resourceType}</Typography>
-                <Chip label={r.package} size="small" variant="outlined" sx={chipSx} />
-              </Stack>
-              <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
-                {r.connection}
-              </Typography>
-            </Box>
-            <Button
-              size="small"
-              variant="outlined"
-              aria-label={`Link ${r.resourceType} through ${r.connection}`}
-              startIcon={pending ? <CircularProgress size={14} /> : <Link size={14} />}
-              disabled={create.isPending}
-              onClick={() => create.mutate({ projectId, componentId, resourceType: r.resourceType, connection: r.connection })}>
-              Link
-            </Button>
-          </Stack>
-        );
-      })}
-      {create.isError && (
-        <Alert severity="error" sx={{ mt: 1 }}>
-          {create.error instanceof Error ? create.error.message : 'Failed to link the resource'}
-        </Alert>
-      )}
-    </Box>
+    <>
+      {outcome}
+      <Box sx={boxSx}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+          Suggested resources
+        </Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+          Resources for the connectors this integration imports. Linking one supplies its connection&apos;s configurables in every environment and redeploys the integration.
+        </Typography>
+        {rows.map((r) => {
+          const pending = create.isPending && create.variables?.resourceType === r.resourceType && create.variables.connection === r.connection;
+          return (
+            <Stack key={`${r.resourceType} ${r.connection}`} direction="row" alignItems="center" gap={1} sx={rowSx}>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Stack direction="row" alignItems="center" gap={0.75}>
+                  <Typography variant="body2">{r.displayName || r.resourceType}</Typography>
+                  <Chip label={r.package} size="small" variant="outlined" sx={chipSx} />
+                </Stack>
+                <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
+                  {r.connection}
+                </Typography>
+              </Box>
+              <Button
+                size="small"
+                variant="outlined"
+                aria-label={`Link ${r.resourceType} through ${r.connection}`}
+                startIcon={pending ? <CircularProgress size={14} /> : <Link size={14} />}
+                disabled={create.isPending}
+                onClick={() => create.mutate({ projectId, componentId, resourceType: r.resourceType, connection: r.connection })}>
+                Link
+              </Button>
+            </Stack>
+          );
+        })}
+        {create.isError && (
+          <Alert severity="error" sx={{ mt: 1 }}>
+            {create.error instanceof Error ? create.error.message : 'Failed to link the resource'}
+          </Alert>
+        )}
+      </Box>
+    </>
   );
 }

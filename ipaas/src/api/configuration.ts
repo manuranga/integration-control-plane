@@ -25,7 +25,7 @@
  */
 
 import { bff, q, seg } from './_client';
-import type { CertGroup, CertMapping, SchemaConfigData, ConfigMgtData, SchemaConfigItem, SaveSchemaConfigInput, ConfigMgtSaveItem, ResourceLink, ResourceLinkSuggestion, CreateResourceLinkInput } from '../types/configuration';
+import type { CertGroup, CertMapping, SchemaConfigData, ConfigMgtData, SchemaConfigItem, SaveSchemaConfigInput, ConfigMgtSaveItem, ResourceLink, ResourceLinkSuggestion, ResourceLinkWrite, CreateResourceLinkInput } from '../types/configuration';
 
 export interface PostConfigMgtInput {
   orgHandler: string;
@@ -55,8 +55,8 @@ export const refreshResourceLinks = (projectId: string, componentId: string): Pr
 
 export const fetchResourceLinkSuggestions = (projectId: string, componentId: string): Promise<ResourceLinkSuggestion[]> => bff.get<ResourceLinkSuggestion[]>(`/components/${seg(componentId)}/link-suggestions${q({ projectName: projectId })}`);
 
-export const createResourceLink = ({ projectId, componentId, resourceType, connection }: CreateResourceLinkInput): Promise<ResourceLink> =>
-  bff.post<ResourceLink>(`/components/${seg(componentId)}/links${q({ projectName: projectId })}`, { resourceType, connection });
+export const createResourceLink = ({ projectId, componentId, resourceType, connection }: CreateResourceLinkInput): Promise<ResourceLinkWrite> =>
+  bff.post<ResourceLinkWrite>(`/components/${seg(componentId)}/links${q({ projectName: projectId })}`, { resourceType, connection });
 
 // --- Choreo-v2 concepts not present on the OpenChoreo stack: safe defaults. ---
 export const fetchCertificateGroups = (_projectId: string, _componentId: string): Promise<CertGroup[]> => Promise.resolve([]);
