@@ -40,12 +40,21 @@ const RECHECK_MS = 250;
 // Set by logout() for the load it returns to. A Thunder session that outlives the sign-out (its
 // end-session failed, or the user came back to a cached page) must not sign the user straight back in.
 const SKIP_SILENT_KEY = 'skip-silent-sign-in';
+// The slot this flag used before storage keys were namespaced. A sign-out that started on a build
+// without the prefix finishes on this one, so that load still has to see it. Remove once no
+// unprefixed build is deployed.
+const LEGACY_SKIP_SILENT_KEY = 'ipaas:skip-silent-sign-in';
 
 // Before giving up on a session, one prompt=none attempt joins a Thunder session from another console.
 type Silent = 'idle' | 'trying' | 'done';
 type Status = { kind: 'pending' } | { kind: 'signedIn'; session: CloudSession } | { kind: 'signedOut'; error: string | null };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+
+// Either slot counts: this load may be the one returning from a sign-out the previous build began.
+function skipSilentRequested(): boolean {
+  return browserSession.get(SKIP_SILENT_KEY) !== null || sessionStorage.getItem(LEGACY_SKIP_SILENT_KEY) !== null;
+}
 
 function isSignInLanding(): boolean {
   return stripBase(window.location.pathname) === oidcCallbackUrl();
@@ -126,7 +135,7 @@ function CloudSessionProvider({ children }: { children: ReactNode }): JSX.Elemen
   const [status, setStatus] = useState<Status>({ kind: 'pending' });
   // A sign-in landing already carries Thunder's answer, a code or an error; a load right after a
   // sign-out must not rejoin the session it left.
-  const [silent, setSilent] = useState<Silent>(() => (isSignInLanding() || browserSession.get(SKIP_SILENT_KEY) ? 'done' : 'idle'));
+  const [silent, setSilent] = useState<Silent>(() => (isSignInLanding() || skipSilentRequested() ? 'done' : 'idle'));
   const silentStarted = useRef(false);
   const [waitFrom, setWaitFrom] = useState(Date.now);
   const [recheck, setRecheck] = useState(0);
@@ -192,6 +201,7 @@ function CloudSessionProvider({ children }: { children: ReactNode }): JSX.Elemen
   // Read once in the initialiser above; cleared here, not there, so StrictMode's second call agrees.
   useEffect(() => {
     browserSession.remove(SKIP_SILENT_KEY);
+    sessionStorage.removeItem(LEGACY_SKIP_SILENT_KEY);
   }, []);
 
   // Thunder answers prompt=none without its sign-in page: a code when it holds a session, else

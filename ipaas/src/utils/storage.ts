@@ -58,7 +58,13 @@ function scoped(storage: () => Storage, migratable: RegExp[]): ScopedStorage {
       if (!migratable.some((pattern) => pattern.test(key))) return null;
       const legacy = store.getItem(key);
       if (legacy === null) return null;
-      store.setItem(prefixed(key), legacy);
+      // The copy is an optimisation. A full store throws here, and these reads happen during
+      // render, so a throw would take the page down for a value we already hold.
+      try {
+        store.setItem(prefixed(key), legacy);
+      } catch {
+        // keep the legacy value; the next read tries the copy again
+      }
       return legacy;
     },
     set(key, value) {

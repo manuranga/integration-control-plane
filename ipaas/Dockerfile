@@ -137,7 +137,10 @@ RUN set -eu; \
     bp="${BASE_PATH}"; \
     # The prefix is interpolated into a regex and a sed replacement, so reject anything that
     # could change their meaning rather than silently building a broken rewrite.
-    case "${bp}" in *[!A-Za-z0-9/_-]*) echo "BASE_PATH may contain only letters, digits, '/', '_' and '-': ${BASE_PATH}" >&2; exit 1 ;; esac; \
+    case "${bp}" in \
+      *[!A-Za-z0-9/_-]*) echo "BASE_PATH may contain only letters, digits, '/', '_' and '-': ${BASE_PATH}" >&2; exit 1 ;; \
+      *//*) echo "BASE_PATH must use single slashes; nginx merges repeated ones before matching: ${BASE_PATH}" >&2; exit 1 ;; \
+    esac; \
     # Trim the slashes with parameter expansion, not printf | sed: a pipe here trips hadolint DL4006.
     while [ "${bp#/}" != "${bp}" ]; do bp="${bp#/}"; done; \
     while [ "${bp%/}" != "${bp}" ]; do bp="${bp%/}"; done; \

@@ -16,7 +16,7 @@
  * under the License.
  */
 
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { local, prefixed, session } from './storage';
 
 beforeEach(() => {
@@ -80,6 +80,18 @@ describe('local — values left by a build from before the prefix', () => {
     localStorage.setItem(key, 'from-another-console');
     expect(local.get(key)).toBeNull();
     expect(localStorage.getItem(prefixed(key))).toBeNull();
+  });
+
+  it('still returns the legacy value when the copy forward cannot be written', () => {
+    localStorage.setItem('org_handle', 'acme');
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('quota', 'QuotaExceededError');
+    });
+    try {
+      expect(local.get('org_handle')).toBe('acme');
+    } finally {
+      setItem.mockRestore();
+    }
   });
 });
 
