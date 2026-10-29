@@ -26,7 +26,7 @@ import { useSchemaConfig, useCertificateGroups, useCertificateMappings, useConfi
 import type { EnvEndpoint } from '../../types/component';
 import type { SchemaConfigItem, CertGroup, CertMapping, CertMappingConfig } from '../../types/configuration';
 import { useGenerateComponentEndpoints } from '../../hooks/useComponents';
-import { useSaveSchemaConfig, usePostCertificateMappings, useRefreshResourceLinks, useResourceLinks } from '../../hooks/useConfiguration';
+import { useSaveSchemaConfig, usePostCertificateMappings, useRefreshResourceLinks, useReloadLinksOnDeploymentChange, useResourceLinks } from '../../hooks/useConfiguration';
 import { LinkSuggestions } from './LinkSuggestions';
 import { UnconnectedLinks } from './UnconnectedLinks';
 import { useDeployDeploymentTrack } from '../../hooks/useDeployments';
@@ -779,6 +779,7 @@ function GenericServiceConfigureDrawer({
   useEffect(() => {
     if (open && projectId && componentId) refreshLinks({ projectId, componentId });
   }, [open, projectId, componentId, refreshLinks]);
+  useReloadLinksOnDeploymentChange(projectId, componentId, open);
   const linkedFrom = useMemo(() => new Map(links.flatMap((l) => Object.keys(l.configurables).map((key) => [key, l.resourceType] as const))), [links]);
   const save = useSaveSchemaConfig();
   const saveCertMappings = usePostCertificateMappings();

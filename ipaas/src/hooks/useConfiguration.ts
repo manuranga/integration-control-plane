@@ -16,6 +16,7 @@
  * under the License.
  */
 
+import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   fetchCertificateGroups,
@@ -33,6 +34,7 @@ import {
   connectResourceLink,
 } from '../api/configuration';
 import type { CertMapping, SchemaConfigItem, SaveSchemaConfigInput, PostConfigMgtInput, CreateResourceLinkInput, ConnectResourceLinkInput } from '../types/configuration';
+import type { ComponentDeployment } from '../types/deployment';
 
 export function useCertificateGroups(projectId: string, componentId: string, enabled: boolean) {
   return useQuery({
@@ -143,6 +145,29 @@ export function useCreateResourceLink() {
       qc.invalidateQueries({ queryKey: ['componentDeployment'] });
     },
   });
+}
+
+/**
+ * While enabled, reloads the integration's links when the deployment of one of its environments changes, as the
+ * environment cards poll it: a link written elsewhere (a refresh from another page, a link made on WSO2 Cloud) rolls the
+ * integration out.
+ */
+export function useReloadLinksOnDeploymentChange(projectId: string, componentId: string, enabled: boolean) {
+  const qc = useQueryClient();
+  useEffect(() => {
+    if (!enabled) return;
+    const cache = qc.getQueryCache();
+    const ofComponent = (key: readonly unknown[]) => key[0] === 'componentDeployment' && key.includes(componentId);
+    const state = (data: ComponentDeployment | null | undefined) => `${data?.releaseId}/${data?.deploymentStatusV2}`;
+    const seen = new Map(cache.findAll({ predicate: (q) => ofComponent(q.queryKey) && q.state.data !== undefined }).map((q) => [q.queryHash, state(q.state.data as ComponentDeployment | null)]));
+    return cache.subscribe((e) => {
+      if (e.type !== 'updated' || !ofComponent(e.query.queryKey) || e.query.state.data === undefined) return;
+      const now = state(e.query.state.data as ComponentDeployment | null);
+      const before = seen.get(e.query.queryHash);
+      seen.set(e.query.queryHash, now);
+      if (before !== undefined && before !== now) void qc.invalidateQueries({ queryKey: ['resourceLinks', projectId, componentId] });
+    });
+  }, [qc, projectId, componentId, enabled]);
 }
 
 /** Connects a link that supplies no configurable through one of its connections. */
