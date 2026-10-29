@@ -20,6 +20,7 @@ import { useState } from 'react';
 import { Alert, Box, Button, CircularProgress, MenuItem, Stack, TextField, Typography } from '@wso2/oxygen-ui';
 import { useConnectResourceLink } from '../../hooks/useConfiguration';
 import type { ResourceLink } from '../../types/configuration';
+import { LinkOutcome } from './LinkOutcome';
 
 interface UnconnectedLinksProps {
   projectId: string;
@@ -38,31 +39,35 @@ const monoSx = { fontFamily: 'monospace' } as const;
 export function UnconnectedLinks({ projectId, componentId, links }: UnconnectedLinksProps) {
   const unconnected = links.filter((l) => Object.keys(l.configurables).length === 0);
   const connect = useConnectResourceLink();
-  if (unconnected.length === 0) return null;
+  const outcome = connect.data && <LinkOutcome resourceType={connect.variables.resourceType} done="connected" report={connect.data.report} />;
+  if (unconnected.length === 0) return outcome || null;
 
   return (
-    <Box sx={boxSx}>
-      <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-        Linked resources not connected
-      </Typography>
-      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-        Linked on WSO2 Cloud: their keys reach the integration under their own names, which no configurable reads. Connecting one supplies a connection&apos;s configurables from it in every environment and redeploys the integration.
-      </Typography>
-      {unconnected.map((l) => (
-        <LinkRow
-          key={l.resourceType}
-          link={l}
-          busy={connect.isPending}
-          pending={connect.isPending && connect.variables?.resourceType === l.resourceType}
-          onConnect={(connection) => connect.mutate({ projectId, componentId, resourceType: l.resourceType, connection })}
-        />
-      ))}
-      {connect.isError && (
-        <Alert severity="error" sx={{ mt: 1 }}>
-          {connect.error instanceof Error ? connect.error.message : 'Failed to connect the resource'}
-        </Alert>
-      )}
-    </Box>
+    <>
+      {outcome}
+      <Box sx={boxSx}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+          Linked resources not connected
+        </Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+          Linked on WSO2 Cloud: their keys reach the integration under their own names, which no configurable reads. Connecting one supplies a connection&apos;s configurables from it in every environment and redeploys the integration.
+        </Typography>
+        {unconnected.map((l) => (
+          <LinkRow
+            key={l.resourceType}
+            link={l}
+            busy={connect.isPending}
+            pending={connect.isPending && connect.variables?.resourceType === l.resourceType}
+            onConnect={(connection) => connect.mutate({ projectId, componentId, resourceType: l.resourceType, connection })}
+          />
+        ))}
+        {connect.isError && (
+          <Alert severity="error" sx={{ mt: 1 }}>
+            {connect.error instanceof Error ? connect.error.message : 'Failed to connect the resource'}
+          </Alert>
+        )}
+      </Box>
+    </>
   );
 }
 

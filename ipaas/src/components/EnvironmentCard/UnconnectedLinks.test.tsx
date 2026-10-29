@@ -22,7 +22,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { UnconnectedLinks } from './UnconnectedLinks';
 
 const mutate = vi.fn();
-vi.mock('../../hooks/useConfiguration', () => ({ useConnectResourceLink: () => ({ mutate, isPending: false, isError: false }) }));
+const connected = vi.hoisted(() => ({ current: {} as Record<string, unknown> }));
+vi.mock('../../hooks/useConfiguration', () => ({ useConnectResourceLink: () => ({ mutate, isPending: false, isError: false, ...connected.current }) }));
 vi.mock('@wso2/oxygen-ui', () => {
   const Plain = ({ children }: { children?: ReactNode }) => <div>{children}</div>;
   return {
@@ -61,6 +62,7 @@ afterEach(() => {
   act(() => root.unmount());
   container.remove();
   mutate.mockReset();
+  connected.current = {};
 });
 
 describe('UnconnectedLinks', () => {
@@ -74,6 +76,15 @@ describe('UnconnectedLinks', () => {
     expect(container.textContent).toContain('Connects through wso2.sfdemo.sfSales once every environment runs the latest build.');
     expect(container.querySelector('select')).toBeNull();
     expect(connectButton()).toBeNull();
+  });
+
+  it('says where Connect failed, after the link has left the list', async () => {
+    connected.current = {
+      data: JSON.parse('{"resourceType":"salesforce-sales","configurables":{"wso2.sfdemo.sfDeskBaseUrl":"SALESFORCE_BASE_URL"},"report":[{"environment":"development","state":"rolled_out"},{"environment":"production","state":"failed","error":"status 422"}]}'),
+      variables: { projectId: 'default', componentId: 'sfdemo', resourceType: 'salesforce-sales', connection: 'wso2.sfdemo.sfDesk' },
+    };
+    await render([{ resourceType: 'salesforce-sales', configurables: { 'wso2.sfdemo.sfDeskBaseUrl': 'SALESFORCE_BASE_URL' } }]);
+    expect(container.textContent).toBe('salesforce-sales is connected, except in production (status 422). The integration keeps its own values there.');
   });
 
   it('asks which connection when several are free', async () => {
