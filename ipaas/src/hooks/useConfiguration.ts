@@ -16,6 +16,7 @@
  * under the License.
  */
 
+import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   fetchCertificateGroups,
@@ -30,7 +31,7 @@ import {
   fetchResourceLinkSuggestions,
   createResourceLink,
 } from '../api/configuration';
-import type { CertMapping, SchemaConfigItem, SaveSchemaConfigInput, PostConfigMgtInput, CreateResourceLinkInput } from '../types/configuration';
+import type { CertMapping, SchemaConfigItem, SaveSchemaConfigInput, PostConfigMgtInput, CreateResourceLinkInput, ResourceLink } from '../types/configuration';
 
 export function useCertificateGroups(projectId: string, componentId: string, enabled: boolean) {
   return useQuery({
@@ -142,3 +143,15 @@ export function useCreateResourceLink() {
     },
   });
 }
+
+const noLinks: ResourceLink[] = [];
+
+/** The links of an open Configure form, and the configurables they supply (config key → resource type). */
+export function useFormLinks(projectId: string, componentId: string, open: boolean) {
+  const { data: links = noLinks } = useResourceLinks(projectId, componentId, open);
+  const linkedFrom = useMemo(() => linkedConfigurables(links), [links]);
+  return { links, linkedFrom };
+}
+
+/** Config key → the resource type whose link supplies the configurable. */
+export const linkedConfigurables = (links: ResourceLink[]): Map<string, string> => new Map(links.flatMap((l) => Object.keys(l.configurables).map((key) => [key, l.resourceType] as const)));
