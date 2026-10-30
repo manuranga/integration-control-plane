@@ -51,7 +51,7 @@ export function LinkSuggestions({ projectId, componentId, open, links }: LinkSug
           Suggested resources
         </Typography>
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-          Resources for the connectors this integration imports. Linking one supplies its connection&apos;s configurables in every environment and redeploys the integration.
+          Resources for the connectors this integration imports. Linking one supplies its connection&apos;s configurables from each environment&apos;s next release: the latest build deploys now, and promoting it carries the link on.
         </Typography>
         {rows.map((r) => {
           const pending = create.isPending && create.variables?.resourceType === r.resourceType && create.variables.connection === r.connection;

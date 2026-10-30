@@ -32,7 +32,7 @@ export function linkOutcomeMessage(resourceType: string, done: 'linked' | 'conne
   const pending = report.filter((r) => r.state !== 'failed' && r.state !== NEXT_RELEASE && !DONE.has(r.state)).map((r) => r.environment);
   const next = report.filter((r) => r.state === NEXT_RELEASE).map((r) => r.environment);
   const parts = [];
-  if (next.length > 0) parts.push(`${resourceType} is ${done}. It takes effect in ${listed(next)} at each one's next release: the latest build's deploys now; promote it to the others.`);
+  if (next.length > 0) parts.push(`${resourceType} is ${done}. The latest build is redeploying with it; other environments get it when you promote it to them.`);
   if (failed.length > 0) {
     const where = failed.map((r) => (r.error ? `${r.environment} (${r.error})` : r.environment));
     const kept = failed.every((r) => !r.error?.endsWith(NOT_RESTORED));
