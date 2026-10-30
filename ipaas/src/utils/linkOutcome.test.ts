@@ -51,4 +51,11 @@ describe('linkOutcomeMessage', () => {
       'salesforce-sales is linked, except in production. The integration keeps its own values there. It is still rolling out in development.',
     );
   });
+
+  it('says each environment gets the link at its next release', () => {
+    expect(outcome(`{${link},"report":[{"environment":"development","state":"next_release"},{"environment":"production","state":"next_release"}]}`)).toEqual({
+      severity: 'info',
+      message: "salesforce-sales is linked. It takes effect in development and production at each one's next release: the latest build's deploys now; promote it to the others.",
+    });
+  });
 });

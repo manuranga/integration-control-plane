@@ -82,7 +82,7 @@ describe('UnconnectedLinks', () => {
   it('offers Connect through the one free connection when the refresh leaves the link alone, as after its connection was deleted', async () => {
     await render(JSON.parse('[{"resourceType":"salesforce-sales","configurables":{},"connections":["wso2.sfdemo.sfDesk"]}]'));
     expect(container.textContent).not.toContain('once every environment runs the latest build');
-    expect(container.textContent).toContain("These links aren't connected to any connection in this integration");
+    expect(container.textContent).toContain('The latest build has no connection these links go through');
     await act(async () => connectButton()!.click());
     expect(mutate).toHaveBeenCalledWith(expect.objectContaining({ resourceType: 'salesforce-sales', connection: 'wso2.sfdemo.sfDesk' }));
   });

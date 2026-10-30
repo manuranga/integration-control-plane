@@ -33,9 +33,8 @@ const rowSx = { py: 0.75, borderTop: '1px solid', borderColor: 'divider' } as co
 const monoSx = { fontFamily: 'monospace' } as const;
 
 /**
- * Links that supply no configurable: made without a connection, such as on WSO2 Cloud, or through a connection a later
- * build removed. The links refresh connects one it can by itself once every environment runs the latest build; the user
- * connects the others.
+ * Links that supply no configurable of the latest build: made without a connection, such as on WSO2 Cloud, or through a
+ * connection the latest build no longer has. Connecting one changes only the latest build's releases.
  */
 export function UnconnectedLinks({ projectId, componentId, links }: UnconnectedLinksProps) {
   const unconnected = links.filter((l) => Object.keys(l.configurables).length === 0);
@@ -48,10 +47,10 @@ export function UnconnectedLinks({ projectId, componentId, links }: UnconnectedL
       {outcome}
       <Box sx={boxSx}>
         <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-          Linked resources not connected
+          Linked resources this build doesn&apos;t use
         </Typography>
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-          These links aren&apos;t connected to any connection in this integration, so no configurable reads their keys. Connecting one supplies a connection&apos;s configurables from it in every environment and redeploys the integration.
+          The latest build has no connection these links go through, so no configurable reads their keys. Connect one to a connection of this build: it takes effect at this build&apos;s next release. Environments running earlier builds keep their links until you promote this build to them.
         </Typography>
         {unconnected.map((l) => (
           <LinkRow
