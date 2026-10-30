@@ -40,7 +40,7 @@ export function LinkSuggestions({ projectId, componentId, open, links }: LinkSug
   const create = useCreateResourceLink();
 
   const rows = linkSuggestionRows(suggestions, links);
-  const outcome = create.data && <LinkOutcome resourceType={create.variables.resourceType} done="linked" report={create.data.report} />;
+  const outcome = create.data && <LinkOutcome resourceType={create.variables.resourceType} report={create.data.report} />;
   if (rows.length === 0) return outcome || null;
 
   return (

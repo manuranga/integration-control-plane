@@ -21,8 +21,8 @@ import type { LinkEnvironmentOutcome } from '../../types/configuration';
 import { linkOutcomeMessage } from '../../utils/linkOutcome';
 
 /** Where a link write didn't finish: the environments it failed in or is still rolling out to. */
-export function LinkOutcome({ resourceType, done, report }: { resourceType: string; done: 'linked' | 'connected'; report?: LinkEnvironmentOutcome[] }) {
-  const outcome = linkOutcomeMessage(resourceType, done, report);
+export function LinkOutcome({ resourceType, report }: { resourceType: string; report?: LinkEnvironmentOutcome[] }) {
+  const outcome = linkOutcomeMessage(resourceType, report);
   if (!outcome) return null;
   return (
     <Alert severity={outcome.severity} sx={{ mb: 1.5 }}>

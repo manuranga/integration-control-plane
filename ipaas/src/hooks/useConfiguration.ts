@@ -29,7 +29,6 @@ import {
   fetchResourceLinks,
   fetchResourceLinkSuggestions,
   createResourceLink,
-  refreshResourceLinks,
 } from '../api/configuration';
 import type { CertMapping, SchemaConfigItem, SaveSchemaConfigInput, PostConfigMgtInput, CreateResourceLinkInput } from '../types/configuration';
 
@@ -140,21 +139,6 @@ export function useCreateResourceLink() {
       qc.invalidateQueries({ queryKey: ['resourceLinks', vars.projectId, vars.componentId] });
       // Linking rolls the integration out in every environment.
       qc.invalidateQueries({ queryKey: ['componentDeployment'] });
-    },
-  });
-}
-
-/**
- * Brings the integration's links up to its latest build (the BFF follows a build once every
- * environment runs it). Call it when the Configure form opens, when a build finishes and when an
- * environment's deployed release changes.
- */
-export function useRefreshResourceLinks() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ projectId, componentId }: { projectId: string; componentId: string }) => refreshResourceLinks(projectId, componentId),
-    onSuccess: (_, vars) => {
-      qc.invalidateQueries({ queryKey: ['resourceLinks', vars.projectId, vars.componentId] });
     },
   });
 }

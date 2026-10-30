@@ -26,14 +26,14 @@ const NOT_RESTORED = "; the Configure form's values were not restored";
  * response has no report). A failed environment keeps the integration's own values unless its error says they
  * weren't restored; any other state than done is still rolling out.
  */
-export function linkOutcomeMessage(resourceType: string, done: 'linked' | 'connected', report: LinkEnvironmentOutcome[] = []): { severity: 'warning' | 'info'; message: string } | null {
+export function linkOutcomeMessage(resourceType: string, report: LinkEnvironmentOutcome[] = []): { severity: 'warning' | 'info'; message: string } | null {
   const failed = report.filter((r) => r.state === 'failed');
   const pending = report.filter((r) => r.state !== 'failed' && !DONE.has(r.state)).map((r) => r.environment);
   const parts = [];
   if (failed.length > 0) {
     const where = failed.map((r) => (r.error ? `${r.environment} (${r.error})` : r.environment));
     const kept = failed.every((r) => !r.error?.endsWith(NOT_RESTORED));
-    parts.push(`${resourceType} is ${done}, except in ${listed(where)}.${kept ? ' The integration keeps its own values there.' : ''}`);
+    parts.push(`${resourceType} is linked, except in ${listed(where)}.${kept ? ' The integration keeps its own values there.' : ''}`);
   }
   if (pending.length > 0) parts.push(`${failed.length > 0 ? 'It' : resourceType} is still rolling out in ${listed(pending)}.`);
   return parts.length === 0 ? null : { severity: failed.length > 0 ? 'warning' : 'info', message: parts.join(' ') };

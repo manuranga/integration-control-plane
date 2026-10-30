@@ -20,7 +20,7 @@ import { describe, expect, it } from 'vitest';
 import type { ResourceLinkWrite } from '../types/configuration';
 import { linkOutcomeMessage } from './linkOutcome';
 
-const outcome = (body: string) => linkOutcomeMessage('salesforce-sales', 'linked', (JSON.parse(body) as ResourceLinkWrite).report);
+const outcome = (body: string) => linkOutcomeMessage('salesforce-sales', (JSON.parse(body) as ResourceLinkWrite).report);
 const link = '"resourceType":"salesforce-sales","configurables":{"acme.sfdemo.sfSalesBaseUrl":"SALESFORCE_BASE_URL"}';
 
 describe('linkOutcomeMessage', () => {

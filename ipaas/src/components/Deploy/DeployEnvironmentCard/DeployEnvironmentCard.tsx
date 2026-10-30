@@ -24,7 +24,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { DeploymentStatus } from '../../../types/deployment';
 import { useComponentDeployment, useDeploymentStatus, useDeploymentTrackImages, useEnvEndpoints } from '../../../hooks/useDeployments';
 import { useExecutionConfigs } from '../../../hooks/useExecutions';
-import { useGetConfigMgt, useRefreshResourceLinks, useSchemaConfig } from '../../../hooks/useConfiguration';
+import { useGetConfigMgt, useSchemaConfig } from '../../../hooks/useConfiguration';
 import { useMiConfig } from '../../../hooks/useMiConfig';
 import { runtimeFromDisplayType } from '../../../utils/identifyIntegration';
 import { miConfigCount } from '../../../utils/miConfigs';
@@ -120,16 +120,6 @@ export default function DeployEnvironmentCard({
 
   const releaseId = deployment?.releaseId ?? '';
   const status = deployment?.deploymentStatusV2;
-
-  // A new release here (an auto-deploy or a promotion) can put every environment on the latest build,
-  // which is when the integration's links follow it. The first load is not a change.
-  const { mutate: refreshLinks } = useRefreshResourceLinks();
-  const seenReleaseRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (rawDeployment === undefined) return;
-    if (seenReleaseRef.current !== null && seenReleaseRef.current !== releaseId) refreshLinks({ projectId, componentId });
-    seenReleaseRef.current = releaseId;
-  }, [rawDeployment, releaseId, projectId, componentId, refreshLinks]);
 
   const { data: executionConfigs } = useExecutionConfigs(flags.isAutomation ? componentId : '', flags.isAutomation ? releaseId : '', flags.isAutomation ? env.id : '');
   const scheduleDescription = executionConfigs?.cronjobFrequency ? `${describeCron(executionConfigs.cronjobFrequency)}, ${executionConfigs.cronjobTimezone || 'UTC'}` : null;
