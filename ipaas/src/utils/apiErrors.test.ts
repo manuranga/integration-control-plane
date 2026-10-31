@@ -17,7 +17,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { httpStatusOf, isNotFoundError, isQuotaError, isUnsupportedError } from './apiErrors';
+import { httpStatusOf, isNotFoundError, isPermissionError, isQuotaError, isUnsupportedError } from './apiErrors';
 
 describe('httpStatusOf', () => {
   it('prefers a structured status field over the message', () => {
@@ -101,5 +101,25 @@ describe('isQuotaError', () => {
     expect(isQuotaError('402')).toBe(false);
     expect(isQuotaError(null)).toBe(false);
     expect(isQuotaError(undefined)).toBe(false);
+  });
+});
+
+describe('isPermissionError', () => {
+  const refusal = (status: number, body: string) => Object.assign(new Error('refused'), { status, body });
+
+  it('is a 403 that names a missing scope', () => {
+    expect(isPermissionError(refusal(403, '{"message":"insufficient permissions: requires ipaas:integration:deploy","code":"INSUFFICIENT_SCOPE","scope":"ipaas:integration:deploy"}'))).toBe(true);
+  });
+
+  it('is not another 403, such as a suspended subscription', () => {
+    expect(isPermissionError(refusal(403, '{"code":"SUBSCRIPTION_SUSPENDED"}'))).toBe(false);
+  });
+
+  it('is not a 403 without a JSON body', () => {
+    expect(isPermissionError(refusal(403, 'Forbidden'))).toBe(false);
+  });
+
+  it('is not another status', () => {
+    expect(isPermissionError(refusal(400, '{"code":"INSUFFICIENT_SCOPE"}'))).toBe(false);
   });
 });

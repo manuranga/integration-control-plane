@@ -23,7 +23,7 @@ import { useAppNavigate } from '../hooks/useAppNavigate';
 import Authorized from '../components/Authorized';
 import InlineEditField from '../components/InlineEditField';
 import ProjectSettingsTabs from '../components/Settings/ProjectSettingsTabs';
-import { Permissions } from '../constants/permissions';
+import { Scopes } from '../constants/permissions';
 import { useAccessControl } from '../contexts/AccessControlContext';
 import { useComponents } from '../hooks/useComponents';
 import { useProjectId, useProjects, useUpdateProject, useDeleteProject } from '../hooks/useProjects';
@@ -49,7 +49,7 @@ function ProjectOverviewForm({ org, project }: { org: string; project: Project }
     if (alert?.type === 'error') alertRef.current?.focus();
   }, [alert]);
 
-  const canManage = hasAnyPermission([Permissions.PROJECT_MANAGE], project.id);
+  const canManage = hasAnyPermission([Scopes.PROJECT_UPDATE], project.id);
 
   const validateName = (value: string): string => {
     const trimmed = value.trim();
@@ -112,7 +112,7 @@ function ProjectOverviewForm({ org, project }: { org: string; project: Project }
         <InlineEditField label="Description" value={project.description ?? ''} helperText={project.description ? undefined : 'No description yet.'} multiline editable={canManage} onSave={(v) => saveField({ description: v })} />
       </Stack>
 
-      <Authorized permissions={Permissions.PROJECT_MANAGE}>
+      <Authorized permissions={Scopes.PROJECT_DELETE}>
         <Box sx={{ mt: 3, p: 2, border: '1px solid', borderColor: 'error.main', borderRadius: 1, maxWidth: 640 }}>
           <Typography sx={{ fontWeight: 600, mb: 0.5 }}>Delete this project</Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
