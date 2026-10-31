@@ -35,7 +35,7 @@ export default function HeaderStatus({ component, env, projectId, versionId, org
       <StatusDot status={deploymentStatusV2} />
       {hasDeployment && (
         <>
-          <ConfigureButton onClick={() => setConfigureOpen(true)} />
+          <ConfigureButton environment={env} onClick={() => setConfigureOpen(true)} />
           <RagIngestionConfigureDrawer open={configureOpen} onClose={() => setConfigureOpen(false)} component={component} env={env} versionId={versionId} orgHandler={orgHandler} projectId={projectId} deploymentPipelineId={deploymentPipelineId} />
         </>
       )}

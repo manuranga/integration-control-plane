@@ -124,7 +124,7 @@ export default function FileEventHeader({
 
         {hasDeployment && (
           <>
-            <ConfigureButton onClick={() => setConfigureOpen(true)} hasMissingConfigs={missingConfigs} />
+            <ConfigureButton environment={env} onClick={() => setConfigureOpen(true)} hasMissingConfigs={missingConfigs} />
             <ConfigureDrawer
               onSaved={() => {
                 requestPoll();
