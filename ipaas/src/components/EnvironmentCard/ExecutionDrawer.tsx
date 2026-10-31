@@ -23,6 +23,8 @@ import { useExecutionArguments } from '../../hooks/useExecutions';
 import type { TaskExecution } from '../../types/executions';
 import { executionIdTail } from '../../utils/executionStatus';
 import { useTriggerComponent } from '../../hooks/useExecutions';
+import { Scopes } from '../../constants/permissions';
+import { useCan } from '../../hooks/useCan';
 
 interface ExecutionDrawerProps {
   execution: TaskExecution | null;
@@ -62,6 +64,7 @@ function StatusIcon({ status }: { status: string }) {
 }
 
 export default function ExecutionDrawer({ execution, open, onClose, onRunSuccess, orgHandler, projectId, componentId, releaseId }: ExecutionDrawerProps) {
+  const canExecute = useCan()(Scopes.INTEGRATION_EXECUTE);
   const handleClose = () => {
     (document.activeElement as HTMLElement)?.blur();
     onClose();
@@ -234,9 +237,11 @@ export default function ExecutionDrawer({ execution, open, onClose, onRunSuccess
               <Button variant="outlined" color="inherit" onClick={onClose}>
                 Cancel
               </Button>
-              <Button variant="contained" onClick={handleRun} disabled={trigger.isPending || !releaseId} startIcon={trigger.isPending ? <CircularProgress color="inherit" size={16} /> : undefined}>
-                {trigger.isPending ? 'Executing…' : 'Execute'}
-              </Button>
+              {canExecute && (
+                <Button variant="contained" onClick={handleRun} disabled={trigger.isPending || !releaseId} startIcon={trigger.isPending ? <CircularProgress color="inherit" size={16} /> : undefined}>
+                  {trigger.isPending ? 'Executing…' : 'Execute'}
+                </Button>
+              )}
             </DrawerPanel.Footer>
           )}
         </>
