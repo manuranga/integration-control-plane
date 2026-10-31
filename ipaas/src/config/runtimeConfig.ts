@@ -118,7 +118,7 @@ export interface ApiConfig {
   moesifAppUrl?: string;
   /** Which tracking codes (GTM container, CookiePro domain script) to load. */
   trackingEnv: 'dev' | 'stage' | 'prod';
-  /** Moesif app key for product-usage analytics. Separate from the API Insights embed above. */
+  /** Moesif app key for product-usage analytics. Separate from the API Insights embed above. Unset disables Moesif tracking. */
   moesifAppApiKey?: string;
 }
 
@@ -163,7 +163,6 @@ const DEFAULT_CONFIG: ApiConfig = {
   integrationBuilderMaxTokens: 1024,
   integrationBuilderCentralGraphqlUrl: 'https://api.dev-central.ballerina.io/2.0/graphql',
   trackingEnv: 'dev',
-  moesifAppApiKey: 'eyJhcHAiOiIzOTE6Njg4IiwidmVyIjoiMi4xIiwib3JnIjoiMjYyOjgxMCIsImlhdCI6MTc4MDI3MjAwMH0.PkVCaZxNZNsZluB9t4W0cItGgez1khyaOS3Z-O_XTZg',
 };
 
 /**
@@ -220,7 +219,7 @@ export async function loadConfig(): Promise<void> {
       integrationBuilderCentralGraphqlUrl: config.INTEGRATION_BUILDER_CENTRAL_GRAPHQL_URL || 'https://api.dev-central.ballerina.io/2.0/graphql',
       moesifAppUrl: config.MOESIF_APP_URL?.trim() || undefined,
       trackingEnv: parseTrackingEnv(config.TRACKING_ENV),
-      moesifAppApiKey: config.MOESIF_APP_API_KEY?.trim() || DEFAULT_CONFIG.moesifAppApiKey,
+      moesifAppApiKey: config.MOESIF_APP_API_KEY?.trim() || undefined,
     };
 
     console.info('✓ Runtime configuration loaded from config.json');

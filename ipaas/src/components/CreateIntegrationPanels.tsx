@@ -116,7 +116,6 @@ export default function CreateIntegrationPanels({ scope, heading }: CreateIntegr
 
   const handleOpenCloudEditor = () => {
     if (creationBlocked) return;
-    trackEvent('open-cloud-editor-click', { org: scope.org, project: scope.project });
     const codeServerSample = (sampleImages ?? []).find((img) => img.name === 'Code Server');
     if (!codeServerSample) {
       setPageError({ message: 'Cloud Editor is not available. Please try again later.', severity: 'warning' });
@@ -125,7 +124,9 @@ export default function CreateIntegrationPanels({ scope, heading }: CreateIntegr
     const url = buildCloudEditorUrl({ userId, orgUuid, orgHandle: scope.org, projectId, codeServerSample }, window.location.origin);
     if (!window.open(url, '_blank')) {
       setPageError({ message: 'Please allow popups for this site and try again.', severity: 'warning' });
+      return;
     }
+    trackEvent('open-cloud-editor-click', { org: scope.org, project: scope.project });
   };
 
   const importUrl = importComponentUrl(scope.org, scope.project);

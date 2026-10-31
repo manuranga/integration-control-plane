@@ -100,6 +100,8 @@ function syncMoesifConsent(applicationId: string | undefined): void {
 
   moesifClient ??= moesif.init({ applicationId, batchEnabled: true, batchSize: 20, batchMaxTime: 5000 });
   moesifClient.start();
+  // Consent often lands after sign-in, when the post-sign-in identify found no client yet.
+  identifyMoesifSession();
 }
 
 // Ported from choreo-console's MOESIF_EVENT_MAP: maps this console's event keys to the Moesif event
@@ -200,7 +202,8 @@ function identifyMoesifSession(): void {
  * to also (re-)identify the current user and organization in Moesif.
  */
 export function trackEvent(name: string, properties?: Record<string, unknown>, identify?: boolean): void {
-  if (!moesifClient) return;
+  // The client outlives a consent withdrawal (stop() only halts API capture), so check consent too.
+  if (!moesifClient || !isAnalyticsCookiesAllowed()) return;
   const mapped = MOESIF_EVENT_MAP[name];
   if (!mapped) return;
 

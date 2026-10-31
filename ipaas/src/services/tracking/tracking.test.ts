@@ -84,6 +84,18 @@ describe('initTracking', () => {
     expect(moesifClient.start).toHaveBeenCalledTimes(1);
   });
 
+  it('identifies the signed-in user once consent initializes Moesif', () => {
+    (window as unknown as { API_CONFIG: unknown }).API_CONFIG = { moesifAppApiKey: 'test-key' };
+    session.current = { user: { userId: 'u-1', username: 'jane@wso2.com', displayName: 'Jane' }, orgHandle: 'acme', orgUuid: 'org-1' };
+
+    initTracking();
+    setActiveGroups('C0001,C0002');
+    window.OptanonWrapper?.();
+
+    expect(moesifClient.identifyUser).toHaveBeenCalledWith('u-1', { email: 'jane@wso2.com', name: 'Jane', isWSO2User: true });
+    expect(moesifClient.identifyCompany).toHaveBeenCalledWith('org-1', { name: 'acme' });
+  });
+
   it('stops Moesif when analytics consent is later withdrawn', () => {
     (window as unknown as { API_CONFIG: unknown }).API_CONFIG = { moesifAppApiKey: 'test-key' };
     let onConsentChanged: (() => void) | undefined;
@@ -169,6 +181,14 @@ describe('trackEvent', () => {
     trackEvent('component-test');
 
     expect(moesifClient.track).toHaveBeenCalledWith('Component-Viewed-Page', expect.objectContaining({ page: 'test' }));
+  });
+
+  it('sends nothing once analytics consent is withdrawn', () => {
+    setActiveGroups('C0001');
+
+    trackEvent('component-create-submit');
+
+    expect(moesifClient.track).not.toHaveBeenCalled();
   });
 
   it('ignores an unmapped event', () => {
