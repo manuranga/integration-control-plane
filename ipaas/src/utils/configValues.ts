@@ -47,4 +47,10 @@ export function requiredConfigKeys(jsonSchema?: string): string[] {
   }
 }
 
+/** The Configure control's label and colour: a role that may only read is not urged to act. */
+export function configureControl(readOnly: boolean, hasMissingConfigs: boolean): { label: string; color: 'error' | 'primary' } {
+  if (readOnly) return { label: 'View Configuration', color: 'primary' };
+  return hasMissingConfigs ? { label: 'Configure to Continue', color: 'error' } : { label: 'Configure', color: 'primary' };
+}
+
 export const miConfigValues = (config: MiConfig): ConfigValue[] => [...config.envVars.map((e) => ({ ...e, secret: false })), ...config.secrets.map((key) => ({ key, value: '', secret: true }))];

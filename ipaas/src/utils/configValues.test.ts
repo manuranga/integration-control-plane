@@ -18,7 +18,7 @@
 
 import { describe, expect, it } from 'vitest';
 import type { SchemaConfigData } from '../types/configuration';
-import { miConfigValues, schemaConfigValues } from './configValues';
+import { configureControl, miConfigValues, schemaConfigValues } from './configValues';
 
 describe('schemaConfigValues', () => {
   it('carries plain values and drops secret values', () => {
@@ -57,5 +57,17 @@ describe('miConfigValues', () => {
       { key: 'A', value: '1', secret: false },
       { key: 'S', value: '', secret: true },
     ]);
+  });
+});
+
+describe('configureControl', () => {
+  it('offers a read-only role a view, without urging it to act', () => {
+    expect(configureControl(true, true)).toEqual({ label: 'View Configuration', color: 'primary' });
+    expect(configureControl(true, false)).toEqual({ label: 'View Configuration', color: 'primary' });
+  });
+
+  it('urges a role that may edit to set missing values', () => {
+    expect(configureControl(false, true)).toEqual({ label: 'Configure to Continue', color: 'error' });
+    expect(configureControl(false, false)).toEqual({ label: 'Configure', color: 'primary' });
   });
 });
