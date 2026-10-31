@@ -34,10 +34,12 @@ function daysUntilExpiry(expiresOn?: string): number | null {
 }
 
 export default function BallerinaCentralPanel({ onBack }: { onBack: () => void }): JSX.Element {
-  const { data: tokenStatus, isLoading, isError, refetch } = useBallerinaCentralToken();
+  const can = useCan();
+  const canRead = can(Scopes.PACKAGE_REGISTRY_READ);
+  const canManage = can(Scopes.PACKAGE_REGISTRY_MANAGE);
+  const { data: tokenStatus, isLoading, isError, refetch } = useBallerinaCentralToken(canRead);
   const saveToken = useSaveBallerinaCentralToken();
   const removeToken = useRemoveBallerinaCentralToken();
-  const canManage = useCan()(Scopes.PACKAGE_REGISTRY_MANAGE);
   const [tokenInput, setTokenInput] = useState('');
   const [instructionsOpen, setInstructionsOpen] = useState(true);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -73,7 +75,11 @@ export default function BallerinaCentralPanel({ onBack }: { onBack: () => void }
         </Alert>
       )}
 
-      {isLoading ? (
+      {!canRead ? (
+        <Alert severity="info" sx={{ maxWidth: 640 }}>
+          Your role doesn&apos;t allow viewing or changing the Ballerina Central token.
+        </Alert>
+      ) : isLoading ? (
         <Skeleton variant="rounded" height={160} sx={{ maxWidth: 640 }} />
       ) : isError ? (
         <Alert severity="error" action={<Button onClick={() => refetch()}>Retry</Button>}>
@@ -166,7 +172,12 @@ export default function BallerinaCentralPanel({ onBack }: { onBack: () => void }
           {removeToken.isError && <Alert severity="error">{removeToken.error.message}</Alert>}
 
           <Stack direction="row" gap={1.5}>
-            <Button variant="outlined" color="error" disabled={removeToken.isPending || !canManage} startIcon={removeToken.isPending ? <CircularProgress size={14} /> : undefined} onClick={() => removeToken.mutate(undefined, { onSuccess: () => setSaveSuccess(false) })}>
+            <Button
+              variant="outlined"
+              color="error"
+              disabled={removeToken.isPending || !canManage}
+              startIcon={removeToken.isPending ? <CircularProgress size={14} /> : undefined}
+              onClick={() => removeToken.mutate(undefined, { onSuccess: () => setSaveSuccess(false) })}>
               Remove token
             </Button>
           </Stack>
