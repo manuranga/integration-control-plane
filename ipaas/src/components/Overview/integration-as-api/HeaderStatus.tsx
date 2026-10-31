@@ -22,6 +22,8 @@ import type { HeaderStatusProps } from '../../../types/integration';
 import { useSchemaConfig } from '../../../hooks/useConfiguration';
 import StatusDot from '../_shared/StatusDot';
 import ConfigureButton from '../_shared/ConfigureButton';
+import { Scopes } from '../../../constants/permissions';
+import { useCan } from '../../../hooks/useCan';
 import { hasMissingRequiredConfigs } from '../_shared/configStatus';
 // Transitional: legacy ConfigureDrawer (defaults to the generic-service form
 // when `isAutomation` is absent) until its genericisation in phase 4.5.
@@ -51,6 +53,7 @@ export default function HeaderStatus({
   buildId,
 }: HeaderStatusProps): ReactNode {
   const [configureOpen, setConfigureOpen] = useState(false);
+  const can = useCan();
 
   const { data: schemaConfig } = useSchemaConfig(projectId, component.id, envTemplateId, versionId, deployedCommitSha);
   const missingConfigs = useMemo(() => hasMissingRequiredConfigs(schemaConfig), [schemaConfig]);
@@ -60,7 +63,7 @@ export default function HeaderStatus({
       <StatusDot status={deploymentStatusV2} />
       {hasDeployment && (
         <>
-          <ConfigureButton environment={env} onClick={() => setConfigureOpen(true)} hasMissingConfigs={missingConfigs} />
+          <ConfigureButton onClick={() => setConfigureOpen(true)} hasMissingConfigs={missingConfigs} />
           <ConfigureDrawer
             onSaved={() => {
               requestPoll();
@@ -81,6 +84,7 @@ export default function HeaderStatus({
             releaseMgtReleaseId={releaseMgtReleaseId}
             releaseMgtDeploymentId={releaseMgtDeploymentId}
             envTemplateId={envTemplateId}
+            readOnly={!can(Scopes.CONFIG_MANAGE, env)}
             buildId={buildId}
           />
         </>

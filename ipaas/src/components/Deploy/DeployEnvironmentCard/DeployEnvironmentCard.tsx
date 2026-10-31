@@ -346,7 +346,7 @@ export default function DeployEnvironmentCard({
             envCritical={env.critical}
             endpointCount={endpoints.length}
             scaleToZeroEnabled={env.scaleToZeroEnabled}
-            onConfigClick={can(Scopes.CONFIG_MANAGE, env) ? () => setConfigureOpen(true) : undefined}
+            onConfigClick={can(Scopes.CONFIG_READ) ? () => setConfigureOpen(true) : undefined}
             onJobConfigClick={flags.isAutomation && can(Scopes.INTEGRATION_UPDATE, env) ? () => setScheduleOpen(true) : undefined}
             onHistoryClick={() => setHistoryOpen(true)}
             configurablesCount={configurablesCount}
@@ -394,6 +394,7 @@ export default function DeployEnvironmentCard({
         isAutomation={flags.isAutomation}
         envTemplateId={envTemplateId}
         hideEndpoints={hideEndpoints}
+        readOnly={!can(Scopes.CONFIG_MANAGE, env)}
       />
 
       {flags.isAutomation && hasRelease && scheduleOpen && (

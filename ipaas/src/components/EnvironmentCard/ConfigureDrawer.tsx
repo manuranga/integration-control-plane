@@ -16,7 +16,7 @@
  * under the License.
  */
 
-import { Alert, Box, Button, Chip, CircularProgress, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Drawer, IconButton, MenuItem, Select as MuiSelect, Stack, Typography } from '@wso2/oxygen-ui';
+import { Alert, Box, Button, Chip, CircularProgress, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Drawer, IconButton, MenuItem, Select as MuiSelect, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@wso2/oxygen-ui';
 import TextField from '../common/TextField';
 import { ChevronDown, ChevronUp, Link, Trash2, X } from '@wso2/oxygen-ui-icons-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -28,6 +28,8 @@ import type { SchemaConfigItem, CertGroup, CertMapping, CertMappingConfig } from
 import { useGenerateComponentEndpoints } from '../../hooks/useComponents';
 import { useSaveSchemaConfig, usePostCertificateMappings } from '../../hooks/useConfiguration';
 import { useDeployDeploymentTrack } from '../../hooks/useDeployments';
+import { useMiConfig } from '../../hooks/useMiConfig';
+import { miConfigValues, schemaConfigValues } from '../../utils/configValues';
 import ApiSettingsDrawer from '../Overview/integration-as-api/ApiSettingsDrawer';
 import { toEndpointOptions } from '../../utils/endpoints';
 import { EndpointCard } from '../EndpointCard';
@@ -676,9 +678,12 @@ export interface ConfigureDrawerProps {
    * even when nothing changed. The schema drawers always save, so only MI reads it.
    */
   continueWithoutChanges?: boolean;
+  /** The role may read the configuration but not change it: show the values, with nothing to save. */
+  readOnly?: boolean;
 }
 
 export default function ConfigureDrawer(props: ConfigureDrawerProps) {
+  if (props.readOnly) return <ReadOnlyConfigureDrawer {...props} />;
   // MI has no configuration schema: it takes free-form env vars and secrets.
   if (runtimeFromDisplayType(props.displayType ?? '') === 'mi') {
     // envId, not envTemplateId: MI configs live on the environment's ReleaseBinding.
@@ -1152,5 +1157,60 @@ function GenericServiceConfigureDrawer({
 
       <ApiSettingsDrawer open={manageDrawerOpen} onClose={() => setManageDrawerOpen(false)} componentName={componentId} envName={envId} endpoints={toEndpointOptions(endpoints)} activeEndpointName={settingsEp?.id} />
     </>
+  );
+}
+
+// ── Read-only ─────────────────────────────────────────────────────────────────
+
+function ReadOnlyConfigureDrawer({ open, onClose, projectId, componentId, envId, envTemplateId, versionId, commitHash, releaseId, displayType }: ConfigureDrawerProps) {
+  const isMi = runtimeFromDisplayType(displayType ?? '') === 'mi';
+  const schema = useSchemaConfig(projectId, componentId, envTemplateId ?? envId, versionId, commitHash, open && !isMi);
+  const mi = useMiConfig(projectId, componentId, envId, open && isMi && !!releaseId);
+  const isLoading = isMi ? mi.isLoading : schema.isLoading;
+  const values = isMi ? mi.data && miConfigValues(mi.data) : schema.data && schemaConfigValues(schema.data);
+
+  const renderValues = () => {
+    if (isMi && !releaseId) return <Typography color="text.secondary">The integration is not deployed to this environment.</Typography>;
+    if (isLoading) return <CircularProgress size={32} />;
+    if (!values) return <Typography color="text.secondary">Could not load the configurations.</Typography>;
+    if (!values.length) return <Typography color="text.secondary">No configurable values.</Typography>;
+    return (
+      <Table size="small">
+        <TableHead>
+          <TableRow>
+            <TableCell>Key</TableCell>
+            <TableCell>Value</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {values.map((v) => (
+            <TableRow key={v.key}>
+              <TableCell>{v.key}</TableCell>
+              <TableCell sx={{ wordBreak: 'break-all' }}>{v.secret ? '••••••••' : v.value || 'Not set'}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    );
+  };
+
+  return (
+    <Drawer anchor="right" open={open} onClose={onClose} variant="temporary" sx={drawerSx}>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ px: 3, py: 2, borderBottom: '1px solid', borderColor: 'divider', flexShrink: 0 }}>
+        <Typography variant="h5">Configurations</Typography>
+        <IconButton size="small" aria-label="close" onClick={onClose}>
+          <X size={16} />
+        </IconButton>
+      </Stack>
+      <Box sx={{ flex: 1, overflow: 'auto', px: 3, py: 2 }}>
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Your role can view these configurations but not change them.
+        </Alert>
+        {renderValues()}
+      </Box>
+      <Stack direction="row" justifyContent="flex-end" sx={{ px: 2, py: 1.5, borderTop: '1px solid', borderColor: 'divider', flexShrink: 0 }}>
+        <Button onClick={onClose}>Close</Button>
+      </Stack>
+    </Drawer>
   );
 }
