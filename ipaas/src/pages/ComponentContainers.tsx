@@ -21,7 +21,7 @@ import { useEffect, useMemo, useState, type JSX } from 'react';
 import DeploymentTrackBar from '../components/DeploymentTrackBar';
 import EnvironmentSelect from '../components/common/EnvironmentSelect';
 import ContainerInfoCard from '../components/Containers/ContainerInfoCard';
-import { useAccessControl } from '../contexts/AccessControlContext';
+import { useCan } from '../hooks/useCan';
 import { Scopes } from '../constants/permissions';
 import { useRelease } from '../hooks/useDevopsConfigs';
 import { useComponentByHandler } from '../hooks/useComponents';
@@ -35,9 +35,8 @@ import type { ComponentScope } from '../nav';
 export default function ComponentContainers({ org, project, component }: ComponentScope): JSX.Element {
   const orgUuid = useOrgUuid();
   const { projectId } = useProjectId(project);
-  const { hasPermission } = useAccessControl();
+  const can = useCan();
   const { data: comp, isLoading } = useComponentByHandler(projectId, component);
-  const canManage = hasPermission(Scopes.INTEGRATION_UPDATE, projectId, comp?.id);
 
   const tracks = useMemo(() => comp?.deploymentTracks ?? [], [comp?.deploymentTracks]);
   const [trackId, setTrackId] = useState('');
@@ -50,6 +49,10 @@ export default function ComponentContainers({ org, project, component }: Compone
   useEffect(() => {
     if (environments.length) setEnvId((prev) => (prev && environments.some((e) => e.id === prev) ? prev : environments[0].id));
   }, [environments]);
+  const canManage = can(
+    Scopes.INTEGRATION_UPDATE,
+    environments.find((e) => e.id === envId),
+  );
 
   const { data: deployment } = useComponentDeployment(org, orgUuid ?? '', comp?.id ?? '', trackId, envId);
   const releaseId = deployment?.releaseId ?? '';

@@ -366,6 +366,7 @@ export default function DeployEnvironmentCard({
                     deploymentPipelineId={deploymentPipelineId}
                     sourceEnvId={env.id}
                     targetEnvId={nextEnvId}
+                    targetCritical={nextEnvCritical}
                     icon={<ArrowRight size={14} />}
                     onPromoteStarted={onPromoteStarted}
                     onPromoteSettled={onPromoteSettled}

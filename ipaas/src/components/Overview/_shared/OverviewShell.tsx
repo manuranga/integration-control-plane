@@ -88,12 +88,20 @@ export default function OverviewShell({ component, identity, environments, versi
             orgHandler={orgHandler}
             projectHandler={projectHandler}
             deploymentPipelineId={deploymentPipelineId}
-                  isBuildInProgress={isBuildInProgress}
+            isBuildInProgress={isBuildInProgress}
             module={module}
           />
           {i < environments.length - 1 && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
-              <PromoteButton orgHandler={orgHandler} componentId={component.id} versionId={versionId} deploymentPipelineId={deploymentPipelineId} sourceEnvId={env.id} targetEnvId={environments[i + 1].id} />
+              <PromoteButton
+                orgHandler={orgHandler}
+                componentId={component.id}
+                versionId={versionId}
+                deploymentPipelineId={deploymentPipelineId}
+                sourceEnvId={env.id}
+                targetEnvId={environments[i + 1].id}
+                targetCritical={environments[i + 1].critical ?? false}
+              />
             </Box>
           )}
         </Fragment>
