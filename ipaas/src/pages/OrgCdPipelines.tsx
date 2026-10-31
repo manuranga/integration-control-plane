@@ -16,6 +16,8 @@
  * under the License.
  */
 
+import { Scopes } from '../constants/permissions';
+import { useCan } from '../hooks/useCan';
 import { Alert, Box, Button, CircularProgress, IconButton, PageContent, PageTitle, Stack, Tooltip } from '@wso2/oxygen-ui';
 import { GitBranch, Pencil, Plus, Trash2 } from '@wso2/oxygen-ui-icons-react';
 import { useMemo, useState, type JSX } from 'react';
@@ -34,6 +36,7 @@ import DeletePipelineDialog from '../components/CdPipelines/DeletePipelineDialog
 const EMPTY_DESCRIPTION = 'Create a pipeline to define how integrations promote across environments.';
 
 export default function OrgCdPipelines(scope: OrgScope): JSX.Element {
+  const canManage = useCan()(Scopes.DEPLOYMENT_PIPELINE_MANAGE);
   const navigate = useAppNavigate();
   const { data: pipelines, isLoading, isError, refetch } = useOrgDeploymentPipelines();
   const { data: envTemplates } = useEnvTemplates(scope.org);
@@ -56,9 +59,11 @@ export default function OrgCdPipelines(scope: OrgScope): JSX.Element {
       {!!pipelines?.length && (
         <Stack direction="row" gap={1} alignItems="center" sx={{ mb: 5 }}>
           <SearchField value={search} onChange={setSearch} placeholder="Search pipelines..." fullWidth />
-          <Button variant="contained" startIcon={<Plus size={16} />} onClick={() => navigate(cdPipelineEditorUrl(scope))} sx={{ whiteSpace: 'nowrap', flexShrink: 0, px: 2.5 }}>
-            Create Pipeline
-          </Button>
+          {canManage && (
+            <Button variant="contained" startIcon={<Plus size={16} />} onClick={() => navigate(cdPipelineEditorUrl(scope))} sx={{ whiteSpace: 'nowrap', flexShrink: 0, px: 2.5 }}>
+              Create Pipeline
+            </Button>
+          )}
         </Stack>
       )}
 
@@ -83,7 +88,7 @@ export default function OrgCdPipelines(scope: OrgScope): JSX.Element {
           Failed to load deployment pipelines.
         </Alert>
       ) : !pipelines?.length ? (
-        <EmptyListing icon={<GitBranch size={48} />} title="No deployment pipelines" description={EMPTY_DESCRIPTION} showAction actionLabel="Create Pipeline" onAction={() => navigate(cdPipelineEditorUrl(scope))} />
+        <EmptyListing icon={<GitBranch size={48} />} title="No deployment pipelines" description={EMPTY_DESCRIPTION} showAction={canManage} actionLabel="Create Pipeline" onAction={() => navigate(cdPipelineEditorUrl(scope))} />
       ) : !filteredPipelines?.length ? (
         <EmptyListing icon={<GitBranch size={48} />} title="No deployment pipelines found" description="Try adjusting your search" showAction={false} />
       ) : (
@@ -96,33 +101,35 @@ export default function OrgCdPipelines(scope: OrgScope): JSX.Element {
               tree={pipeline.promotion_tree}
               envTemplates={envTemplates}
               actions={
-                <>
-                  <Tooltip title="Edit">
-                    <IconButton
-                      size="small"
-                      aria-label={`Edit ${pipeline.name}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(cdPipelineEditorUrl(scope, pipeline.id));
-                      }}>
-                      <Pencil size={16} />
-                    </IconButton>
-                  </Tooltip>
-                  {!pipeline.is_default && (
-                    <Tooltip title="Delete">
+                canManage && (
+                  <>
+                    <Tooltip title="Edit">
                       <IconButton
                         size="small"
-                        color="error"
-                        aria-label={`Delete ${pipeline.name}`}
+                        aria-label={`Edit ${pipeline.name}`}
                         onClick={(e) => {
                           e.stopPropagation();
-                          setDeleting(pipeline);
+                          navigate(cdPipelineEditorUrl(scope, pipeline.id));
                         }}>
-                        <Trash2 size={16} />
+                        <Pencil size={16} />
                       </IconButton>
                     </Tooltip>
-                  )}
-                </>
+                    {!pipeline.is_default && (
+                      <Tooltip title="Delete">
+                        <IconButton
+                          size="small"
+                          color="error"
+                          aria-label={`Delete ${pipeline.name}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleting(pipeline);
+                          }}>
+                          <Trash2 size={16} />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                  </>
+                )
               }
             />
           ))}
