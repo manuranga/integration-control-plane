@@ -50,7 +50,7 @@ interface RuntimeConfig {
   INTEGRATION_BUILDER_MAX_TOKENS?: string;
   INTEGRATION_BUILDER_CENTRAL_GRAPHQL_URL?: string;
   MOESIF_APP_URL?: string;
-  /** Which tracking codes (GTM container, CookiePro domain script) to load: 'dev' | 'stage' | 'prod'. Unset or unrecognized defaults to 'dev'. */
+  /** Which tracking codes (GTM container, CookiePro domain script) to load: 'dev' | 'stage' | 'prod', or 'off' for none. Unset or unrecognized defaults to 'dev'. */
   TRACKING_ENV?: string;
   MOESIF_APP_API_KEY?: string;
 }
@@ -116,8 +116,8 @@ export interface ApiConfig {
   integrationBuilderCentralGraphqlUrl: string;
   /** Trusted Moesif embed origin; empty disables API Insights. */
   moesifAppUrl?: string;
-  /** Which tracking codes (GTM container, CookiePro domain script) to load. */
-  trackingEnv: 'dev' | 'stage' | 'prod';
+  /** Which tracking codes (GTM container, CookiePro domain script) to load; 'off' loads none. */
+  trackingEnv: 'dev' | 'stage' | 'prod' | 'off';
   /** Moesif app key for product-usage analytics. Separate from the API Insights embed above. Unset disables Moesif tracking. */
   moesifAppApiKey?: string;
 }
@@ -138,7 +138,7 @@ function parsePositiveInt(value: unknown, fallback: number): number {
 // Accepts only the recognized tracking-env values; anything else (including unset) falls back to 'dev'.
 // A set but unrecognized value is warned about, since a typo would otherwise load dev codes silently.
 function parseTrackingEnv(value: unknown): ApiConfig['trackingEnv'] {
-  if (value === 'stage' || value === 'prod') return value;
+  if (value === 'stage' || value === 'prod' || value === 'off') return value;
   if (typeof value === 'string' && value.trim() !== '' && value !== 'dev') console.warn(`Unrecognized TRACKING_ENV "${value}"; using 'dev'.`);
   return 'dev';
 }

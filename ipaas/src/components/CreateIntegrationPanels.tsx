@@ -133,7 +133,6 @@ export default function CreateIntegrationPanels({ scope, heading }: CreateIntegr
 
   const handleImportClick = () => {
     if (creationBlocked) return;
-    trackEvent('component-create-import-github', { org: scope.org, project: scope.project, provider: GitProvider.GITHUB });
     const { githubAppClientId, githubAppAuthRedirectUrl } = window.API_CONFIG;
     if (!githubAppClientId) {
       // No GitHub App configured means private-repo authorization is impossible,
@@ -154,6 +153,7 @@ export default function CreateIntegrationPanels({ scope, heading }: CreateIntegr
       setPageError({ message: 'Please allow popups for this site and try again.', severity: 'warning' });
       return;
     }
+    trackEvent('component-create-import-github', { org: scope.org, project: scope.project, provider: GitProvider.GITHUB });
 
     const channel = new BroadcastChannel(GITHUB_AUTH.BROADCAST_CHANNEL);
     channelRef.current = channel;

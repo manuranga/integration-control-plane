@@ -21,7 +21,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const session = vi.hoisted(() => ({ current: null as unknown }));
 vi.mock('../../auth', () => ({ getSession: () => session.current }));
 
-const moesifClient = vi.hoisted(() => ({ start: vi.fn(), stop: vi.fn(), track: vi.fn(), identifyUser: vi.fn(), identifyCompany: vi.fn() }));
+const moesifClient = vi.hoisted(() => ({
+  start: vi.fn(),
+  stop: vi.fn(),
+  track: vi.fn(),
+  identifyUser: vi.fn(),
+  identifyCompany: vi.fn(),
+  clearCookies: vi.fn(),
+  clearStorage: vi.fn(),
+}));
 const moesifInit = vi.hoisted(() => vi.fn(() => moesifClient));
 vi.mock('moesif-browser-js', () => ({ default: { init: moesifInit } }));
 
@@ -53,6 +61,8 @@ describe('initTracking', () => {
     moesifClient.track.mockClear();
     moesifClient.identifyUser.mockClear();
     moesifClient.identifyCompany.mockClear();
+    moesifClient.clearCookies.mockClear();
+    moesifClient.clearStorage.mockClear();
   });
 
   it('does not load GTM before analytics consent is granted', () => {
@@ -114,6 +124,20 @@ describe('initTracking', () => {
     onConsentChanged?.();
 
     expect(moesifClient.stop).toHaveBeenCalledTimes(1);
+    expect(moesifClient.clearCookies).toHaveBeenCalledTimes(1);
+    expect(moesifClient.clearStorage).toHaveBeenCalledTimes(1);
+  });
+
+  it('registers the consent listener once when OptanonWrapper fires again', () => {
+    const onConsentChanged = vi.fn();
+    (globalThis as Record<string, unknown>).OneTrust = { OnConsentChanged: onConsentChanged };
+
+    initTracking();
+    setActiveGroups('C0001,C0002');
+    window.OptanonWrapper?.();
+    window.OptanonWrapper?.();
+
+    expect(onConsentChanged).toHaveBeenCalledTimes(1);
   });
 
   it('loads the dev/stage GTM container and CookiePro test domain script by default', () => {
@@ -202,5 +226,76 @@ describe('trackEvent', () => {
 
     expect(moesifClient.identifyUser).toHaveBeenCalledWith('u-1', { email: 'jane@wso2.com', name: 'Jane', isWSO2User: true });
     expect(moesifClient.identifyCompany).toHaveBeenCalledWith('org-1', { name: 'acme' });
+  });
+});
+
+// Consent resolution is module state, so these start from a freshly loaded module.
+describe('events before consent resolves', () => {
+  const signedIn = { user: { userId: 'u-1', username: 'jane@wso2.com', displayName: 'Jane' }, orgHandle: 'acme', orgUuid: 'org-1' };
+
+  async function freshTracking(): Promise<typeof import('./tracking')> {
+    vi.resetModules();
+    return import('./tracking');
+  }
+
+  beforeEach(() => {
+    document.head.innerHTML = '';
+    delete (window as unknown as Record<string, unknown>).OptanonWrapper;
+    delete (globalThis as Record<string, unknown>).OneTrust;
+    (window as unknown as { API_CONFIG: unknown }).API_CONFIG = { moesifAppApiKey: 'test-key' };
+    setActiveGroups(undefined);
+    session.current = null;
+    moesifClient.track.mockClear();
+    moesifClient.identifyUser.mockClear();
+  });
+
+  it('sends events queued before consent once it is granted', async () => {
+    const tracking = await freshTracking();
+    tracking.initTracking();
+    tracking.trackEvent('visit-login-page');
+    expect(moesifClient.track).not.toHaveBeenCalled();
+
+    setActiveGroups('C0001,C0002');
+    window.OptanonWrapper?.();
+
+    expect(moesifClient.track).toHaveBeenCalledWith('Landing-SignIn-Viewed', expect.any(Object));
+  });
+
+  it('discards queued events when consent is denied', async () => {
+    const tracking = await freshTracking();
+    tracking.initTracking();
+    tracking.trackEvent('visit-login-page');
+
+    setActiveGroups('C0001');
+    window.OptanonWrapper?.();
+    setActiveGroups('C0001,C0002');
+
+    expect(moesifClient.track).not.toHaveBeenCalled();
+  });
+
+  it('identifies a restored session on its first event', async () => {
+    const tracking = await freshTracking();
+    tracking.initTracking();
+    setActiveGroups('C0001,C0002');
+    window.OptanonWrapper?.(); // consent resolves before the session is restored
+    expect(moesifClient.identifyUser).not.toHaveBeenCalled();
+
+    session.current = signedIn;
+    tracking.trackEvent('visit-home');
+    tracking.trackEvent('navbar-home');
+
+    expect(moesifClient.identifyUser).toHaveBeenCalledTimes(1);
+    expect(moesifClient.identifyUser).toHaveBeenCalledWith('u-1', expect.any(Object));
+  });
+
+  it('loads nothing and queues nothing when trackingEnv is off', async () => {
+    (window as unknown as { API_CONFIG: unknown }).API_CONFIG = { trackingEnv: 'off', moesifAppApiKey: 'test-key' };
+    const tracking = await freshTracking();
+    tracking.initTracking();
+    tracking.trackEvent('visit-login-page');
+
+    expect(document.head.querySelector('script[src*="cookiepro"]')).toBeNull();
+    expect(window.OptanonWrapper).toBeUndefined();
+    expect(moesifClient.track).not.toHaveBeenCalled();
   });
 });

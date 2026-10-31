@@ -90,11 +90,32 @@ function injectCookiePro(domainScriptId: string, onReady: () => void): void {
 // since onConsentChange re-runs this on every later preference-center change too.
 let moesifClient: ReturnType<typeof moesif.init> | null = null;
 
-function syncMoesifConsent(applicationId: string | undefined): void {
-  if (!applicationId) return;
+// Events fired before CookiePro reports consent (it loads over the network after the first render)
+// wait here, then are sent or discarded once consent resolves. Capped so a blocked CookiePro
+// script can't grow it without bound.
+interface PendingEvent {
+  name: string;
+  properties?: Record<string, unknown>;
+  identify?: boolean;
+}
+const MAX_PENDING_EVENTS = 50;
+let consentResolved = false;
+let pendingEvents: PendingEvent[] = [];
+// The user Moesif last identified, so trackEvent can identify a session restored without a sign-in.
+let identifiedUserId: string | null = null;
 
-  if (!isAnalyticsCookiesAllowed()) {
-    moesifClient?.stop();
+function syncMoesifConsent(applicationId: string | undefined): void {
+  consentResolved = true;
+
+  if (!applicationId || !isAnalyticsCookiesAllowed()) {
+    pendingEvents = [];
+    if (moesifClient) {
+      // stop() only unpatches fetch/XHR; clear the ids and session init() persisted too.
+      moesifClient.stop();
+      moesifClient.clearCookies();
+      moesifClient.clearStorage();
+      identifiedUserId = null;
+    }
     return;
   }
 
@@ -102,6 +123,10 @@ function syncMoesifConsent(applicationId: string | undefined): void {
   moesifClient.start();
   // Consent often lands after sign-in, when the post-sign-in identify found no client yet.
   identifyMoesifSession();
+
+  const queued = pendingEvents;
+  pendingEvents = [];
+  queued.forEach((event) => trackEvent(event.name, event.properties, event.identify));
 }
 
 // Ported from choreo-console's MOESIF_EVENT_MAP: maps this console's event keys to the Moesif event
@@ -192,6 +217,7 @@ function identifyMoesifSession(): void {
   const session = getSession();
   if (!moesifClient || !session) return;
   const { user, orgUuid, orgHandle } = session;
+  identifiedUserId = user.userId;
   moesifClient.identifyUser(user.userId, { email: user.username, name: user.displayName, isWSO2User: isWso2User(user.username) });
   if (orgUuid) moesifClient.identifyCompany(orgUuid, { name: orgHandle });
 }
@@ -202,14 +228,21 @@ function identifyMoesifSession(): void {
  * to also (re-)identify the current user and organization in Moesif.
  */
 export function trackEvent(name: string, properties?: Record<string, unknown>, identify?: boolean): void {
-  // The client outlives a consent withdrawal (stop() only halts API capture), so check consent too.
-  if (!moesifClient || !isAnalyticsCookiesAllowed()) return;
   const mapped = MOESIF_EVENT_MAP[name];
   if (!mapped) return;
 
-  if (identify) identifyMoesifSession();
+  if (!consentResolved) {
+    if (pendingEvents.length < MAX_PENDING_EVENTS) pendingEvents.push({ name, properties, identify });
+    return;
+  }
 
+  // The client outlives a consent withdrawal (stop() only halts API capture), so check consent too.
+  if (!moesifClient || !isAnalyticsCookiesAllowed()) return;
+
+  // A session restored by silent sign-in never passes the sign-in identify, so identify lazily.
   const user = getSession()?.user;
+  if (identify || (user && user.userId !== identifiedUserId)) identifyMoesifSession();
+
   moesifClient.track(mapped.name, {
     product: 'integration',
     asset_type: 'console',
@@ -237,15 +270,28 @@ function injectGtmOnceConsented(containerId: string): () => void {
 
 /**
  * Loads CookiePro, then GTM (which carries Clarity) and Moesif once analytics consent is granted.
- * The tier comes from the TRACKING_ENV runtime key and the Moesif app key from MOESIF_APP_API_KEY.
+ * The tier comes from the TRACKING_ENV runtime key ('off' loads nothing) and the Moesif app key
+ * from MOESIF_APP_API_KEY.
  */
 export function initTracking(): void {
   const env = window.API_CONFIG?.trackingEnv ?? 'dev';
+  if (env === 'off') {
+    // Nothing loads, so nothing will ever resolve consent; stop events from queueing.
+    consentResolved = true;
+    return;
+  }
+
   const injectGtmIfConsented = injectGtmOnceConsented(GTM_CONTAINER_ID[env]);
-  injectCookiePro(COOKIEPRO_DOMAIN_SCRIPT_ID[env], () =>
-    onConsentChange(() => {
-      syncMoesifConsent(window.API_CONFIG?.moesifAppApiKey);
-      injectGtmIfConsented();
-    }),
-  );
+  const sync = (): void => {
+    syncMoesifConsent(window.API_CONFIG?.moesifAppApiKey);
+    injectGtmIfConsented();
+  };
+  // Some OneTrust versions call OptanonWrapper again after a preference change. Register the
+  // consent listener only on the first call, so listeners don't stack; later calls just re-sync.
+  let listening = false;
+  injectCookiePro(COOKIEPRO_DOMAIN_SCRIPT_ID[env], () => {
+    if (listening) return sync();
+    listening = true;
+    onConsentChange(sync);
+  });
 }

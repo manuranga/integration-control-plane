@@ -1042,7 +1042,7 @@ export default function AppLayout(): JSX.Element {
         )}
         {/* Matches the sidebar's surface rather than sitting as a white band under it. */}
         <Footer sx={{ backgroundColor: 'background.acrylic', backdropFilter: 'blur(3px)' }}>
-          <Footer.Link href={documentationUrl()} target="_blank" rel="noopener noreferrer">
+          <Footer.Link href={documentationUrl()} target="_blank" rel="noopener noreferrer" onClick={() => trackEvent('navbar-documentation')}>
             Documentation
           </Footer.Link>
           <Footer.Link href="https://discord.com/invite/wso2" target="_blank" rel="noopener noreferrer">
