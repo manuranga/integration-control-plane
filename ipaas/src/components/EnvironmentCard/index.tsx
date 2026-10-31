@@ -90,13 +90,13 @@ export default function Environment({ env, prevEnv, componentId, projectId, comp
   const envReleaseId = envDeployment?.releaseId ?? '';
 
   // Per-env endpoint URLs for generic services, filtered by releaseId
-  const { data: envEndpoints = [] } = useEnvEndpoints(isGenericService ? componentId : '', isGenericService ? versionId : '', isGenericService ? envReleaseId : '');
+  const { data: envEndpoints = [] } = useEnvEndpoints(isGenericService ? componentId : '', isGenericService ? versionId : '', env.id, isGenericService ? envReleaseId : '');
 
   // Previous env deployment + endpoints (for swagger comparison)
   const prevEnvEnabled = isGenericService && !!prevEnv;
   const { data: prevEnvDeployment } = useComponentDeployment(prevEnvEnabled ? orgHandler : '', prevEnvEnabled ? envOrgUuid : '', prevEnvEnabled ? componentId : '', prevEnvEnabled ? versionId : '', prevEnvEnabled ? prevEnv!.id : '');
   const prevEnvReleaseId = prevEnvDeployment?.releaseId ?? '';
-  const { data: prevEnvEndpoints = [] } = useEnvEndpoints(prevEnvEnabled && !!prevEnvReleaseId ? componentId : '', prevEnvEnabled && !!prevEnvReleaseId ? versionId : '', prevEnvEnabled && !!prevEnvReleaseId ? prevEnvReleaseId : '');
+  const { data: prevEnvEndpoints = [] } = useEnvEndpoints(prevEnvEnabled && !!prevEnvReleaseId ? componentId : '', prevEnvEnabled && !!prevEnvReleaseId ? versionId : '', prevEnv?.id ?? '', prevEnvEnabled && !!prevEnvReleaseId ? prevEnvReleaseId : '');
 
   const { data: scheduleConfig } = useExecutionConfigs(isAutomation ? componentId : '', isAutomation ? envReleaseId : '', isAutomation ? env.id : '');
   const scheduleDescription = scheduleConfig?.cronjobFrequency ? `${describeCron(scheduleConfig.cronjobFrequency)}, in time zone ${scheduleConfig.cronjobTimezone || 'UTC'}` : null;
@@ -155,7 +155,7 @@ export default function Environment({ env, prevEnv, componentId, projectId, comp
 
   const handleRun = () => {
     trigger.mutate(
-      { orgHandler, projectId, componentId, releaseId: envReleaseId, args: [] },
+      { orgHandler, projectId, componentId, environmentId: env.id, releaseId: envReleaseId, args: [] },
       {
         onSuccess: () => {
           setNotification({ text: 'Execution triggered successfully', severity: 'success' });
@@ -189,6 +189,7 @@ export default function Environment({ env, prevEnv, componentId, projectId, comp
       {
         orgHandler,
         componentId,
+        environmentId: env.id,
         releaseId: envReleaseId,
         type: displayType ?? '',
         releaseMgtReleaseId: envDeployment?.releaseMgtDeployment?.releaseMgtReleaseId,
@@ -315,6 +316,7 @@ export default function Environment({ env, prevEnv, componentId, projectId, comp
         orgHandler={orgHandler}
         projectId={projectId}
         componentId={componentId}
+        environmentId={env.id}
         releaseId={envReleaseId}
       />
 
