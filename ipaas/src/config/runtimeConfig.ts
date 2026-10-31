@@ -136,8 +136,11 @@ function parsePositiveInt(value: unknown, fallback: number): number {
 }
 
 // Accepts only the recognized tracking-env values; anything else (including unset) falls back to 'dev'.
+// A set but unrecognized value is warned about, since a typo would otherwise load dev codes silently.
 function parseTrackingEnv(value: unknown): ApiConfig['trackingEnv'] {
-  return value === 'stage' || value === 'prod' ? value : 'dev';
+  if (value === 'stage' || value === 'prod') return value;
+  if (typeof value === 'string' && value.trim() !== '' && value !== 'dev') console.warn(`Unrecognized TRACKING_ENV "${value}"; using 'dev'.`);
+  return 'dev';
 }
 
 // Default configuration (used as fallback if config.json fails to load)
