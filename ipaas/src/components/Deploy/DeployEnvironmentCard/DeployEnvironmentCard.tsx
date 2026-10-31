@@ -39,6 +39,8 @@ import DeployEnvironmentCardBody from './DeployEnvironmentCardBody';
 import DeploymentHistoryDrawer from './DeploymentHistoryDrawer';
 import EndpointsDrawer from './EndpointsDrawer';
 import type { DeployEnvironmentCardProps } from '../../../types/deploy';
+import { Scopes } from '../../../constants/permissions';
+import { useCan } from '../../../hooks/useCan';
 
 export default function DeployEnvironmentCard({
   orgHandler,
@@ -54,6 +56,7 @@ export default function DeployEnvironmentCard({
   componentName,
   projectHandler,
   nextEnvId,
+  nextEnvCritical = false,
   onPromoteStarted,
   onPromoteSettled,
 }: DeployEnvironmentCardProps): JSX.Element {
@@ -62,6 +65,7 @@ export default function DeployEnvironmentCard({
   const showEndpoints = !flags.isAutomation && !hideEndpoints;
   const isMI = runtimeFromDisplayType(displayType ?? '') === 'mi';
   const qc = useQueryClient();
+  const can = useCan();
   const [configureOpen, setConfigureOpen] = useState(false);
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -296,14 +300,15 @@ export default function DeployEnvironmentCard({
   const isSuspended = status === DeploymentStatus.Suspended;
   // Keep button visible while in-flight. Suppress the opposing button while an action is in-flight
   // to prevent both showing simultaneously when status transitions mid-flight (header scatter).
-  const showStop = !flags.isAutomation && (((isActive || isInProgress) && hasRelease && !isRedeployPending) || isStopPending);
+  const canDeployHere = can(Scopes.INTEGRATION_DEPLOY, env);
+  const showStop = canDeployHere && !flags.isAutomation && (((isActive || isInProgress) && hasRelease && !isRedeployPending) || isStopPending);
   // `isRedeployPending` keeps a button visible mid-flight, but it must be the one
   // that was clicked: a redeploy started from ERROR stays on Redeploy, not Start.
-  const showStart = !flags.isAutomation && ((isSuspended && hasRelease && !isStopPending) || (isRedeployPending && !isError));
+  const showStart = canDeployHere && !flags.isAutomation && ((isSuspended && hasRelease && !isStopPending) || (isRedeployPending && !isError));
   // A failed deployment is already not serving, so stopping it achieves nothing —
   // offer the recovery action instead, and hold it through the redeploy.
-  const showRedeploy = !flags.isAutomation && isError && hasRelease && !isStopPending;
-  const showPromote = !!nextEnvId;
+  const showRedeploy = canDeployHere && !flags.isAutomation && isError && hasRelease && !isStopPending;
+  const showPromote = !!nextEnvId && can(Scopes.INTEGRATION_DEPLOY, { critical: nextEnvCritical });
 
   return (
     <>
@@ -341,8 +346,8 @@ export default function DeployEnvironmentCard({
             envCritical={env.critical}
             endpointCount={endpoints.length}
             scaleToZeroEnabled={env.scaleToZeroEnabled}
-            onConfigClick={() => setConfigureOpen(true)}
-            onJobConfigClick={flags.isAutomation ? () => setScheduleOpen(true) : undefined}
+            onConfigClick={can(Scopes.CONFIG_MANAGE, env) ? () => setConfigureOpen(true) : undefined}
+            onJobConfigClick={flags.isAutomation && can(Scopes.INTEGRATION_UPDATE, env) ? () => setScheduleOpen(true) : undefined}
             onHistoryClick={() => setHistoryOpen(true)}
             configurablesCount={configurablesCount}
             onEndpointsClick={showEndpoints ? () => setEndpointsOpen(true) : undefined}

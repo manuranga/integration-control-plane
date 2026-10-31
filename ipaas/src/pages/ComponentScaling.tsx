@@ -18,12 +18,12 @@
 
 import { Alert, Box, CircularProgress, PageContent, PageTitle } from '@wso2/oxygen-ui';
 import { useEffect, useMemo, useState, type JSX } from 'react';
-import { useAccessControl } from '../contexts/AccessControlContext';
 import DeploymentTrackBar from '../components/DeploymentTrackBar';
 import EnvironmentSelect from '../components/common/EnvironmentSelect';
 import CloudAutoscaling from '../components/Scaling/CloudAutoscaling';
 import CloudReplicas from '../components/Scaling/CloudReplicas';
-import { Permissions } from '../constants/permissions';
+import { Scopes } from '../constants/permissions';
+import { useCan } from '../hooks/useCan';
 import { GENERIC_SERVICE_TYPES } from '../constants/integrations';
 import { useComponentByHandler } from '../hooks/useComponents';
 import { useComponentDeployment } from '../hooks/useDeployments';
@@ -37,9 +37,8 @@ import type { ComponentScope } from '../nav';
 export default function ComponentScaling({ org, project, component }: ComponentScope): JSX.Element {
   const orgUuid = useOrgUuid();
   const { projectId } = useProjectId(project);
-  const { hasPermission } = useAccessControl();
   const { data: comp, isLoading } = useComponentByHandler(projectId, component);
-  const canManage = hasPermission(Permissions.INTEGRATION_MANAGE, projectId, comp?.id);
+  const can = useCan();
 
   const tracks = useMemo(() => comp?.deploymentTracks ?? [], [comp?.deploymentTracks]);
   const [trackId, setTrackId] = useState('');
@@ -101,8 +100,8 @@ export default function ComponentScaling({ org, project, component }: ComponentS
                   </Alert>
                 )}
                 {/* Keyed by environment so an unsaved HPA choice never carries over to another one. */}
-                <CloudAutoscaling key={selectedEnv.id} projectId={projectId} componentId={comp.id} environmentId={selectedEnv.id} environmentName={selectedEnv.name} canManage={canManage} onSaved={onSaved} onError={onError} />
-                <CloudReplicas key={`replicas-${selectedEnv.id}`} projectId={projectId} componentId={comp.id} componentHandler={component} releaseId={releaseId} environmentId={selectedEnv.id} orgHandler={org} projectHandler={project} canManage={canManage} />
+                <CloudAutoscaling key={selectedEnv.id} projectId={projectId} componentId={comp.id} environmentId={selectedEnv.id} environmentName={selectedEnv.name} canManage={can(Scopes.INTEGRATION_UPDATE, selectedEnv)} onSaved={onSaved} onError={onError} />
+                <CloudReplicas key={`replicas-${selectedEnv.id}`} projectId={projectId} componentId={comp.id} componentHandler={component} releaseId={releaseId} environmentId={selectedEnv.id} orgHandler={org} projectHandler={project} canManage={can(Scopes.INTEGRATION_UPDATE, selectedEnv)} />
               </>
             )}
           </>

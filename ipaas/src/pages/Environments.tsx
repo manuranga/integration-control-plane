@@ -33,7 +33,7 @@ import EmptyListing from '../components/EmptyListing';
 import { formatDistanceToNow } from '../utils/time';
 import { editEnvironmentUrl, newEnvironmentUrl, type OrgScope, type ProjectScope } from '../nav';
 import { useAccessControl } from '../contexts/AccessControlContext';
-import { Permissions } from '../constants/permissions';
+import { Scopes } from '../constants/permissions';
 import Authorized from '../components/Authorized';
 
 function formatDeleteError(error: Error): string {
@@ -111,7 +111,7 @@ export default function Environments(scope: OrgScope | ProjectScope): JSX.Elemen
   const navigate = useAppNavigate();
   const location = useLocation();
   const { hasOrgPermission } = useAccessControl();
-  const canManageEnv = hasOrgPermission(Permissions.ENVIRONMENT_MANAGE);
+  const canManageEnv = hasOrgPermission(Scopes.ENVIRONMENT_MANAGE);
 
   const { data: orgs } = useOrgs();
   const org = orgs?.find((o) => o.handle === scope.org);
@@ -177,7 +177,7 @@ export default function Environments(scope: OrgScope | ProjectScope): JSX.Elemen
         <>
           <Stack direction="row" gap={1} alignItems="center" sx={{ mb: 3 }}>
             <SearchField value={search} onChange={setSearch} placeholder="Search environments..." fullWidth />
-            <Authorized permissions={Permissions.ENVIRONMENT_MANAGE}>
+            <Authorized permissions={Scopes.ENVIRONMENT_MANAGE}>
               <Button variant="contained" startIcon={<Plus size={16} />} onClick={() => navigate(newEnvironmentUrl(scope))} sx={{ whiteSpace: 'nowrap', flexShrink: 0, px: 2.5 }}>
                 Create Environment
               </Button>

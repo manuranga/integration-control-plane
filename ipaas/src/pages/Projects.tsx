@@ -32,7 +32,7 @@ import ExploreMore from '../components/ExploreMore';
 import { newProjectUrl, importProjectUrl, projectSettingsSectionUrl, type OrgScope } from '../nav';
 import { projectHomeUrl } from '../paths';
 import { useAccessControl } from '../contexts/AccessControlContext';
-import { Permissions } from '../constants/permissions';
+import { Scopes } from '../constants/permissions';
 import Authorized from '../components/Authorized';
 import { trackEvent } from '../services/tracking/tracking';
 import * as styles from './Projects.styles';
@@ -88,7 +88,7 @@ export default function Projects(scope: OrgScope): JSX.Element {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [alert, setAlert] = useState<string | null>(null);
   const { hasOrgPermission } = useAccessControl();
-  const canCreateProject = hasOrgPermission(Permissions.PROJECT_MANAGE);
+  const canCreateProject = hasOrgPermission(Scopes.PROJECT_CREATE);
   const { data: projects, isLoading, refetch } = useProjects();
 
   useEffect(() => trackEvent('visit-home'), []);
@@ -232,7 +232,7 @@ export default function Projects(scope: OrgScope): JSX.Element {
 
       <Stack direction="row" gap={1} alignItems="center" sx={{ mb: 3, ml: 1 }}>
         <SearchField value={query} onChange={setQuery} placeholder="Search projects" fullWidth />
-        <Authorized permissions={Permissions.PROJECT_MANAGE}>
+        <Authorized permissions={Scopes.PROJECT_CREATE}>
           <Button variant="contained" startIcon={<Plus size={16} />} onClick={() => navigate(newProjectUrl(scope))} sx={styles.projectActionSx}>
             Create Project
           </Button>
