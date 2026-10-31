@@ -97,11 +97,10 @@ const REPO_METADATA_EMPTY: RepoMetadata = {
   isSubPathEmpty: true,
 };
 
-// BFF ComponentRepository fields map 1:1 to Repository; projectName scopes
-// the lookup to the component within the caller's namespace.
-export async function fetchComponentRepository(projectId: string, componentHandler: string): Promise<Repository | null> {
+// BFF ComponentRepository fields map 1:1 to Repository.
+export async function fetchComponentRepository(_projectId: string, componentHandler: string): Promise<Repository | null> {
   try {
-    return (await bff.get<Repository | null>(`/components/${seg(componentHandler)}/repository${q({ projectName: projectId })}`)) ?? null;
+    return (await bff.get<Repository | null>(`/components/${seg(componentHandler)}/repository`)) ?? null;
   } catch {
     return null;
   }
