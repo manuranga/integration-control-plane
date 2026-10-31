@@ -17,10 +17,17 @@
  */
 
 import { useAccessControl } from '../contexts/AccessControlContext';
+import { Scopes } from '../constants/permissions';
 import { scopesIn } from '../utils/permissions';
 
 /** Whether the user's role allows an action that needs `scope`, in `environment` when it acts on one. */
 export function useCan(): (scope: string, environment?: { critical: boolean }) => boolean {
   const { hasAllPermissions } = useAccessControl();
   return (scope, environment) => hasAllPermissions(environment ? scopesIn(scope, environment) : [scope]);
+}
+
+/** Whether the user's role may read pod logs in `environment`: production logs need their own scope. */
+export function useCanReadLogs(): (environment?: { critical: boolean }) => boolean {
+  const { hasAllPermissions } = useAccessControl();
+  return (environment) => hasAllPermissions(environment?.critical ? [Scopes.LOG_READ, Scopes.LOG_PRODUCTION_READ] : [Scopes.LOG_READ]);
 }
