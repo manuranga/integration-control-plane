@@ -182,9 +182,12 @@ export function useTriggerBuild() {
 export function usePromote() {
   const qc = useQueryClient();
   return useMutation({
+    mutationKey: ['promote'],
     mutationFn: (input: PromoteInput) => promote(input),
     onSuccess: (_data, input) => {
       qc.invalidateQueries({ queryKey: ['componentDeployment'] });
+      // The links report what the target's release carries; they follow it until it is the promoted one.
+      qc.invalidateQueries({ queryKey: ['resourceLinks'] });
       qc.invalidateQueries({ queryKey: ['deploymentStatus', input.componentId] });
     },
   });
