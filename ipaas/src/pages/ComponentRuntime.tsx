@@ -55,12 +55,12 @@ export default function ComponentRuntime({ org, project, component }: ComponentS
   const releaseId = deployment?.releaseId ?? '';
   const status = deployment?.deploymentStatusV2 ?? DeploymentStatus.NotDeployed;
 
-  const { data: release } = useReleaseDetails(projectId, component, releaseId);
+  const { data: release } = useReleaseDetails(projectId, component, envId, releaseId);
   const namespace = release?.environment?.namespace ?? '';
   const isDeployed = status !== DeploymentStatus.NotDeployed && !!releaseId && release?.undeployed !== true;
 
-  const pods = useComponentPods(projectId, component, releaseId);
-  const metrics = useComponentPodMetrics(projectId, component, releaseId);
+  const pods = useComponentPods(projectId, component, envId, releaseId);
+  const metrics = useComponentPodMetrics(projectId, component, envId, releaseId);
 
   // release.replicas is a one-shot fetch (invalidated once right when Redeploy is clicked,
   // before the rollout settles) and then never refreshed, so it goes stale — e.g. it can get
@@ -72,13 +72,13 @@ export default function ComponentRuntime({ org, project, component }: ComponentS
   // when it's absent but pods are actually running, "0 used" would misreport unknown as zero.
   const usageUnavailable = !metrics.data?.componentLevelMetrics && (pods.data?.length ?? 0) > 0;
 
-  const podScope = useMemo(() => ({ projectId, releaseId, orgHandler: org, projectHandler: project, componentHandler: component }), [projectId, releaseId, org, project, component]);
+  const podScope = useMemo(() => ({ projectId, environmentId: envId, releaseId, orgHandler: org, projectHandler: project, componentHandler: component }), [projectId, envId, releaseId, org, project, component]);
 
   const { hasPermission } = useAccessControl();
   const canManage = hasPermission(Permissions.INTEGRATION_MANAGE, projectId, componentId);
 
   const redeploy = useRedeployRelease();
-  const onRedeploy = () => redeploy.mutate({ projectId, componentName: component, releaseId });
+  const onRedeploy = () => redeploy.mutate({ projectId, componentName: component, environmentId: envId, releaseId });
 
   const isLoading = loadingProject || loadingComponent || loadingEnvironments;
 
