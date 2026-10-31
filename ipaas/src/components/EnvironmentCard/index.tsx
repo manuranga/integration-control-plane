@@ -262,7 +262,7 @@ export default function Environment({ env, prevEnv, componentId, projectId, comp
           onRun={can(Scopes.INTEGRATION_EXECUTE) ? handleRun : undefined}
           onRunWithArgs={() => setRunWithArgsOpen(true)}
           onRefresh={handleRefresh}
-          onConfigure={can(Scopes.CONFIG_MANAGE, env) ? () => setConfigureOpen(true) : undefined}
+          onConfigure={can(Scopes.CONFIG_READ) ? () => setConfigureOpen(true) : undefined}
           onViewLogs={isGenericService ? () => setLogsOpen(true) : undefined}
           onTest={isGenericService ? () => navigate(`/organizations/${orgHandler}/projects/${projectHandler}/components/${componentHandler}/test/console`) : undefined}
           hasMissingConfigs={hasMissingConfigs}
@@ -342,6 +342,7 @@ export default function Environment({ env, prevEnv, componentId, projectId, comp
         isAutomation={isAutomation}
         envTemplateId={envTemplateId}
         buildId={envDeployment?.build?.buildId}
+        readOnly={!can(Scopes.CONFIG_MANAGE, env)}
       />
 
       {isGenericService && <ServiceLogsDrawer open={logsOpen} onClose={() => setLogsOpen(false)} componentId={componentId} environmentId={env.id} envName={env.name} versionId={versionId} />}

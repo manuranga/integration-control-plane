@@ -22,8 +22,6 @@ import { Scopes } from '../../../constants/permissions';
 import { useCan } from '../../../hooks/useCan';
 
 interface ConfigureButtonProps {
-  /** The environment the drawer configures: only roles that may change its configuration see the button. */
-  environment: { critical: boolean };
   onClick: () => void;
   /** When true, renders an error-coloured "Configure to Continue" affordance. */
   hasMissingConfigs?: boolean;
@@ -35,9 +33,9 @@ interface ConfigureButtonProps {
  * a configuration drawer (automation, integration-as-api). The drawer itself
  * and the missing-config computation live in the type's own `HeaderStatus`.
  */
-export default function ConfigureButton({ environment, onClick, hasMissingConfigs, disabled }: ConfigureButtonProps) {
+export default function ConfigureButton({ onClick, hasMissingConfigs, disabled }: ConfigureButtonProps) {
   const can = useCan();
-  if (!can(Scopes.CONFIG_MANAGE, environment)) return null;
+  if (!can(Scopes.CONFIG_READ)) return null;
   return (
     <Button variant="outlined" size="small" color={hasMissingConfigs ? 'error' : 'primary'} startIcon={<SlidersHorizontal size={14} />} onClick={onClick} disabled={disabled} sx={{ mr: 1 }}>
       {hasMissingConfigs ? 'Configure to Continue' : 'Configure'}
