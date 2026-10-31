@@ -50,8 +50,11 @@ import { toHandler, formatRepoNameToDisplayName } from '../utils/string';
 import { parseGitHubUrl } from '../utils/github';
 import { detectTechnology } from '../utils/technologyDetection';
 import { useProjectId } from '../hooks/useProjects';
+import { Scopes } from '../constants/permissions';
+import { useCan } from '../hooks/useCan';
 
 export default function ImportIntegration(scope: ProjectScope): JSX.Element {
+  const canCreate = useCan()(Scopes.INTEGRATION_CREATE);
   const navigate = useAppNavigate();
   const location = useLocation();
 
@@ -302,7 +305,7 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
     return undefined;
   };
 
-  const canSubmit = Boolean(activeOrg && activeRepo && selectedBranch && selectedTechnology && selectedIntegrationType && displayName.trim() && handlerValid && projectId && (isPublicRepo || isAuthenticated));
+  const canSubmit = canCreate && Boolean(activeOrg && activeRepo && selectedBranch && selectedTechnology && selectedIntegrationType && displayName.trim() && handlerValid && projectId && (isPublicRepo || isAuthenticated));
 
   const handleSubmit = () => {
     createComponent.mutate(
