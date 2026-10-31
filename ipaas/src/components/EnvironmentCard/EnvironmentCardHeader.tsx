@@ -22,6 +22,7 @@ import CommitSummary from '../CommitSummary';
 import { CARD_HEADER_TITLE_SX } from '../../constants/styles';
 import ScheduleButton, { type ScheduleButtonProps } from '../Overview/_shared/ScheduleButton';
 import RunButton from '../Overview/automation/RunButton';
+import { configureControl } from '../../utils/configValues';
 
 interface EnvironmentCardHeaderProps {
   envName: string;
@@ -46,6 +47,8 @@ interface EnvironmentCardHeaderProps {
   onViewLogs?: () => void;
   onTest?: () => void;
   hasMissingConfigs?: boolean;
+  /** The Configure drawer opens read-only. */
+  configReadOnly?: boolean;
   isBuildInProgress?: boolean;
 }
 
@@ -79,9 +82,11 @@ export default function EnvironmentCardHeader({
   onViewLogs,
   onTest,
   hasMissingConfigs,
+  configReadOnly = false,
   isBuildInProgress,
 }: EnvironmentCardHeaderProps) {
   const buildDisabled = isBuildInProgress && (!hasDeployment || isAutomation);
+  const configure = configureControl(configReadOnly, !!hasMissingConfigs);
   const statusDot = isGenericService && deploymentStatusV2 ? STATUS_DOT_MAP[deploymentStatusV2] : null;
   const canStop = isGenericService && deploymentStatusV2 === 'ACTIVE';
   const canStart = isGenericService && deploymentStatusV2 === 'SUSPENDED';
@@ -107,8 +112,8 @@ export default function EnvironmentCardHeader({
           </Stack>
         )}
         {hasDeployment && onConfigure && (isAutomation || isGenericService) && (
-          <Button variant="outlined" size="small" color={hasMissingConfigs ? 'error' : 'primary'} startIcon={<SlidersHorizontal size={14} />} onClick={onConfigure} sx={{ mr: 1 }}>
-            {hasMissingConfigs ? 'Configure to continue' : 'Configure'}
+          <Button variant="outlined" size="small" color={configure.color} startIcon={<SlidersHorizontal size={14} />} onClick={onConfigure} sx={{ mr: 1 }}>
+            {configure.label}
           </Button>
         )}
       </Stack>
