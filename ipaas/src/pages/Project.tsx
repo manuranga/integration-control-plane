@@ -78,7 +78,7 @@ import { resourceUrl, broaden, newComponentUrl, type ProjectScope } from '../nav
 import { useOrgUuid } from '../hooks/useOrgUuid';
 import { useAuth } from '../auth';
 import { componentOverviewUrl } from '../paths';
-import { Permissions } from '../constants/permissions';
+import { Scopes } from '../constants/permissions';
 import { isSupportedIntegration, getDisplayLabel, getNonIntegrationPlatform } from '../constants/integrations';
 import { identifyIntegration } from '../utils/identifyIntegration';
 import IntegrationIcon from '../components/IntegrationIcon';
@@ -415,7 +415,7 @@ function IntegrationsTable({
             </>
           )}
         </Menu>
-        <Authorized permissions={Permissions.INTEGRATION_MANAGE}>
+        <Authorized permissions={Scopes.INTEGRATION_CREATE}>
           <Tooltip title={quotaReached ? 'You have exceeded the allocated integration quota. Upgrade your subscription.' : ''} placement="top">
             <span>
               <Button variant="contained" startIcon={<Plus size={16} />} onClick={() => navigate(newComponentUrl(scope))} disabled={quotaReached}>
@@ -449,7 +449,7 @@ function IntegrationsTable({
                     <ListingTable.Cell>Description</ListingTable.Cell>
                     <ListingTable.Cell sx={{ minWidth: 180, whiteSpace: 'nowrap' }}>Type</ListingTable.Cell>
                     <ListingTable.Cell>Last Updated</ListingTable.Cell>
-                    <Authorized permissions={Permissions.INTEGRATION_MANAGE}>
+                    <Authorized permissions={Scopes.INTEGRATION_DELETE}>
                       <ListingTable.Cell width={60} align="right">
                         Action
                       </ListingTable.Cell>
@@ -503,7 +503,7 @@ function IntegrationsTable({
                               </Typography>
                             )}
                           </ListingTable.Cell>
-                          <Authorized permissions={Permissions.INTEGRATION_MANAGE}>
+                          <Authorized permissions={Scopes.INTEGRATION_DELETE}>
                             <ListingTable.Cell align="right">
                               {deleting ? (
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
