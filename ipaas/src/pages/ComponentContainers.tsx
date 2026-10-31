@@ -56,7 +56,7 @@ export default function ComponentContainers({ org, project, component }: Compone
 
   const { data: deployment } = useComponentDeployment(org, orgUuid ?? '', comp?.id ?? '', trackId, envId);
   const releaseId = deployment?.releaseId ?? '';
-  const { data: release, isLoading: loadingRelease } = useRelease(projectId, comp?.id, releaseId);
+  const { data: release, isLoading: loadingRelease } = useRelease(projectId, comp?.id, envId, releaseId);
 
   // Paid subscriptions aren't served by cloud yet, so only a private data plane unlocks the paid fields.
   const isPaidOrPdpUser = isPrivateDpRelease(release);

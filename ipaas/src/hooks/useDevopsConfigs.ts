@@ -26,12 +26,12 @@ const ROOT = 'devopsConfigs';
 // ── reads ─────────────────────────────────────────────────────────────────────
 
 /** The env's release (app-environment) — used to resolve the main container. */
-export function useRelease(projectId: string, componentId: string | undefined, releaseId: string | undefined) {
+export function useRelease(projectId: string, componentId: string | undefined, environmentId: string, releaseId: string | undefined) {
   const orgUuid = useOrgUuid();
   return useQuery<ReleaseDetails>({
-    queryKey: [ROOT, 'release', orgUuid, projectId, componentId, releaseId],
-    queryFn: () => getReleaseById(orgUuid!, projectId, componentId!, releaseId!),
-    enabled: !!orgUuid && !!projectId && !!componentId && !!releaseId,
+    queryKey: [ROOT, 'release', orgUuid, projectId, componentId, environmentId, releaseId],
+    queryFn: () => getReleaseById(orgUuid!, projectId, componentId!, environmentId, releaseId!),
+    enabled: !!orgUuid && !!projectId && !!componentId && !!environmentId && !!releaseId,
   });
 }
 

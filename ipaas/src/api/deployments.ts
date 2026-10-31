@@ -55,9 +55,9 @@ import { toVisibilityLabel } from './_visibility';
 export const fetchComponentDeployment = (_orgHandler: string, _orgUuid: string, componentId: string, _versionId: string, environmentId: string): Promise<ComponentDeployment | null> =>
   bff.get<ComponentDeployment | null>(`/components/${seg(componentId)}/deployments${q({ environmentId })}`).then((d) => d ?? null);
 
-// Shape of GET /components/{name}/releases/{releaseId}/endpoints (BFF
+// Shape of GET /components/{name}/environments/{env}/endpoints (BFF
 // APIResourcesResponse): the workload's endpoints with resolved URLs and the
-// base64 OpenAPI spec. The BFF resolves the env from the releaseId.
+// base64 OpenAPI spec.
 interface BffEndpointURL {
   host?: string;
   path?: string;
@@ -109,8 +109,8 @@ export function toEnvEndpoint(ep: BffEndpointResources, releaseId: string): EnvE
   };
 }
 
-export const fetchEnvEndpoints = (componentId: string, _versionId: string, releaseId: string): Promise<EnvEndpoint[]> =>
-  bff.get<{ endpoints?: BffEndpointResources[] }>(`/components/${seg(componentId)}/releases/${seg(releaseId)}/endpoints`).then((r) => (r?.endpoints ?? []).map((ep) => toEnvEndpoint(ep, releaseId)));
+export const fetchEnvEndpoints = (componentId: string, _versionId: string, environmentId: string, releaseId: string): Promise<EnvEndpoint[]> =>
+  bff.get<{ endpoints?: BffEndpointResources[] }>(`/components/${seg(componentId)}/environments/${seg(environmentId)}/endpoints`).then((r) => (r?.endpoints ?? []).map((ep) => toEnvEndpoint(ep, releaseId)));
 
 // The fields read from GET /components/{name}/builds (BFF WorkflowRun).
 // Newest-first per the BFF, so items[0] is the latest build.
@@ -240,11 +240,9 @@ export const promote = (input: PromoteInput): Promise<string> => bff.post<Messag
 
 export const stopDeployment = (input: StopDeploymentInput): Promise<string> => bff.put<MessageResponse>(`/components/${seg(input.componentId)}/deployments/stop`, input).then((r) => r?.message ?? '');
 
-// Redeploy by releaseId — the BFF resolves the env from the release binding and
-// re-activates it (the env-keyed /deployments/redeploy route requires an env the
-// devant-typed input does not carry).
-export const redeployDeployment = (input: { orgHandler: string; componentId: string; releaseId: string; type: string; releaseMgtReleaseId?: string; releaseMgtDeploymentId?: string }): Promise<string> =>
-  bff.post<MessageResponse>(`/components/${seg(input.componentId)}/releases/${seg(input.releaseId)}/redeploy`, {}).then((r) => r?.message ?? '');
+// Redeploys the release in the environment, which answers 404 if it no longer runs it.
+export const redeployDeployment = (input: { orgHandler: string; componentId: string; environmentId: string; releaseId: string; type: string; releaseMgtReleaseId?: string; releaseMgtDeploymentId?: string }): Promise<string> =>
+  bff.post<MessageResponse>(`/components/${seg(input.componentId)}/environments/${seg(input.environmentId)}/releases/${seg(input.releaseId)}/redeploy`, {}).then((r) => r?.message ?? '');
 
 // Deploys the prebuilt image: the BFF creates a Workload from imageUrl (baking any
 // supplied config values onto spec.container), snapshots it via generate-release,
