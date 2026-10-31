@@ -29,6 +29,8 @@ import PipelineAccordionCard from '../components/CdPipelines/PipelineAccordionCa
 import AddProjectPipelineDialog from '../components/CdPipelines/AddProjectPipelineDialog';
 import RemoveProjectPipelineDialog from '../components/CdPipelines/RemoveProjectPipelineDialog';
 import SetDefaultPipelineDialog from '../components/CdPipelines/SetDefaultPipelineDialog';
+import { Scopes } from '../constants/permissions';
+import { useCan } from '../hooks/useCan';
 
 // Cloud cannot add pipelines, so the empty state describes them instead of
 // pointing at an action that isn't there.
@@ -39,6 +41,7 @@ export default function ProjectCdPipelines(scope: ProjectScope): JSX.Element {
   const { data: pipelines, isLoading, isError, refetch } = useProjectDeploymentPipelines(projectId);
   const { data: envTemplates } = useEnvTemplates(scope.org);
 
+  const canUpdate = useCan()(Scopes.PROJECT_UPDATE);
   const [addOpen, setAddOpen] = useState(false);
   const [removing, setRemoving] = useState<DeploymentPipeline | null>(null);
   const [settingDefault, setSettingDefault] = useState<DeploymentPipeline | null>(null);
@@ -55,7 +58,7 @@ export default function ProjectCdPipelines(scope: ProjectScope): JSX.Element {
           <PageTitle.SubHeader>The promotion path this project's integrations deploy along.</PageTitle.SubHeader>
         </PageTitle>
         {/* Cloud binds one pipeline per project, so adding a second is really a swap. */}
-        {!!pipelines?.length && (
+        {canUpdate && !!pipelines?.length && (
           <Button variant="contained" startIcon={<Repeat size={18} />} onClick={() => setAddOpen(true)} sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
             Change Pipeline
           </Button>
@@ -95,7 +98,7 @@ export default function ProjectCdPipelines(scope: ProjectScope): JSX.Element {
               envTemplates={envTemplates}
               actions={
                 <>
-                  {!pipeline.is_project_default && (
+                  {canUpdate && !pipeline.is_project_default && (
                     <Button
                       size="small"
                       variant="outlined"
@@ -107,7 +110,7 @@ export default function ProjectCdPipelines(scope: ProjectScope): JSX.Element {
                       Set as default
                     </Button>
                   )}
-                  {!pipeline.is_project_default && (
+                  {canUpdate && !pipeline.is_project_default && (
                     <Tooltip title="Remove">
                       <IconButton
                         size="small"

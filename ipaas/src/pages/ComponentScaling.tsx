@@ -101,7 +101,17 @@ export default function ComponentScaling({ org, project, component }: ComponentS
                 )}
                 {/* Keyed by environment so an unsaved HPA choice never carries over to another one. */}
                 <CloudAutoscaling key={selectedEnv.id} projectId={projectId} componentId={comp.id} environmentId={selectedEnv.id} environmentName={selectedEnv.name} canManage={can(Scopes.INTEGRATION_UPDATE)} onSaved={onSaved} onError={onError} />
-                <CloudReplicas key={`replicas-${selectedEnv.id}`} projectId={projectId} componentId={comp.id} componentHandler={component} releaseId={releaseId} environmentId={selectedEnv.id} orgHandler={org} projectHandler={project} canManage={can(Scopes.INTEGRATION_UPDATE)} />
+                <CloudReplicas
+                  key={`replicas-${selectedEnv.id}`}
+                  projectId={projectId}
+                  componentId={comp.id}
+                  componentHandler={component}
+                  releaseId={releaseId}
+                  environmentId={selectedEnv.id}
+                  orgHandler={org}
+                  projectHandler={project}
+                  canReadLogs={can(Scopes.LOG_READ)}
+                />
               </>
             )}
           </>
