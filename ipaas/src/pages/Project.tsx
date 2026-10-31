@@ -79,7 +79,7 @@ import { resourceUrl, broaden, newComponentUrl, editProjectUrl, type ProjectScop
 import { useOrgUuid } from '../hooks/useOrgUuid';
 import { useAuth } from '../auth';
 import { componentOverviewUrl } from '../paths';
-import { Permissions } from '../constants/permissions';
+import { Scopes } from '../constants/permissions';
 import { isSupportedIntegration, getDisplayLabel, getNonIntegrationPlatform } from '../constants/integrations';
 import { identifyIntegration } from '../utils/identifyIntegration';
 import IntegrationIcon from '../components/IntegrationIcon';
@@ -400,7 +400,7 @@ function IntegrationsTable({
             },
           }}
         />
-        <Authorized permissions={Permissions.INTEGRATION_MANAGE}>
+        <Authorized permissions={Scopes.INTEGRATION_CREATE}>
           <Tooltip title={quotaReached ? 'You have exceeded the allocated integration quota. Upgrade your subscription.' : ''} placement="top">
             <span>
               <Button variant="contained" startIcon={<Plus size={16} />} onClick={() => navigate(newComponentUrl(scope))} disabled={quotaReached}>
@@ -510,7 +510,7 @@ function IntegrationsTable({
                             ) : (
                               <Box className="row-swap" sx={lastUpdatedSwapSx}>
                                 <Box className="row-time">{!init && <RelativeTime time={formatDistanceToNow(c.lastBuildDate)} dateTime={c.lastBuildDate} tooltip={formatDateTime(c.lastBuildDate)} />}</Box>
-                                <Authorized permissions={Permissions.INTEGRATION_MANAGE}>
+                                <Authorized permissions={Scopes.INTEGRATION_DELETE}>
                                   <Button
                                     className="row-delete"
                                     variant="outlined"
@@ -899,7 +899,7 @@ export default function Project(scope: ProjectScope): JSX.Element {
             </Stack>
           </Stack>
           <Stack direction="row" alignItems="center" gap={1.5} sx={{ flexShrink: 0 }}>
-            <Authorized permissions={[Permissions.PROJECT_MANAGE, Permissions.PROJECT_EDIT]}>
+            <Authorized permissions={Scopes.PROJECT_UPDATE}>
               <Button variant="outlined" size="small" startIcon={<Pencil size={14} />} onClick={() => navigate(editProjectUrl(scope))} sx={{ whiteSpace: 'nowrap' }}>
                 Edit project
               </Button>
