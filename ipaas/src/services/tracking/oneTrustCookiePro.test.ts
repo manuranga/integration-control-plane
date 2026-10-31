@@ -17,7 +17,7 @@
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { isAnalyticsCookiesAllowed, onConsentChange } from './oneTrustCookiePro';
+import { hasRecordedConsentChoice, isAnalyticsCookiesAllowed, onConsentChange } from './oneTrustCookiePro';
 
 function setActiveGroups(value: string | undefined): void {
   if (value === undefined) {
@@ -83,5 +83,25 @@ describe('onConsentChange', () => {
     onConsentChange(callback);
 
     expect(onConsentChanged).toHaveBeenCalledWith(callback);
+  });
+});
+
+describe('hasRecordedConsentChoice', () => {
+  afterEach(() => {
+    setOneTrust(undefined);
+  });
+
+  it('is false before OneTrust loads', () => {
+    expect(hasRecordedConsentChoice()).toBe(false);
+  });
+
+  it('is false while the banner is unanswered', () => {
+    setOneTrust({ OnConsentChanged: vi.fn(), IsAlertBoxClosed: () => false });
+    expect(hasRecordedConsentChoice()).toBe(false);
+  });
+
+  it('is true once the user has answered the banner', () => {
+    setOneTrust({ OnConsentChanged: vi.fn(), IsAlertBoxClosed: () => true });
+    expect(hasRecordedConsentChoice()).toBe(true);
   });
 });

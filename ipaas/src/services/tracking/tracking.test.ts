@@ -29,6 +29,8 @@ const moesifClient = vi.hoisted(() => ({
   identifyCompany: vi.fn(),
   clearCookies: vi.fn(),
   clearStorage: vi.fn(),
+  initBatching: vi.fn(),
+  requestBatchers: { events: { stop: vi.fn(), clear: vi.fn() } },
 }));
 const moesifInit = vi.hoisted(() => vi.fn(() => moesifClient));
 vi.mock('moesif-browser-js', () => ({ default: { init: moesifInit } }));
@@ -63,6 +65,9 @@ describe('initTracking', () => {
     moesifClient.identifyCompany.mockClear();
     moesifClient.clearCookies.mockClear();
     moesifClient.clearStorage.mockClear();
+    moesifClient.initBatching.mockClear();
+    moesifClient.requestBatchers.events.stop.mockClear();
+    moesifClient.requestBatchers.events.clear.mockClear();
   });
 
   it('does not load GTM before analytics consent is granted', () => {
@@ -126,6 +131,13 @@ describe('initTracking', () => {
     expect(moesifClient.stop).toHaveBeenCalledTimes(1);
     expect(moesifClient.clearCookies).toHaveBeenCalledTimes(1);
     expect(moesifClient.clearStorage).toHaveBeenCalledTimes(1);
+    expect(moesifClient.requestBatchers.events.stop).toHaveBeenCalledTimes(1);
+    expect(moesifClient.requestBatchers.events.clear).toHaveBeenCalledTimes(1);
+
+    setActiveGroups('C0001,C0002');
+    onConsentChanged?.();
+
+    expect(moesifClient.initBatching).toHaveBeenCalledTimes(1);
   });
 
   it('registers the consent listener once when OptanonWrapper fires again', () => {
@@ -261,7 +273,8 @@ describe('events before consent resolves', () => {
     expect(moesifClient.track).toHaveBeenCalledWith('Landing-SignIn-Viewed', expect.any(Object));
   });
 
-  it('discards queued events when consent is denied', async () => {
+  it('discards queued events when consent is explicitly denied', async () => {
+    (globalThis as Record<string, unknown>).OneTrust = { OnConsentChanged: vi.fn(), IsAlertBoxClosed: () => true };
     const tracking = await freshTracking();
     tracking.initTracking();
     tracking.trackEvent('visit-login-page');
@@ -271,6 +284,30 @@ describe('events before consent resolves', () => {
     setActiveGroups('C0001,C0002');
 
     expect(moesifClient.track).not.toHaveBeenCalled();
+  });
+
+  it('keeps queued events while the banner is unanswered, then sends them on accept', async () => {
+    let bannerClosed = false;
+    let onConsentChanged: (() => void) | undefined;
+    (globalThis as Record<string, unknown>).OneTrust = {
+      OnConsentChanged: (callback: () => void) => {
+        onConsentChanged = callback;
+      },
+      IsAlertBoxClosed: () => bannerClosed,
+    };
+    const tracking = await freshTracking();
+    tracking.initTracking();
+    tracking.trackEvent('visit-login-page');
+
+    setActiveGroups('C0001'); // opt-in region: unanswered banner looks like a denial
+    window.OptanonWrapper?.();
+    expect(moesifClient.track).not.toHaveBeenCalled();
+
+    bannerClosed = true;
+    setActiveGroups('C0001,C0002');
+    onConsentChanged?.();
+
+    expect(moesifClient.track).toHaveBeenCalledWith('Landing-SignIn-Viewed', expect.any(Object));
   });
 
   it('identifies a restored session on its first event', async () => {

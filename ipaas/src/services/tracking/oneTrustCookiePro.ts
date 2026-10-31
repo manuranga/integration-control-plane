@@ -24,7 +24,7 @@
 
 declare global {
   const OnetrustActiveGroups: string;
-  const OneTrust: { OnConsentChanged: (callback: (event: Event) => void) => void };
+  const OneTrust: { OnConsentChanged: (callback: (event: Event) => void) => void; IsAlertBoxClosed?: () => boolean };
 }
 
 const CookieProCategory = {
@@ -61,4 +61,14 @@ export function onConsentChange(callback: () => void): void {
   if (typeof OneTrust !== 'undefined') {
     OneTrust.OnConsentChanged(callback);
   }
+}
+
+/**
+ * Whether the user has answered the cookie banner. In opt-in regions an unanswered banner looks
+ * the same as a denial in `OnetrustActiveGroups` (only strictly necessary cookies), so callers
+ * use this to tell "not decided yet" from "said no".
+ */
+export function hasRecordedConsentChoice(): boolean {
+  // typeof, for the same reason as in onConsentChange.
+  return typeof OneTrust !== 'undefined' && typeof OneTrust.IsAlertBoxClosed === 'function' && OneTrust.IsAlertBoxClosed();
 }

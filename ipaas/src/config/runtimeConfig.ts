@@ -222,7 +222,8 @@ export async function loadConfig(): Promise<void> {
       integrationBuilderCentralGraphqlUrl: config.INTEGRATION_BUILDER_CENTRAL_GRAPHQL_URL || 'https://api.dev-central.ballerina.io/2.0/graphql',
       moesifAppUrl: config.MOESIF_APP_URL?.trim() || undefined,
       trackingEnv: parseTrackingEnv(config.TRACKING_ENV),
-      moesifAppApiKey: config.MOESIF_APP_API_KEY?.trim() || undefined,
+      // config.json is untyped: a non-string value must not throw here and reset the whole config.
+      moesifAppApiKey: typeof config.MOESIF_APP_API_KEY === 'string' ? config.MOESIF_APP_API_KEY.trim() || undefined : undefined,
     };
 
     console.info('✓ Runtime configuration loaded from config.json');

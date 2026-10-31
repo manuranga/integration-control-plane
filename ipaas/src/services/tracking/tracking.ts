@@ -19,7 +19,7 @@
 // @ts-expect-error: moesif-browser-js does not ship types
 import moesif from 'moesif-browser-js';
 import { getSession } from '../../auth';
-import { isAnalyticsCookiesAllowed, onConsentChange } from './oneTrustCookiePro';
+import { hasRecordedConsentChoice, isAnalyticsCookiesAllowed, onConsentChange } from './oneTrustCookiePro';
 
 declare global {
   interface Window {
@@ -103,24 +103,44 @@ let consentResolved = false;
 let pendingEvents: PendingEvent[] = [];
 // The user Moesif last identified, so trackEvent can identify a session restored without a sign-in.
 let identifiedUserId: string | null = null;
+// Set while the SDK's batchers are halted by a consent withdrawal, so a re-grant restarts them.
+let batchingPaused = false;
 
 function syncMoesifConsent(applicationId: string | undefined): void {
-  consentResolved = true;
+  const allowed = isAnalyticsCookiesAllowed();
 
-  if (!applicationId || !isAnalyticsCookiesAllowed()) {
-    pendingEvents = [];
+  if (!applicationId || !allowed) {
+    // An unanswered banner reads as "not allowed" too; keep the queue until the user decides.
+    if (!applicationId || hasRecordedConsentChoice()) {
+      consentResolved = true;
+      pendingEvents = [];
+    }
     if (moesifClient) {
       // stop() only unpatches fetch/XHR; clear the ids and session init() persisted too.
       moesifClient.stop();
       moesifClient.clearCookies();
       moesifClient.clearStorage();
+      // stop() leaves the batch queue flushing on its timer. Halt each batcher and empty its queue
+      // (memory and localStorage) so nothing recorded before the withdrawal is sent. Not
+      // stopAllBatching(), which also turns batching off for good.
+      Object.values<{ stop: () => void; clear: () => void }>(moesifClient.requestBatchers ?? {}).forEach((batcher) => {
+        batcher.stop();
+        batcher.clear();
+      });
+      batchingPaused = true;
       identifiedUserId = null;
     }
     return;
   }
 
+  consentResolved = true;
   moesifClient ??= moesif.init({ applicationId, batchEnabled: true, batchSize: 20, batchMaxTime: 5000 });
   moesifClient.start();
+  if (batchingPaused) {
+    // init() starts the batchers only once; restart the ones the withdrawal halted.
+    moesifClient.initBatching();
+    batchingPaused = false;
+  }
   // Consent often lands after sign-in, when the post-sign-in identify found no client yet.
   identifyMoesifSession();
 
