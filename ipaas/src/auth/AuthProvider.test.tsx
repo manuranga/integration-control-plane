@@ -211,6 +211,18 @@ describe('cloud AuthProvider — settling the session', () => {
     expect(getOrgUuidFromToken()).toBe('org-uuid');
   });
 
+  it("carries the access token's scopes, or none when it has no scope claim", async () => {
+    signedInSdk(accessToken({ scope: 'openid ipaas:project:read  cloud:organization:view' }));
+    await render();
+    expect(auth?.scopes).toEqual(['openid', 'ipaas:project:read', 'cloud:organization:view']);
+
+    root.unmount();
+    root = createRoot(container);
+    signedInSdk();
+    await render();
+    expect(auth?.scopes).toEqual([]);
+  });
+
   it('connects the token for requests made outside React', async () => {
     const token = accessToken();
     signedInSdk(token);
