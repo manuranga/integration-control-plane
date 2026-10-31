@@ -78,7 +78,7 @@ import { newComponentUrl, editProjectUrl, linkRepositoryUrl, type ProjectScope }
 import { useOrgUuid } from '../hooks/useOrgUuid';
 import { useAuth } from '../auth';
 import { componentOverviewUrl, orgProjectsUrl } from '../paths';
-import { Permissions, PROJECT_EDIT_PERMISSIONS } from '../constants/permissions';
+import { Scopes } from '../constants/permissions';
 import { isSupportedIntegration, getDisplayLabel, getNonIntegrationPlatform } from '../constants/integrations';
 import { identifyIntegration } from '../utils/identifyIntegration';
 import IntegrationIcon from '../components/IntegrationIcon';
@@ -401,7 +401,7 @@ function IntegrationsTable({
             },
           }}
         />
-        <Authorized permissions={Permissions.INTEGRATION_MANAGE}>
+        <Authorized permissions={Scopes.INTEGRATION_CREATE}>
           <Tooltip title={quotaReached ? 'You have exceeded the allocated integration quota. Upgrade your subscription.' : ''} placement="top">
             <span>
               <Button variant="contained" startIcon={<Plus size={16} />} onClick={() => navigate(newComponentUrl(scope))} disabled={quotaReached}>
@@ -511,7 +511,7 @@ function IntegrationsTable({
                             ) : (
                               <Box className="row-swap" sx={lastUpdatedSwapSx}>
                                 <Box className="row-time">{!init && <RelativeTime time={formatDistanceToNow(c.lastBuildDate)} dateTime={c.lastBuildDate} tooltip={formatDateTime(c.lastBuildDate)} />}</Box>
-                                <Authorized permissions={Permissions.INTEGRATION_MANAGE}>
+                                <Authorized permissions={Scopes.INTEGRATION_DELETE}>
                                   <Button
                                     className="row-delete"
                                     variant="outlined"
@@ -866,7 +866,7 @@ export default function Project(scope: ProjectScope): JSX.Element {
                 ) : (
                   <Stack direction="row" alignItems="center" gap={0.5} mb={1} onMouseEnter={() => setNameHovered(true)} onMouseLeave={() => setNameHovered(false)}>
                     <Typography variant="h1">{project.name}</Typography>
-                    <Authorized permissions={PROJECT_EDIT_PERMISSIONS}>
+                    <Authorized permissions={Scopes.PROJECT_UPDATE}>
                       <Tooltip title="Edit name">
                         <IconButton size="small" aria-label="Edit project name" onClick={startNameEdit} sx={{ opacity: nameHovered ? 1 : 0, transition: 'opacity 0.15s' }}>
                           <Pencil size={14} />
@@ -964,7 +964,7 @@ export default function Project(scope: ProjectScope): JSX.Element {
                     </Link>
                   </Stack>
                 ) : (
-                  <Authorized permissions={PROJECT_EDIT_PERMISSIONS}>
+                  <Authorized permissions={Scopes.PROJECT_UPDATE}>
                     <Button size="small" variant="text" color="primary" startIcon={<Link2 size={14} />} onClick={() => navigate(linkRepositoryUrl(scope))} sx={linkRepoButtonSx}>
                       Link a repository
                     </Button>
@@ -974,7 +974,7 @@ export default function Project(scope: ProjectScope): JSX.Element {
             </Stack>
           </Stack>
           <Stack direction="row" alignItems="center" gap={1.5} sx={{ flexShrink: 0 }}>
-            <Authorized permissions={PROJECT_EDIT_PERMISSIONS}>
+            <Authorized permissions={Scopes.PROJECT_UPDATE}>
               <Button variant="outlined" size="small" startIcon={<Pencil size={14} />} onClick={() => navigate(editProjectUrl(scope))} sx={{ whiteSpace: 'nowrap' }}>
                 Edit project
               </Button>
