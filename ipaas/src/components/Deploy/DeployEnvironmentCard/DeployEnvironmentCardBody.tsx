@@ -58,6 +58,7 @@ export default function DeployEnvironmentCardBody({
   configurablesCount,
   scaleToZeroEnabled,
   onConfigClick,
+  configReadOnly,
   onJobConfigClick,
   onHistoryClick,
   onEndpointsClick,
@@ -210,7 +211,7 @@ export default function DeployEnvironmentCardBody({
           {configurablesCount !== undefined && configurablesCount >= 0 && <Chip size="small" label={configurablesCount} sx={{ height: 18, fontSize: '0.65rem', borderRadius: 0.75 }} />}
         </Stack>
         {onConfigClick && (
-          <Tooltip title="Configure environment variables">
+          <Tooltip title={configReadOnly ? 'View Configuration' : 'Configure environment variables'}>
             <IconButton size="small" onClick={onConfigClick}>
               <Settings size={16} />
             </IconButton>

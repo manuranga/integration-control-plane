@@ -61,6 +61,7 @@ export default function Environment({ env, prevEnv, componentId, projectId, comp
   const isGenericService = GENERIC_SERVICE_TYPES.has(displayType ?? '');
   const queryClient = useQueryClient();
   const can = useCan();
+  const configReadOnly = !can(Scopes.CONFIG_MANAGE, env);
   const navigate = useAppNavigate();
   const [configureOpen, setConfigureOpen] = useState(false);
   const [logsOpen, setLogsOpen] = useState(false);
@@ -267,6 +268,7 @@ export default function Environment({ env, prevEnv, componentId, projectId, comp
           onViewLogs={isGenericService ? () => setLogsOpen(true) : undefined}
           onTest={isGenericService ? () => navigate(`/organizations/${orgHandler}/projects/${projectHandler}/components/${componentHandler}/test/console`) : undefined}
           hasMissingConfigs={hasMissingConfigs}
+          configReadOnly={configReadOnly}
           isBuildInProgress={isBuildInProgress}
         />
 
@@ -343,7 +345,7 @@ export default function Environment({ env, prevEnv, componentId, projectId, comp
         isAutomation={isAutomation}
         envTemplateId={envTemplateId}
         buildId={envDeployment?.build?.buildId}
-        readOnly={!can(Scopes.CONFIG_MANAGE, env)}
+        readOnly={configReadOnly}
       />
 
       {isGenericService && <ServiceLogsDrawer open={logsOpen} onClose={() => setLogsOpen(false)} componentId={componentId} environmentId={env.id} envName={env.name} versionId={versionId} />}
