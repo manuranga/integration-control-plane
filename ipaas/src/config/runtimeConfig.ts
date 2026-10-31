@@ -50,6 +50,7 @@ interface RuntimeConfig {
   INTEGRATION_BUILDER_MAX_TOKENS?: string;
   INTEGRATION_BUILDER_CENTRAL_GRAPHQL_URL?: string;
   MOESIF_APP_URL?: string;
+  SCOPES_ENFORCED?: string | boolean;
 }
 
 export interface ApiConfig {
@@ -113,6 +114,8 @@ export interface ApiConfig {
   integrationBuilderCentralGraphqlUrl: string;
   /** Trusted Moesif embed origin; empty disables API Insights. */
   moesifAppUrl?: string;
+  /** Hide actions the user's role doesn't allow. Set from the same deployment variable as ipaas-service's SCOPES_ENFORCED, so the console hides what ipaas-service refuses. */
+  scopesEnforced?: boolean;
 }
 
 // Extend window interface
@@ -205,6 +208,7 @@ export async function loadConfig(): Promise<void> {
       integrationBuilderMaxTokens: parsePositiveInt(config.INTEGRATION_BUILDER_MAX_TOKENS, DEFAULT_CONFIG.integrationBuilderMaxTokens),
       integrationBuilderCentralGraphqlUrl: config.INTEGRATION_BUILDER_CENTRAL_GRAPHQL_URL || 'https://api.dev-central.ballerina.io/2.0/graphql',
       moesifAppUrl: config.MOESIF_APP_URL?.trim() || undefined,
+      scopesEnforced: config.SCOPES_ENFORCED === 'true' || config.SCOPES_ENFORCED === true,
     };
 
     console.info('✓ Runtime configuration loaded from config.json');

@@ -36,6 +36,7 @@ Some key names come from earlier products (`CHOREO_*`, `ASGARDEO_*`, `VITE_*`). 
 | `INTEGRATION_BUILDER_*`                                                      | AI Integration Builder: copilot base URL, model, max tokens, connectors GraphQL URL                                      |
 | `AI_COPILOT_URL_SUFFIX`                                                      | Copilot path on the system APIs gateway                                                                                  |
 | `MOESIF_APP_URL`                                                             | API Insights. See below.                                                                                                 |
+| `SCOPES_ENFORCED`                                                            | `true` hides what the user's role doesn't allow. Set with ipaas-service's `SCOPES_ENFORCED`.                             |
 
 Sign-out returns to the page origin. Thunder must list that origin in the client's `postLogoutRedirectUris`.
 
