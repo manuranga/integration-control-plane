@@ -36,11 +36,7 @@
  *     generate-release and binds it; OpenChoreo can only release the latest
  *     Workload, so the most recent successful build is what deploys.
  *
- * Write-path note: several POST/PUT handlers in the BFF accept `?projectName=…`.
- * The writes here omit it because the devant-typed input shapes do not carry
- * projectId. The BFF service today resolves the project from componentName;
- * if that tightens, the right fix is to widen the devant input types (separate
- * workstream) rather than adding a query here.
+ * Requests carry no `?projectName=`: the BFF resolves the project from the component.
  */
 
 import type { ComponentDeployment, BuildRun, ReleaseMgtDeployment, DeploymentTrackImage, DeployDeploymentTrackInput, PromoteInput, StopDeploymentInput, DeployPrebuiltImageInput, ByoiImage } from '../types/deployment';
