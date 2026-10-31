@@ -74,7 +74,7 @@ export default function HeaderStatus({
           </Typography>
         </Stack>
       )}
-      {hasDeployment && <ConfigureButton onClick={() => setConfigureOpen(true)} hasMissingConfigs={missingConfigs} />}
+      {hasDeployment && <ConfigureButton environment={env} onClick={() => setConfigureOpen(true)} hasMissingConfigs={missingConfigs} />}
       <ConfigureDrawer
         onSaved={() => {
           requestPoll();
