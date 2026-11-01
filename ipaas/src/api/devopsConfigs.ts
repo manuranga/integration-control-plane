@@ -123,12 +123,12 @@ const filesBase = (componentId: string, env: string): string => `/components/${s
 // request per (component, env). Dropped on settle, so a refetch after a mutation
 // reloads fresh. Errors degrade to [] (matches the file-mount read).
 const inflightEnvGroups = new Map<string, Promise<BffEnvGroup[]>>();
-const fetchEnvGroups = (componentId: string, projectId: string, env: string): Promise<BffEnvGroup[]> => {
+const fetchEnvGroups = (componentId: string, env: string): Promise<BffEnvGroup[]> => {
   const key = `${componentId} ${env}`;
   const existing = inflightEnvGroups.get(key);
   if (existing) return existing;
   const promise = bff
-    .get<{ groups?: BffEnvGroup[] }>(`${filesBase(componentId, env)}/env-groups${q({ projectName: projectId })}`)
+    .get<{ groups?: BffEnvGroup[] }>(`${filesBase(componentId, env)}/env-groups`)
     .then((r) => r?.groups ?? [])
     .catch(() => [] as BffEnvGroup[])
     .finally(() => inflightEnvGroups.delete(key));
@@ -176,19 +176,11 @@ const stageFile = (fileName: string, data: { data?: Record<string, string> }, se
   pendingFiles.set(fileName, { content: data.data?.data ?? '', sensitive });
 };
 
-// Cloud has no release resource and no lookup route, so the env is recovered by matching release_name.
-interface BffReleaseBinding {
-  environment_id?: string;
-  release_name?: string;
-}
-const envForRelease = (componentId: string, releaseId: string): Promise<string> =>
-  bff.get<ListResponse<BffReleaseBinding>>(`/components/${seg(componentId)}/release-mgt-deployments`).then((r) => items(r).find((d) => d.release_name === releaseId)?.environment_id ?? '');
-
 // PUT the combined file mount, draining any staged content for this fileName.
-const putFile = (componentId: string, projectId: string, env: string, fileName: string, mountPath: string, secretIdSet: boolean): Promise<unknown> => {
+const putFile = (componentId: string, env: string, fileName: string, mountPath: string, secretIdSet: boolean): Promise<unknown> => {
   const staged = pendingFiles.get(fileName);
   pendingFiles.delete(fileName);
-  return bff.put(`${filesBase(componentId, env)}/files/${seg(fileName)}${q({ projectName: projectId })}`, {
+  return bff.put(`${filesBase(componentId, env)}/files/${seg(fileName)}`, {
     fileName,
     mountPath,
     content: staged?.content ?? '',
@@ -201,28 +193,26 @@ const putFile = (componentId: string, projectId: string, env: string, fileName: 
 // (they carry only the env via data.environment_id), so resolve it per env.
 // `keep` names stored secret keys that stay as they are; any other stored key
 // missing from `data` is removed.
-const putEnvGroup = async (projectId: string, env: string, name: string, sensitive: boolean, data: Record<string, string>, keep?: string[]): Promise<void> => {
+const putEnvGroup = async (env: string, name: string, sensitive: boolean, data: Record<string, string>, keep?: string[]): Promise<void> => {
   const componentId = await componentForEnv(env);
   if (!componentId) return;
-  await bff.put(`${filesBase(componentId, env)}/env-groups/${seg(name)}${q({ projectName: projectId })}`, { name, sensitive, data, ...(keep?.length ? { keep } : {}) });
+  await bff.put(`${filesBase(componentId, env)}/env-groups/${seg(name)}`, { name, sensitive, data, ...(keep?.length ? { keep } : {}) });
 };
 
-const listEnvGroups = async (projectId: string, env: string): Promise<BffEnvGroup[]> => {
+const listEnvGroups = async (env: string): Promise<BffEnvGroup[]> => {
   const componentId = await componentForEnv(env);
   if (!componentId) return [];
-  return fetchEnvGroups(componentId, projectId, env);
+  return fetchEnvGroups(componentId, env);
 };
 
 // ── release (real container data, keyed by the resolved env) ───────────────────
 
-// Cloud has no release distinct from an app-environment binding, so releaseId
-// resolves to an env via envForRelease. `ID` is aliased to that env on purpose —
+// Cloud has no release distinct from an app-environment binding, so the release is
+// read as the env's. The container's `ID` is aliased to the env on purpose —
 // downstream consumers address the container by env, not a real container id.
 // Other fields come straight from the BFF's Containers endpoint (same shape as
 // ReleaseContainer), except `name` falls back to the env only if BFF omits it.
-export const getReleaseById = async (_orgUuid: string, _projectId: string, componentId: string, releaseId: string): Promise<ReleaseDetails> => {
-  const env = await envForRelease(componentId, releaseId);
-  if (!env) return { ID: releaseId, containers: [] };
+export const getReleaseById = async (_orgUuid: string, _projectId: string, componentId: string, env: string, releaseId: string): Promise<ReleaseDetails> => {
   setComponentForEnv(env, componentId);
   const list = await bff.get<ListResponse<ReleaseContainer>>(`${filesBase(componentId, env)}/containers`).catch(() => null);
   const real = items(list)[0];
@@ -244,9 +234,9 @@ export const updateContainer = async (_orgUuid: string, _projectId: string, comp
 const toConfigMap = (g: BffEnvGroup, environmentId: string): DevopsConfigMap => ({ ID: g.name, name: g.name, environment_id: environmentId, app_environment_id: '', version: 1, config_type: 'VariableList', keys: g.keys ?? [] });
 const toSecret = (g: BffEnvGroup, environmentId: string): DevopsSecret => ({ ID: g.name, name: g.name, environment_id: environmentId, app_environment_id: '', keys: g.keys ?? [], version: 1, config_type: 'VariableList', secret_type: 'Opaque' });
 
-export const getConfigMaps = async (_orgUuid: string, projectId: string, environmentId: string): Promise<DevopsConfigMap[]> => (await listEnvGroups(projectId, environmentId)).filter((g) => !g.sensitive).map((g) => toConfigMap(g, environmentId));
+export const getConfigMaps = async (_orgUuid: string, _projectId: string, environmentId: string): Promise<DevopsConfigMap[]> => (await listEnvGroups(environmentId)).filter((g) => !g.sensitive).map((g) => toConfigMap(g, environmentId));
 
-export const getSecrets = async (_orgUuid: string, projectId: string, environmentId: string): Promise<DevopsSecret[]> => (await listEnvGroups(projectId, environmentId)).filter((g) => g.sensitive).map((g) => toSecret(g, environmentId));
+export const getSecrets = async (_orgUuid: string, _projectId: string, environmentId: string): Promise<DevopsSecret[]> => (await listEnvGroups(environmentId)).filter((g) => g.sensitive).map((g) => toSecret(g, environmentId));
 
 // Secret values are write-only; the page never reads secret details (the editor
 // re-enters them from the row's keys), so a benign redacted default suffices.
@@ -256,13 +246,13 @@ export const getSecretDetails = (_orgUuid: string, _projectId: string, environme
 // On edit, prefill values. The id can be an env-var group (→ its KEY=value map)
 // or a file mount (→ its content under `data`); try the group first, fall back to
 // the file. Secret values are unreadable → empty (re-entered); a 404 → empty.
-export const getConfigMapDetails = async (_orgUuid: string, projectId: string, environmentId: string, configMapId: string): Promise<DevopsConfigMapDetails> => {
+export const getConfigMapDetails = async (_orgUuid: string, _projectId: string, environmentId: string, configMapId: string): Promise<DevopsConfigMapDetails> => {
   const base: DevopsConfigMapDetails = { ID: configMapId, name: configMapId, environment_id: environmentId, app_environment_id: '', version: 1, config_type: 'File', keys: [], data: { data: '' } };
   const componentId = await componentForEnv(environmentId);
   if (!componentId) return base;
-  const group = await bff.get<BffEnvGroup>(`${filesBase(componentId, environmentId)}/env-groups/${seg(configMapId)}${q({ projectName: projectId })}`).catch(() => null);
+  const group = await bff.get<BffEnvGroup>(`${filesBase(componentId, environmentId)}/env-groups/${seg(configMapId)}`).catch(() => null);
   if (group) return { ...base, config_type: 'VariableList', keys: group.keys ?? [], data: group.data ?? {} };
-  const file = await bff.get<BffFileMount>(`${filesBase(componentId, environmentId)}/files/${seg(configMapId)}${q({ projectName: projectId })}`).catch(() => null);
+  const file = await bff.get<BffFileMount>(`${filesBase(componentId, environmentId)}/files/${seg(configMapId)}`).catch(() => null);
   return { ...base, data: { data: file?.content ?? '' } };
 };
 
@@ -274,13 +264,13 @@ export const getConfigMapDetails = async (_orgUuid: string, projectId: string, e
 const isEnvVars = (configType: string): boolean => configType === 'VariableList';
 
 export const createSecret = async (_orgUuid: string, _projectId: string, data: SecretWriteData): Promise<DevopsSecret> => {
-  if (isEnvVars(data.config_type)) await putEnvGroup(data.project_id, data.environment_id, data.name, true, data.data ?? {});
+  if (isEnvVars(data.config_type)) await putEnvGroup(data.environment_id, data.name, true, data.data ?? {});
   else stageFile(data.name, data, true);
   return { ID: data.name, name: data.name, environment_id: data.environment_id, app_environment_id: data.app_environment_id ?? '', keys: Object.keys(data.data ?? {}), version: 1, config_type: data.config_type, secret_type: data.secret_type };
 };
 
 export const updateSecret = async (_orgUuid: string, _projectId: string, secretId: string, data: SecretWriteData): Promise<DevopsSecret> => {
-  if (isEnvVars(data.config_type)) await putEnvGroup(data.project_id, data.environment_id, secretId, true, data.data ?? {}, data.keep);
+  if (isEnvVars(data.config_type)) await putEnvGroup(data.environment_id, secretId, true, data.data ?? {}, data.keep);
   else stageFile(secretId, data, true);
   return {
     ID: secretId,
@@ -295,13 +285,13 @@ export const updateSecret = async (_orgUuid: string, _projectId: string, secretI
 };
 
 export const createConfigMap = async (_orgUuid: string, _projectId: string, data: ConfigMapWriteData): Promise<DevopsConfigMap> => {
-  if (isEnvVars(data.config_type)) await putEnvGroup(data.project_id, data.environment_id, data.name, false, data.data ?? {});
+  if (isEnvVars(data.config_type)) await putEnvGroup(data.environment_id, data.name, false, data.data ?? {});
   else stageFile(data.name, data, false);
   return { ID: data.name, name: data.name, environment_id: data.environment_id, app_environment_id: data.app_environment_id ?? '', version: 1, config_type: data.config_type, keys: Object.keys(data.data ?? {}) };
 };
 
 export const updateConfigMapData = async (_orgUuid: string, _projectId: string, configMapId: string, data: ConfigMapWriteData): Promise<DevopsConfigMapDetails> => {
-  if (isEnvVars(data.config_type)) await putEnvGroup(data.project_id, data.environment_id, configMapId, false, data.data ?? {});
+  if (isEnvVars(data.config_type)) await putEnvGroup(data.environment_id, configMapId, false, data.data ?? {});
   else stageFile(configMapId, data, false);
   return { ID: configMapId, name: data.name, environment_id: data.environment_id, app_environment_id: data.app_environment_id ?? '', version: 1, config_type: data.config_type, keys: Object.keys(data.data ?? {}), data: data.data ?? {} };
 };
@@ -313,18 +303,18 @@ export const deleteConfigMap = (_orgUuid: string, _projectId: string, _environme
 
 // ── container config mounts (files + env-var groups) ───────────────────────────
 
-export const getContainerConfigMounts = async (_orgUuid: string, projectId: string, componentId: string, releaseId: string, containerId: string): Promise<DevopsConfigMount[]> => {
+export const getContainerConfigMounts = async (_orgUuid: string, _projectId: string, componentId: string, releaseId: string, containerId: string): Promise<DevopsConfigMount[]> => {
   const env = containerId; // carried through from getReleaseById
   if (!env) return [];
   setComponentForEnv(env, componentId);
-  const [filesR, groups] = await Promise.all([bff.get<{ files?: BffFileMount[] }>(`${filesBase(componentId, env)}/files${q({ projectName: projectId })}`).catch(() => null), fetchEnvGroups(componentId, projectId, env)]);
+  const [filesR, groups] = await Promise.all([bff.get<{ files?: BffFileMount[] }>(`${filesBase(componentId, env)}/files`).catch(() => null), fetchEnvGroups(componentId, env)]);
   return [...(filesR?.files ?? []).map((f) => toFileMount(f, env, releaseId)), ...groups.map((g) => toEnvMount(g, env, releaseId))];
 };
 
 // On create, the hook mounts the config after creating it. Env-var groups are
 // already fully written by createConfigMap/createSecret, so the ENVFile mount is
 // a no-op that echoes a synthetic mount; file mounts issue the combined PUT here.
-export const mountConfig = async (_orgUuid: string, projectId: string, componentId: string, data: ConfigMountWriteData): Promise<DevopsConfigMount> => {
+export const mountConfig = async (_orgUuid: string, _projectId: string, componentId: string, data: ConfigMountWriteData): Promise<DevopsConfigMount> => {
   const id = data.configmap_id ?? data.secret_id ?? '';
   if (data.mount_type !== 'File') {
     return {
@@ -340,7 +330,7 @@ export const mountConfig = async (_orgUuid: string, projectId: string, component
     };
   }
   const mountPath = data.mount_path ?? '';
-  await putFile(componentId, projectId, data.container_id, id, mountPath, !!data.secret_id);
+  await putFile(componentId, data.container_id, id, mountPath, !!data.secret_id);
   return {
     ID: id,
     configmap_id: data.configmap_id,
@@ -356,12 +346,12 @@ export const mountConfig = async (_orgUuid: string, projectId: string, component
 
 // The hook only updates a mount for file-mount edits (mount path is editable);
 // env-var edits update the group via updateConfigMapData/updateSecret instead.
-export const updateConfigMount = async (_orgUuid: string, projectId: string, path: ConfigMountPath, data: ConfigMountWriteData): Promise<DevopsConfigMount> => {
+export const updateConfigMount = async (_orgUuid: string, _projectId: string, path: ConfigMountPath, data: ConfigMountWriteData): Promise<DevopsConfigMount> => {
   const fileName = path.mountId;
   const env = path.containerId;
   const mountPath = (data.mount_path as string) ?? '';
   const secretId = (data.secret_id as string | null) ?? null;
-  await putFile(path.componentId, projectId, env, fileName, mountPath, !!secretId);
+  await putFile(path.componentId, env, fileName, mountPath, !!secretId);
   return {
     ID: fileName,
     configmap_id: (data.configmap_id as string | null) ?? null,
@@ -378,17 +368,17 @@ export const updateConfigMount = async (_orgUuid: string, projectId: string, pat
 // Unmount = delete. The id is an env-var group or a file mount; delete the group
 // if it exists, else resolve the file's mount path and delete the file. A config
 // already gone is a no-op. path carries the component, so no env→component lookup.
-export const removeConfigMount = async (_orgUuid: string, projectId: string, path: ConfigMountPath): Promise<void> => {
+export const removeConfigMount = async (_orgUuid: string, _projectId: string, path: ConfigMountPath): Promise<void> => {
   const env = path.containerId;
   const name = path.mountId;
   const base = filesBase(path.componentId, env);
-  const group = await bff.get<BffEnvGroup>(`${base}/env-groups/${seg(name)}${q({ projectName: projectId })}`).catch(() => null);
+  const group = await bff.get<BffEnvGroup>(`${base}/env-groups/${seg(name)}`).catch(() => null);
   if (group) {
-    await bff.delete(`${base}/env-groups/${seg(name)}${q({ projectName: projectId })}`);
+    await bff.delete(`${base}/env-groups/${seg(name)}`);
     return;
   }
-  const list = await bff.get<{ files?: BffFileMount[] }>(`${base}/files${q({ projectName: projectId })}`).catch(() => null);
+  const list = await bff.get<{ files?: BffFileMount[] }>(`${base}/files`).catch(() => null);
   const file = (list?.files ?? []).find((f) => f.fileName === name);
   if (!file) return;
-  await bff.delete(`${base}/files/${seg(name)}${q({ projectName: projectId, mountPath: file.mountPath })}`);
+  await bff.delete(`${base}/files/${seg(name)}${q({ mountPath: file.mountPath })}`);
 };

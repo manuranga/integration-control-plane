@@ -65,7 +65,7 @@ export function useRagRetrievalService(orgHandler: string, projectId: string, en
   const deploymentActive = deployment?.deploymentStatusV2 === 'ACTIVE';
 
   // 4. Its endpoint (need publicUrl + apimId to authenticate).
-  const { data: endpoints = [], isLoading: loadingEndpoints } = useEnvEndpoints(service?.id ?? '', versionId, releaseId);
+  const { data: endpoints = [], isLoading: loadingEndpoints } = useEnvEndpoints(service?.id ?? '', versionId, envId, releaseId);
   const endpoint = useMemo(() => endpoints.find((e) => e.publicUrl && e.apimId) ?? null, [endpoints]);
   const invokeUrl = deploymentActive ? (endpoint?.publicUrl ?? '') : '';
   const apimId = endpoint?.apimId ?? null;
