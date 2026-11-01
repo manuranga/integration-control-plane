@@ -337,6 +337,7 @@ export default function AutomationExecutions({
         componentId={componentId}
         environmentId={environmentId}
         releaseId={releaseId}
+        envCritical={envCritical}
       />
 
       <LogsDrawer open={!!logsExecution} onClose={() => setLogsExecution(null)} executionId={logsExecution?.id ?? ''} componentId={componentId} deploymentTrackId={deploymentTrackId} environmentId={environmentId} run={logsExecution ?? undefined} />
