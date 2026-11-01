@@ -116,6 +116,7 @@ export default function Deploy(scope: ComponentScope): JSX.Element {
             commits={commits}
             firstEnvId={environments[0]?.id ?? ''}
             firstEnvTemplateId={environments[0]?.templateId ?? environments[0]?.id ?? ''}
+            firstEnvCritical={environments[0]?.critical ?? true}
             autoDeployEnabled={autoDeployEnabled}
             componentName={component.name}
             projectHandler={project?.handler ?? ''}

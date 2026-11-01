@@ -33,6 +33,8 @@ export interface BuildAreaProps {
   commits: Commit[];
   firstEnvId: string;
   firstEnvTemplateId: string;
+  /** The first environment is production: deploying there, or turning auto-deploy on, needs production-write. */
+  firstEnvCritical: boolean;
   autoDeployEnabled?: boolean;
   componentName: string;
   projectHandler: string;

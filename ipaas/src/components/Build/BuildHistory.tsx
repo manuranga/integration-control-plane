@@ -17,7 +17,7 @@
  */
 
 import { Scopes } from '../../constants/permissions';
-import { useCan } from '../../hooks/useCan';
+import { useCan, useGate } from '../../hooks/useCan';
 import { Alert, Button, Chip, CircularProgress, IconButton, ListingTable, Snackbar, Stack, TablePagination, Tooltip, Typography } from '@wso2/oxygen-ui';
 import { GitCommit, Settings } from '@wso2/oxygen-ui-icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -42,9 +42,11 @@ interface BuildHistoryProps {
   commits: Commit[];
   commitsLoading: boolean;
   repository: Repository | null;
+  /** Builds deploy automatically to a production environment, so building needs production-write. */
+  autoDeployCritical: boolean;
 }
 
-export default function BuildHistory({ componentId, versionId, envId, branch, builds, buildsLoading, commits, commitsLoading, repository }: BuildHistoryProps) {
+export default function BuildHistory({ componentId, versionId, envId, branch, builds, buildsLoading, commits, commitsLoading, repository, autoDeployCritical }: BuildHistoryProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerType, setDrawerType] = useState<BuildDrawerType | null>(null);
   const [selectedBuild, setSelectedBuild] = useState<BuildRun | null>(null);
@@ -57,6 +59,7 @@ export default function BuildHistory({ componentId, versionId, envId, branch, bu
   const [searchParams, setSearchParams] = useSearchParams();
   const triggerBuild = useTriggerBuild();
   const can = useCan();
+  const build = useGate()(Scopes.INTEGRATION_BUILD, { critical: autoDeployCritical });
 
   const handleAutoOpen = useCallback((build: BuildRun) => {
     setSelectedBuild(build);
@@ -139,23 +142,23 @@ export default function BuildHistory({ componentId, versionId, envId, branch, bu
         <Typography variant="h1">Build</Typography>
 
         <Stack direction="row" alignItems="center" gap={1}>
-          {can(Scopes.INTEGRATION_BUILD) && (
+          {build.shown && (
           <>
-          <Tooltip title={hasInProgress ? 'A build is already in progress' : !latestCommit ? 'No commits available' : ''}>
+          <Tooltip title={build.refusal || (hasInProgress ? 'A build is already in progress' : !latestCommit ? 'No commits available' : '')}>
             <span>
-              <Button variant="outlined" size="small" onClick={handleSelectCommit} disabled={isBuilding || commitsLoading || commits.length === 0}>
+              <Button variant="outlined" size="small" onClick={handleSelectCommit} disabled={isBuilding || commitsLoading || commits.length === 0 || !!build.refusal}>
                 Show Commits
               </Button>
             </span>
           </Tooltip>
 
-          <Tooltip title={hasInProgress ? 'A build is already in progress' : !latestCommit ? 'No commits available' : ''}>
+          <Tooltip title={build.refusal || (hasInProgress ? 'A build is already in progress' : !latestCommit ? 'No commits available' : '')}>
             <span>
               <Button
                 variant="contained"
                 size="small"
                 onClick={handleBuildLatest}
-                disabled={isBuilding || !latestCommit}
+                disabled={isBuilding || !latestCommit || !!build.refusal}
                 startIcon={isBuilding ? <CircularProgress color="inherit" size={14} /> : undefined}>
                 {isBuilding ? 'Building' : 'Build Latest'}
               </Button>
