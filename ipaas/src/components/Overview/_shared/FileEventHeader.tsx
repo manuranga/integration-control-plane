@@ -25,6 +25,8 @@ import { useSchemaConfig } from '../../../hooks/useConfiguration';
 import type { CustomHeaderProps } from '../../../types/integration';
 import StatusDot from './StatusDot';
 import ConfigureButton from './ConfigureButton';
+import { Scopes } from '../../../constants/permissions';
+import { useCan } from '../../../hooks/useCan';
 import { hasMissingRequiredConfigs } from './configStatus';
 // Transitional: legacy ConfigureDrawer (defaults to the generic-service form
 // when `isAutomation` is absent) until its genericisation in phase 4.5.
@@ -57,6 +59,8 @@ export default function FileEventHeader({
   onRefresh,
 }: CustomHeaderProps): ReactNode {
   const [configureOpen, setConfigureOpen] = useState(false);
+  const can = useCan();
+  const configReadOnly = !can(Scopes.CONFIG_MANAGE, env);
   const stopMutation = useStopDeployment();
   const redeployMutation = useRedeployDeployment();
   const isActionPending = stopMutation.isPending || redeployMutation.isPending;
@@ -124,7 +128,7 @@ export default function FileEventHeader({
 
         {hasDeployment && (
           <>
-            <ConfigureButton onClick={() => setConfigureOpen(true)} hasMissingConfigs={missingConfigs} />
+            <ConfigureButton onClick={() => setConfigureOpen(true)} hasMissingConfigs={missingConfigs} readOnly={configReadOnly} />
             <ConfigureDrawer
               onSaved={() => {
                 requestPoll();
@@ -145,6 +149,7 @@ export default function FileEventHeader({
               releaseMgtReleaseId={releaseMgtReleaseId}
               releaseMgtDeploymentId={releaseMgtDeploymentId}
               envTemplateId={envTemplateId}
+              readOnly={configReadOnly}
               buildId={buildId}
               // File/event have no endpoints — match devant's ConfigurationWizard
               // (Configurations + Certificate Mount only, no Endpoints step).

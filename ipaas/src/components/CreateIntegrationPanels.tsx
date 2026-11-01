@@ -50,7 +50,7 @@ import { buildCloudEditorUrl } from '../utils/cloudEditor';
 import { useProjectId } from '../hooks/useProjects';
 import { useAccessControl } from '../contexts/AccessControlContext';
 import { useOrgComponentLimits, useOrgSubscriptions } from '../hooks/useOrg';
-import { Permissions } from '../constants/permissions';
+import { Scopes } from '../constants/permissions';
 import { FREE_COMPONENT_LIMIT } from '../constants/subscription';
 import { useSamples } from '../hooks/useSamples';
 import { trackEvent } from '../services/tracking/tracking';
@@ -94,7 +94,7 @@ export default function CreateIntegrationPanels({ scope, heading }: CreateIntegr
 
   const isUpgraded = (subscriptions ?? []).some((sub) => sub.subscriptionType === 'devant-subscription' && sub.subscriptionStatus === 'active');
   const quotaReached = !isUpgraded && (orgLimits?.billableComponentCount ?? 0) >= FREE_COMPONENT_LIMIT;
-  const canManage = hasAnyPermission([Permissions.INTEGRATION_MANAGE], projectId);
+  const canManage = hasAnyPermission([Scopes.INTEGRATION_CREATE], projectId);
   const creationBlocked = !canManage || quotaReached;
   const blockedTooltip = !canManage ? 'You do not have permission to create integrations.' : 'You have exceeded the allocated integration quota. Upgrade your subscription.';
   const { features } = useFeaturePreview();
@@ -271,7 +271,7 @@ export default function CreateIntegrationPanels({ scope, heading }: CreateIntegr
                   {standalone ? 'Create an Integration on Cloud' : 'Create on Cloud'}
                 </Typography>
               </Stack>
-              <Card variant="outlined" sx={{ flex: 1, boxShadow: 'none', borderColor: 'primary.main', ...(creationBlocked ? { opacity: 0.5, pointerEvents: 'none' } : {}) }}>
+              <Card variant="outlined" inert={creationBlocked} sx={{ flex: 1, boxShadow: 'none', borderColor: 'primary.main', ...(creationBlocked ? { opacity: 0.5, pointerEvents: 'none' } : {}) }}>
                 <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: 3, '&:last-child': { pb: 3 } }}>
                   <Box sx={{ flex: 1, minHeight: 260, overflow: 'hidden' }}>
                     <IDEMockup onOpenClick={handleOpenCloudEditor} />
@@ -292,7 +292,7 @@ export default function CreateIntegrationPanels({ scope, heading }: CreateIntegr
                 {standalone ? 'Import your own Integration' : 'Import your own'}
               </Typography>
             )}
-            <Card variant="outlined" sx={{ boxShadow: 'none', ...(isImportAuthenticating || creationBlocked ? { pointerEvents: 'none', opacity: creationBlocked ? 0.5 : 0.7 } : {}) }}>
+            <Card variant="outlined" inert={creationBlocked} sx={{ boxShadow: 'none', ...(isImportAuthenticating || creationBlocked ? { pointerEvents: 'none', opacity: creationBlocked ? 0.5 : 0.7 } : {}) }}>
               <CardContent
                 sx={{
                   display: 'flex',

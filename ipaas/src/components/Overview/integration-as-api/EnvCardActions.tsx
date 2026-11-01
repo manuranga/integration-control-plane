@@ -22,6 +22,8 @@ import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { useAppNavigate } from '../../../hooks/useAppNavigate';
 import { useRedeployDeployment, useStopDeployment } from '../../../hooks/useDeployments';
+import { Scopes } from '../../../constants/permissions';
+import { useCan } from '../../../hooks/useCan';
 import type { EnvCardActionsProps } from '../../../types/integration';
 import { isDeploymentHealthy } from '../../../utils/deploymentStatus';
 import ServiceLogsDrawer from './ServiceLogsDrawer';
@@ -52,6 +54,7 @@ export default function EnvCardActions({
   const stopMutation = useStopDeployment();
   const redeployMutation = useRedeployDeployment();
   const isActionPending = stopMutation.isPending || redeployMutation.isPending;
+  const canDeployHere = useCan()(Scopes.INTEGRATION_DEPLOY, env);
 
   const canStop = deploymentStatusV2 === 'ACTIVE';
   const canStart = deploymentStatusV2 === 'SUSPENDED';
@@ -106,7 +109,7 @@ export default function EnvCardActions({
           View Logs
         </Button>
       )}
-      {(canStop || isInProgress) && (
+      {canDeployHere && (canStop || isInProgress) && (
         <Tooltip title="Stop deployment">
           <span>
             <Button variant="outlined" size="small" color="error" startIcon={<Square size={14} />} onClick={handleStop} disabled={isActionPending || isInProgress}>
@@ -115,7 +118,7 @@ export default function EnvCardActions({
           </span>
         </Tooltip>
       )}
-      {canStart && (
+      {canDeployHere && canStart && (
         <Tooltip title="Start deployment">
           <span>
             <Button variant="outlined" size="small" color="success" startIcon={<RotateCw size={14} />} onClick={handleRedeploy} disabled={isActionPending}>
@@ -124,7 +127,7 @@ export default function EnvCardActions({
           </span>
         </Tooltip>
       )}
-      {hasError && (
+      {canDeployHere && hasError && (
         <Tooltip title="Redeploy">
           <span>
             <Button variant="outlined" size="small" color="error" startIcon={<RotateCw size={14} />} onClick={handleRedeploy} disabled={isActionPending}>

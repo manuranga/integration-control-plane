@@ -146,6 +146,7 @@ export default function Deploy(scope: ComponentScope): JSX.Element {
                   componentName={component.name}
                   projectHandler={project?.handler ?? ''}
                   nextEnvId={nextEnv?.id}
+                  nextEnvCritical={nextEnv?.critical}
                   isPromotionTarget={env.id === promotingToEnvId}
                   onPromoteStarted={nextEnv ? () => setPromotingToEnvId(nextEnv.id) : undefined}
                   onPromoteSettled={nextEnv ? () => setPromotingToEnvId(null) : undefined}

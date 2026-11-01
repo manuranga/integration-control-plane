@@ -20,6 +20,7 @@ import { Box, Button, IconButton, Stack, Tooltip, Typography } from '@wso2/oxyge
 import { RefreshCw, Clock, SlidersHorizontal, GitCommit, Square, RotateCw, FlaskConical, List } from '@wso2/oxygen-ui-icons-react';
 import ScheduleButton, { type ScheduleButtonProps } from '../Overview/_shared/ScheduleButton';
 import RunButton from '../Overview/automation/RunButton';
+import { configureControl } from '../../utils/configValues';
 
 interface EnvironmentCardHeaderProps {
   envName: string;
@@ -37,13 +38,15 @@ interface EnvironmentCardHeaderProps {
   isRefreshing: boolean;
   deployTrackIsPending: boolean;
   scheduleButtonProps?: ScheduleButtonProps;
-  onRun: () => void;
+  onRun?: () => void;
   onRunWithArgs: () => void;
   onRefresh: () => void;
   onConfigure?: () => void;
   onViewLogs?: () => void;
   onTest?: () => void;
   hasMissingConfigs?: boolean;
+  /** The Configure drawer opens read-only. */
+  configReadOnly?: boolean;
   isBuildInProgress?: boolean;
 }
 
@@ -77,9 +80,11 @@ export default function EnvironmentCardHeader({
   onViewLogs,
   onTest,
   hasMissingConfigs,
+  configReadOnly = false,
   isBuildInProgress,
 }: EnvironmentCardHeaderProps) {
   const buildDisabled = isBuildInProgress && (!hasDeployment || isAutomation);
+  const configure = configureControl(configReadOnly, !!hasMissingConfigs);
   const statusDot = isGenericService && deploymentStatusV2 ? STATUS_DOT_MAP[deploymentStatusV2] : null;
   const canStop = isGenericService && deploymentStatusV2 === 'ACTIVE';
   const canStart = isGenericService && deploymentStatusV2 === 'SUSPENDED';
@@ -117,8 +122,8 @@ export default function EnvironmentCardHeader({
           </Stack>
         )}
         {hasDeployment && onConfigure && (isAutomation || isGenericService) && (
-          <Button variant="outlined" size="small" color={hasMissingConfigs ? 'error' : 'primary'} startIcon={<SlidersHorizontal size={14} />} onClick={onConfigure} sx={{ mr: 1 }}>
-            {hasMissingConfigs ? 'Configure to Continue' : 'Configure'}
+          <Button variant="outlined" size="small" color={configure.color} startIcon={<SlidersHorizontal size={14} />} onClick={onConfigure} sx={{ mr: 1 }}>
+            {configure.label}
           </Button>
         )}
       </Stack>
@@ -137,7 +142,7 @@ export default function EnvironmentCardHeader({
                 View Logs
               </Button>
             )}
-            {(canStop || isInProgress) && (
+            {onStop && (canStop || isInProgress) && (
               <Tooltip title="Stop deployment">
                 <span>
                   <Button variant="outlined" size="small" color="error" startIcon={<Square size={14} />} onClick={onStop} disabled={isActionPending || isInProgress}>
@@ -146,7 +151,7 @@ export default function EnvironmentCardHeader({
                 </span>
               </Tooltip>
             )}
-            {canStart && (
+            {onRedeploy && canStart && (
               <Tooltip title="Start deployment">
                 <span>
                   <Button variant="outlined" size="small" color="success" startIcon={<RotateCw size={14} />} onClick={onRedeploy} disabled={isActionPending}>
@@ -155,7 +160,7 @@ export default function EnvironmentCardHeader({
                 </span>
               </Tooltip>
             )}
-            {hasError && (
+            {onRedeploy && hasError && (
               <Tooltip title="Redeploy">
                 <span>
                   <Button variant="outlined" size="small" color="error" startIcon={<RotateCw size={14} />} onClick={onRedeploy} disabled={isActionPending}>
@@ -177,7 +182,7 @@ export default function EnvironmentCardHeader({
               </Stack>
             )}
             {scheduleButtonProps && <ScheduleButton {...scheduleButtonProps} disabled={hasMissingConfigs || buildDisabled} />}
-            <RunButton envCritical={envCritical} disabled={hasMissingConfigs || buildDisabled} pending={deployTrackIsPending} onRun={onRun} onRunWithArgs={onRunWithArgs} />
+            {onRun && <RunButton envCritical={envCritical} disabled={hasMissingConfigs || buildDisabled} pending={deployTrackIsPending} onRun={onRun} onRunWithArgs={onRunWithArgs} />}
           </>
         )}
         <Tooltip title="Refresh">

@@ -68,6 +68,8 @@ export interface DeployEnvironmentCardProps {
   componentName: string;
   projectHandler: string;
   nextEnvId?: string;
+  /** Whether the next environment is production: promoting into it needs the production scope. */
+  nextEnvCritical?: boolean;
   isPromotionTarget?: boolean;
   onPromoteStarted?: () => void;
   onPromoteSettled?: () => void;
@@ -105,7 +107,10 @@ export interface DeployEnvironmentCardBodyProps {
   endpointCount?: number;
   configurablesCount?: number;
   scaleToZeroEnabled?: boolean;
-  onConfigClick: () => void;
+  /** Absent when the user's role can't read configuration: the card hides the control. */
+  onConfigClick?: () => void;
+  /** The configuration opens read-only. */
+  configReadOnly?: boolean;
   onJobConfigClick?: () => void;
   onHistoryClick?: () => void;
   onEndpointsClick?: () => void;

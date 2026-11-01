@@ -24,8 +24,8 @@ import EmptyListing from '../components/EmptyListing';
 import HealthCheckCard from '../components/HealthChecks/HealthCheckCard';
 import CreateHealthCheckStepper from '../components/HealthChecks/CreateHealthCheckStepper';
 import EnvironmentSelect from '../components/common/EnvironmentSelect';
-import { useAccessControl } from '../contexts/AccessControlContext';
-import { Permissions } from '../constants/permissions';
+import { useCan } from '../hooks/useCan';
+import { Scopes } from '../constants/permissions';
 import { useHealthChecks } from '../hooks/useHealthChecks';
 import { useRelease } from '../hooks/useDevopsConfigs';
 import { useComponentByHandler } from '../hooks/useComponents';
@@ -39,9 +39,8 @@ import type { ComponentScope } from '../nav';
 export default function ComponentHealthChecks({ org, project, component }: ComponentScope): JSX.Element {
   const orgUuid = useOrgUuid();
   const { projectId } = useProjectId(project);
-  const { hasPermission } = useAccessControl();
+  const can = useCan();
   const { data: comp, isLoading } = useComponentByHandler(projectId, component);
-  const canManage = hasPermission(Permissions.INTEGRATION_MANAGE, projectId, comp?.id);
 
   const tracks = useMemo(() => comp?.deploymentTracks ?? [], [comp?.deploymentTracks]);
   const [trackId, setTrackId] = useState('');
@@ -54,6 +53,10 @@ export default function ComponentHealthChecks({ org, project, component }: Compo
   useEffect(() => {
     if (environments.length) setEnvId((prev) => (prev && environments.some((e) => e.id === prev) ? prev : environments[0].id));
   }, [environments]);
+  const canManage = can(
+    Scopes.INTEGRATION_UPDATE,
+    environments.find((e) => e.id === envId),
+  );
 
   const { data: deployment, isLoading: loadingDeployment } = useComponentDeployment(org, orgUuid ?? '', comp?.id ?? '', trackId, envId);
   const releaseId = deployment?.releaseId ?? '';

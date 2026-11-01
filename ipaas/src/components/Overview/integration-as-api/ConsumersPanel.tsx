@@ -20,6 +20,8 @@ import { Alert, Avatar, Box, Button, Chip, CircularProgress, Divider, IconButton
 import { Plus, ShieldCheck, Trash2, Users } from '@wso2/oxygen-ui-icons-react';
 import { useMemo, useState, type JSX } from 'react';
 import { DELETE_CONSUMER_WARNING, SECURITY_MODE_LABEL } from '../../../constants/apiConsumption';
+import { Scopes } from '../../../constants/permissions';
+import { useCan } from '../../../hooks/useCan';
 import { useConsumers, useDeleteConsumer, useEndpointSecurity } from '../../../hooks/useConsumers';
 import type { Consumer, EndpointOption, EndpointRef } from '../../../types/consumers';
 import { consumerSummary } from '../../../utils/apiConsumption';
@@ -41,6 +43,8 @@ interface ConsumersPanelProps {
   envName: string;
   /** Display label. */
   envLabel: string;
+  /** Whether the environment is production, where changes also need the production scope. */
+  envCritical: boolean;
   /** Endpoint name — the BFF's `endpointName` path segment. */
   endpointName: string;
   /** All endpoints of this environment, for the security drawer's selector. */
@@ -48,7 +52,10 @@ interface ConsumersPanelProps {
 }
 
 /** Cloud-only "Consumers" subcard inside the API env card. */
-export default function ConsumersPanel({ componentName, projectName, envName, envLabel, endpointName, endpoints }: ConsumersPanelProps): JSX.Element {
+export default function ConsumersPanel({ componentName, projectName, envName, envLabel, envCritical, endpointName, endpoints }: ConsumersPanelProps): JSX.Element {
+  const can = useCan();
+  const env = { critical: envCritical };
+  const canManageConsumers = can(Scopes.APPLICATION_MANAGE, env) && can(Scopes.ENDPOINT_API_KEY_MANAGE, env);
   const endpointRef: EndpointRef = useMemo(() => ({ componentName, environmentName: envName, endpointName }), [componentName, envName, endpointName]);
 
   const { data: consumers = [], isLoading, error } = useConsumers(projectName, endpointRef);
@@ -96,12 +103,16 @@ export default function ConsumersPanel({ componentName, projectName, envName, en
           )}
         </Typography>
         <Stack direction="row" alignItems="center" gap={1.5}>
-          <Button variant="text" size="small" startIcon={<ShieldCheck size={14} />} onClick={() => setSecurityOpen(true)} sx={styles.textAction}>
-            Configure Security
-          </Button>
-          <Button variant="contained" size="small" startIcon={count > 0 ? <Plus size={14} /> : undefined} onClick={() => setDialogTarget('new')}>
-            {count > 0 ? 'New Consumer' : 'Consume API'}
-          </Button>
+          {can(Scopes.ENDPOINT_UPDATE, env) && (
+            <Button variant="text" size="small" startIcon={<ShieldCheck size={14} />} onClick={() => setSecurityOpen(true)} sx={styles.textAction}>
+              Configure Security
+            </Button>
+          )}
+          {canManageConsumers && (
+            <Button variant="contained" size="small" startIcon={count > 0 ? <Plus size={14} /> : undefined} onClick={() => setDialogTarget('new')}>
+              {count > 0 ? 'New Consumer' : 'Consume API'}
+            </Button>
+          )}
         </Stack>
       </Box>
 
@@ -134,14 +145,18 @@ export default function ConsumersPanel({ componentName, projectName, envName, en
                     </Typography>
                   )}
                 </Box>
-                <Button variant="outlined" size="small" onClick={() => setDialogTarget(c)}>
-                  Manage
-                </Button>
-                <Tooltip title="Delete Consumer">
-                  <IconButton size="small" aria-label={`Delete ${c.displayName}`} onClick={() => setPendingDelete(c)} sx={styles.consumerDeleteButton}>
-                    <Trash2 size={15} />
-                  </IconButton>
-                </Tooltip>
+                {canManageConsumers && (
+                  <>
+                    <Button variant="outlined" size="small" onClick={() => setDialogTarget(c)}>
+                      Manage
+                    </Button>
+                    <Tooltip title="Delete Consumer">
+                      <IconButton size="small" aria-label={`Delete ${c.displayName}`} onClick={() => setPendingDelete(c)} sx={styles.consumerDeleteButton}>
+                        <Trash2 size={15} />
+                      </IconButton>
+                    </Tooltip>
+                  </>
+                )}
               </Box>
             );
           })}

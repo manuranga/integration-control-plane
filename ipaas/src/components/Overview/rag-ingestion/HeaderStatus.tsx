@@ -20,6 +20,8 @@ import { useState, type ReactNode } from 'react';
 import type { HeaderStatusProps } from '../../../types/integration';
 import StatusDot from '../_shared/StatusDot';
 import ConfigureButton from '../_shared/ConfigureButton';
+import { Scopes } from '../../../constants/permissions';
+import { useCan } from '../../../hooks/useCan';
 import RagIngestionConfigureDrawer from './configure/RagIngestionConfigureDrawer';
 
 /**
@@ -29,11 +31,13 @@ import RagIngestionConfigureDrawer from './configure/RagIngestionConfigureDrawer
  */
 export default function HeaderStatus({ component, env, projectId, versionId, orgHandler, deploymentPipelineId, hasDeployment, deploymentStatusV2 }: HeaderStatusProps): ReactNode {
   const [configureOpen, setConfigureOpen] = useState(false);
+  const can = useCan();
 
   return (
     <>
       <StatusDot status={deploymentStatusV2} />
-      {hasDeployment && (
+      {/* The RAG drawer has no read-only view, so only roles that may change the configuration get it. */}
+      {hasDeployment && can(Scopes.CONFIG_MANAGE, env) && (
         <>
           <ConfigureButton onClick={() => setConfigureOpen(true)} />
           <RagIngestionConfigureDrawer open={configureOpen} onClose={() => setConfigureOpen(false)} component={component} env={env} versionId={versionId} orgHandler={orgHandler} projectId={projectId} deploymentPipelineId={deploymentPipelineId} />
