@@ -616,7 +616,9 @@ function buildProjectRepoUrl(gitProvider?: string, gitOrganization?: string, rep
 
 export default function Project(scope: ProjectScope): JSX.Element {
   const navigate = useAppNavigate();
-  const canUpdate = useCan()(Scopes.PROJECT_UPDATE);
+  const can = useCan();
+  const canUpdate = can(Scopes.PROJECT_UPDATE);
+  const canUseEditor = can(Scopes.EDITOR_USE);
   const isUuid = UUID_RE.test(scope.project);
   const { data: projectById, isLoading: loadingById } = useProject(isUuid ? scope.project : '');
   const { data: projectByHandle, isLoading: loadingByHandle } = useProjectByHandler(isUuid ? '' : scope.project);
@@ -896,9 +898,13 @@ export default function Project(scope: ProjectScope): JSX.Element {
                 Edit project
               </Button>
             </Authorized>
-            {openInCloudComponent && projectRepoUrl && (
+            {openInCloudComponent && projectRepoUrl && (canUseEditor || openInIntegratorEnabled) && (
               <Box sx={{ position: 'relative', flexShrink: 0 }}>
-                {openInIntegratorEnabled ? (
+                {!canUseEditor ? (
+                  <Button variant="outlined" size="small" startIcon={<IntegratorIcon width={16} height={16} />} onClick={handleOpenInIntegrator} sx={{ whiteSpace: 'nowrap' }}>
+                    Open in Integrator
+                  </Button>
+                ) : openInIntegratorEnabled ? (
                   <>
                     <ButtonGroup variant="outlined" size="small" ref={splitButtonRef}>
                       <Button
