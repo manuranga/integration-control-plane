@@ -90,7 +90,7 @@ function buildUrl(u?: BffEndpointURL): string {
 }
 
 export function toEnvEndpoint(ep: BffEndpointResources, releaseId: string): EnvEndpoint {
-  const displayProjectUrl = ep.displayProjectUrl !== false;
+  const displayProjectUrl = ep.displayProjectUrl === true;
   const effectiveLabels = (ep.visibility ?? []).map(toVisibilityLabel).filter((label) => label !== 'Project');
   const publicStatus = ep.visibilityStatus?.public.status;
   const organizationStatus = ep.visibilityStatus?.organization.status;

@@ -35,6 +35,7 @@ const bffEndpoint = (visibility: string[], urls: { external?: typeof EXTERNAL; i
   type: 'HTTP',
   port: 8090,
   visibility,
+  displayProjectUrl: true,
   urls,
 });
 
@@ -104,6 +105,13 @@ describe('toEnvEndpoint visibility URLs', () => {
     expect(ep.networkVisibilities).toEqual(['Public']);
     expect(ep.projectUrl).toBe('');
     expect(ep.publicUrl).toBe(EXTERNAL_URL);
+  });
+
+  it('hides the project URL when the display preference is omitted', () => {
+    const { displayProjectUrl: _omitted, ...endpoint } = bffEndpoint(['project', 'public']);
+    const ep = toEnvEndpoint(endpoint, 'r1');
+    expect(ep.networkVisibilities).toEqual(['Public']);
+    expect(ep.projectUrl).toBe('');
   });
 
   it('shows Public while its default APIP deployment is enabling', () => {
