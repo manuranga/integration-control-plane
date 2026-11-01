@@ -18,7 +18,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { Scopes } from '../constants/permissions';
-import { scopesIn, sessionPermissions } from './permissions';
+import { runsInProduction, scopesIn, sessionPermissions } from './permissions';
 
 describe('sessionPermissions', () => {
   it('is the token scopes when scopes are enforced', () => {
@@ -37,5 +37,19 @@ describe('scopesIn', () => {
 
   it('is the scope alone elsewhere', () => {
     expect(scopesIn(Scopes.INTEGRATION_DEPLOY, { critical: false })).toEqual([Scopes.INTEGRATION_DEPLOY]);
+  });
+});
+
+describe('runsInProduction', () => {
+  const environments = [
+    { id: 'development', critical: false },
+    { id: 'production', critical: true },
+  ];
+  it('is true when a release binding is in a production environment', () => {
+    expect(runsInProduction(environments, ['development', 'production'])).toBe(true);
+  });
+  it('is false when the bindings are only in other environments', () => {
+    expect(runsInProduction(environments, ['development'])).toBe(false);
+    expect(runsInProduction(environments, [])).toBe(false);
   });
 });

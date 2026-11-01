@@ -73,5 +73,6 @@ export const Scopes = {
   DEPLOYMENT_PIPELINE_MANAGE: 'cloud:deployment-pipeline:manage',
   ENDPOINT_UPDATE: 'ipaas:endpoint:update',
   ENDPOINT_API_KEY_MANAGE: 'ipaas:endpoint:api-key-manage',
+  ENDPOINT_EXPOSE: 'ipaas:endpoint:expose',
   APPLICATION_MANAGE: 'ipaas:application:manage',
 } as const;

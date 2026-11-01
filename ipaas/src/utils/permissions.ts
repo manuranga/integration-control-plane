@@ -30,3 +30,8 @@ export function sessionPermissions(scopes: string[], enforced: boolean): string[
 export function scopesIn(scope: string, environment: { critical: boolean }): string[] {
   return environment.critical ? [scope, Scopes.PRODUCTION_WRITE] : [scope];
 }
+
+/** Whether an integration runs in production: one of its release bindings is in a production environment. */
+export function runsInProduction(environments: { id: string; critical: boolean }[], bindingEnvironmentIds: string[]): boolean {
+  return bindingEnvironmentIds.some((id) => environments.some((e) => e.id === id && e.critical));
+}
