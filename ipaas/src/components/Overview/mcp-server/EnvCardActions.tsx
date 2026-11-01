@@ -79,7 +79,7 @@ export default function EnvCardActions({
 
   const handleRedeploy = () => {
     redeployMutation.mutate(
-      { orgHandler, componentId: component.id, releaseId, type: 'service', releaseMgtReleaseId, releaseMgtDeploymentId },
+      { orgHandler, componentId: component.id, environmentId: env.id, releaseId, type: 'service', releaseMgtReleaseId, releaseMgtDeploymentId },
       {
         onSuccess: () => {
           requestPoll();

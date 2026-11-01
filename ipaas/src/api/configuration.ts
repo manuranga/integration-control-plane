@@ -24,7 +24,7 @@
  * on the OpenChoreo stack, so they return safe defaults (matching the reference).
  */
 
-import { bff, q, seg } from './_client';
+import { bff, seg } from './_client';
 import type { CertGroup, CertMapping, SchemaConfigData, ConfigMgtData, SchemaConfigItem, SaveSchemaConfigInput, ConfigMgtSaveItem } from '../types/configuration';
 
 export interface PostConfigMgtInput {
@@ -38,12 +38,12 @@ export interface PostConfigMgtInput {
   configs: ConfigMgtSaveItem[];
 }
 
-export const fetchSchemaConfig = (projectId: string, componentId: string, envId: string, _deploymentTrackId: string, _commitHash?: string): Promise<SchemaConfigData | null> =>
-  bff.get<SchemaConfigData>(`/components/${seg(componentId)}/environments/${seg(envId)}/config-schema${q({ projectName: projectId })}`).catch(() => null);
+export const fetchSchemaConfig = (_projectId: string, componentId: string, envId: string, _deploymentTrackId: string, _commitHash?: string): Promise<SchemaConfigData | null> =>
+  bff.get<SchemaConfigData>(`/components/${seg(componentId)}/environments/${seg(envId)}/config-schema`).catch(() => null);
 
 export const saveSchemaConfig = (input: SaveSchemaConfigInput): Promise<{ configurations: SchemaConfigItem[] }> =>
   bff
-    .post<{ configurations?: SchemaConfigItem[] }>(`/components/${seg(input.componentId)}/environments/${seg(input.envId)}/config-schema${q({ projectName: input.projectId })}`, {
+    .post<{ configurations?: SchemaConfigItem[] }>(`/components/${seg(input.componentId)}/environments/${seg(input.envId)}/config-schema`, {
       configurations: input.configurations,
       ...(input.commitHash ? { commitHash: input.commitHash } : {}),
     })

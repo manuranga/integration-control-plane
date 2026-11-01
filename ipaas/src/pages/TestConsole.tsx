@@ -82,7 +82,7 @@ export default function TestConsole(scope: ComponentScope): JSX.Element {
   const releaseId = deployment?.releaseId ?? '';
 
   // Endpoints for the selected env + track
-  const { data: endpoints = [], isLoading: loadingEndpoints } = useEnvEndpoints(component?.id ?? '', selectedTrackId, releaseId);
+  const { data: endpoints = [], isLoading: loadingEndpoints } = useEnvEndpoints(component?.id ?? '', selectedTrackId, selectedEnvId, releaseId);
 
   // Selected endpoint — derived rather than synced via an effect, since useApimSwagger below
   // keys off selectedEndpoint and an effect+render round trip would delay it becoming enabled.
