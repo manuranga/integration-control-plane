@@ -21,6 +21,7 @@ import { useEffect, useMemo, useState, type JSX } from 'react';
 import ComingSoon from './ComingSoon';
 import McpPlayground from '../components/McpPlayground/McpPlayground';
 import { useEndpointTestAccess } from '../hooks/useEndpointTestAccess';
+import ApiKeyAuthOffer from '../components/ApiKeyAuthOffer';
 import { useComponentByHandler } from '../hooks/useComponents';
 import { useComponentDeployment, useEnvEndpoints } from '../hooks/useDeployments';
 import { useEnvironments } from '../hooks/useEnvironments';
@@ -122,6 +123,7 @@ export default function McpTest(scope: ComponentScope): JSX.Element {
                 {access.keyError}
               </Alert>
             )}
+            {accessRef && <ApiKeyAuthOffer access={access} componentName={accessRef.componentName} sx={{ mb: 1.5 }} />}
             <McpPlayground url={mcpUrl} token={access.apiKey || null} headerName={access.authHeader} isTokenFetching={access.isMinting} onTokenRegenerate={canMint ? regenerate : undefined} endpointSwitcher={endpointSwitcher} />
           </>
         )}
