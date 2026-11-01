@@ -35,7 +35,10 @@ import { prebuiltIntegrationsUrl, prebuiltIntegrationDeployUrl } from '../paths'
 import type { PrebuiltIntegration } from '../types/prebuilt';
 import type { SchemaConfigItem } from '../types/configuration';
 import { Scopes } from '../constants/permissions';
-import { useCan } from '../hooks/useCan';
+import { useCan, useGate } from '../hooks/useCan';
+import { useEnvironments } from '../hooks/useEnvironments';
+import { useOrgUuid } from '../hooks/useOrgUuid';
+import { useProjectId } from '../hooks/useProjects';
 
 interface LocationState {
   integration?: PrebuiltIntegration;
@@ -70,6 +73,12 @@ function ConfigSkeleton(): JSX.Element {
 
 export default function PrebuiltIntegrationSetup(scope: ProjectScope): JSX.Element {
   const canCreate = useCan()(Scopes.INTEGRATION_CREATE);
+  // The deploy goes to the project's first environment; until it loads, it counts as production.
+  const orgUuid = useOrgUuid();
+  const { projectId } = useProjectId(scope.project);
+  const { data: environments } = useEnvironments(orgUuid ?? '', projectId ?? '');
+  const deploy = useGate()(Scopes.INTEGRATION_DEPLOY, { critical: environments?.[0]?.critical ?? true });
+  const refusal = !canCreate ? "Your role doesn't allow creating integrations" : !deploy.shown ? "Your role doesn't allow deploying integrations" : deploy.refusal;
   const navigate = useAppNavigate();
   const location = useLocation();
   const { slug } = useParams<{ slug: string }>();
@@ -97,7 +106,7 @@ export default function PrebuiltIntegrationSetup(scope: ProjectScope): JSX.Eleme
 
   // Deploy button is enabled when: no schema (nothing to fill), or all required fields are filled.
   // While the schema is still loading we keep the button disabled.
-  const deployEnabled = canCreate && !isConfigSchemaLoading && (!hasSchema || requiredComplete);
+  const deployEnabled = !refusal && !isConfigSchemaLoading && (!hasSchema || requiredComplete);
 
   const handleDeploy = () => {
     if (!integration || !slug) return;
@@ -227,7 +236,7 @@ export default function PrebuiltIntegrationSetup(scope: ProjectScope): JSX.Eleme
           )}
 
           <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
-            <Tooltip title={canCreate ? 'Please fill the required fields to deploy the integration' : "Your role doesn't allow creating integrations"} disableHoverListener={deployEnabled} placement="top" arrow>
+            <Tooltip title={refusal || 'Please fill the required fields to deploy the integration'} disableHoverListener={deployEnabled} placement="top" arrow>
               <span>
                 <Button variant="contained" endIcon={<ArrowRight size={16} />} onClick={handleDeploy} disabled={!deployEnabled}>
                   Deploy Integration
