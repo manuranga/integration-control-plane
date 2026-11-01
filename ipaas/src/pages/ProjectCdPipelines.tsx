@@ -34,6 +34,8 @@ import { useCan } from '../hooks/useCan';
 
 // Cloud cannot add pipelines, so the empty state describes them instead of
 // pointing at an action that isn't there.
+const PIPELINE_REFUSAL = "Your role doesn't allow changing the project's deployment pipeline.";
+
 const EMPTY_DESCRIPTION = 'Add an organization pipeline to define how integrations promote across environments.';
 
 export default function ProjectCdPipelines(scope: ProjectScope): JSX.Element {
@@ -41,7 +43,10 @@ export default function ProjectCdPipelines(scope: ProjectScope): JSX.Element {
   const { data: pipelines, isLoading, isError, refetch } = useProjectDeploymentPipelines(projectId);
   const { data: envTemplates } = useEnvTemplates(scope.org);
 
-  const canUpdate = useCan()(Scopes.PROJECT_UPDATE);
+  const can = useCan();
+  const canUpdate = can(Scopes.PROJECT_UPDATE);
+  // Changing a project's pipeline also needs the org-level pipeline scope, as in Choreo.
+  const canChangePipeline = canUpdate && can(Scopes.DEPLOYMENT_PIPELINE_MANAGE);
   const [addOpen, setAddOpen] = useState(false);
   const [removing, setRemoving] = useState<DeploymentPipeline | null>(null);
   const [settingDefault, setSettingDefault] = useState<DeploymentPipeline | null>(null);
@@ -59,9 +64,13 @@ export default function ProjectCdPipelines(scope: ProjectScope): JSX.Element {
         </PageTitle>
         {/* Cloud binds one pipeline per project, so adding a second is really a swap. */}
         {canUpdate && !!pipelines?.length && (
-          <Button variant="contained" startIcon={<Repeat size={18} />} onClick={() => setAddOpen(true)} sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
-            Change Pipeline
-          </Button>
+          <Tooltip title={canChangePipeline ? '' : PIPELINE_REFUSAL}>
+            <span>
+              <Button variant="contained" startIcon={<Repeat size={18} />} onClick={() => setAddOpen(true)} disabled={!canChangePipeline} sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
+                Change Pipeline
+              </Button>
+            </span>
+          </Tooltip>
         )}
       </Stack>
 
@@ -86,7 +95,7 @@ export default function ProjectCdPipelines(scope: ProjectScope): JSX.Element {
           Failed to load deployment pipelines.
         </Alert>
       ) : !pipelines?.length ? (
-        <EmptyListing icon={<GitBranch size={48} />} title="No deployment pipelines" description={EMPTY_DESCRIPTION} showAction actionLabel="Add Pipeline" onAction={() => setAddOpen(true)} />
+        <EmptyListing icon={<GitBranch size={48} />} title="No deployment pipelines" description={EMPTY_DESCRIPTION} showAction={canChangePipeline} actionLabel="Add Pipeline" onAction={() => setAddOpen(true)} />
       ) : (
         <Stack gap={3}>
           {orderedPipelines?.map((pipeline) => (
@@ -98,7 +107,7 @@ export default function ProjectCdPipelines(scope: ProjectScope): JSX.Element {
               envTemplates={envTemplates}
               actions={
                 <>
-                  {canUpdate && !pipeline.is_project_default && (
+                  {canChangePipeline && !pipeline.is_project_default && (
                     <Button
                       size="small"
                       variant="outlined"
@@ -110,7 +119,7 @@ export default function ProjectCdPipelines(scope: ProjectScope): JSX.Element {
                       Set as default
                     </Button>
                   )}
-                  {canUpdate && !pipeline.is_project_default && (
+                  {canChangePipeline && !pipeline.is_project_default && (
                     <Tooltip title="Remove">
                       <IconButton
                         size="small"
