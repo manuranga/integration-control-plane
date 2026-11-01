@@ -302,7 +302,8 @@ export const updateComponent = (input: UpdateComponentInput): Promise<Component>
   return bff.put<Component>(`/projects/${seg(input.projectId)}/components/${seg(input.handler || input.id)}`, body).then(withFrontendDisplayType);
 };
 
-export const updateAutoDeployEnabled = (input: UpdateAutoDeployInput): Promise<{ id: string; autoDeployEnabled: boolean }> => bff.patch<{ id: string; autoDeployEnabled: boolean }>(`/components/${seg(input.componentId)}/auto-deploy`, input);
+export const updateAutoDeployEnabled = (input: UpdateAutoDeployInput): Promise<{ id: string; autoDeployEnabled: boolean }> =>
+  bff.patch<{ id: string; autoDeployEnabled: boolean }>(`/components/${seg(input.componentId)}/auto-deploy`, { autoDeployEnabled: input.enableAutoDeploy });
 
 export const generateComponentEndpoints = (input: GenerateComponentEndpointsInput): Promise<EnvEndpoint[]> => bff.post<ListResponse<EnvEndpoint>>(`/components/${seg(input.componentId)}/endpoints/generate`, input).then(items);
 

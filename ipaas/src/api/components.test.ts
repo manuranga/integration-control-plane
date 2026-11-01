@@ -20,13 +20,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const post = vi.hoisted(() => vi.fn());
 const put = vi.hoisted(() => vi.fn());
+const patch = vi.hoisted(() => vi.fn());
 
 vi.mock('./_client', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./_client')>();
-  return { ...actual, bff: { ...actual.bff, post, put } };
+  return { ...actual, bff: { ...actual.bff, post, put, patch } };
 });
 
-import { createComponent, updateEndpoint } from './components';
+import { createComponent, updateAutoDeployEnabled, updateEndpoint } from './components';
 import type { CreateComponentInput } from '../types/component';
 
 const baseInput: CreateComponentInput = {
@@ -148,5 +149,13 @@ describe('updateEndpoint visibility reconciliation', () => {
       visibility: ['project', 'public'],
       displayProjectUrl: false,
     });
+  });
+});
+
+describe('updateAutoDeployEnabled', () => {
+  it('sends the switch as autoDeployEnabled, the field ipaas-service reads', async () => {
+    patch.mockResolvedValue({ id: 'orders', autoDeployEnabled: true });
+    await updateAutoDeployEnabled({ componentId: 'orders', deploymentTrackId: 't1', branch: 'main', enableAutoDeploy: true });
+    expect(patch).toHaveBeenCalledWith('/components/orders/auto-deploy', { autoDeployEnabled: true });
   });
 });
