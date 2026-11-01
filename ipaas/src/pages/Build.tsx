@@ -88,10 +88,22 @@ export default function Build(scope: ComponentScope): JSX.Element {
   }
 
   const envId = environments[0]?.id ?? '';
+  const autoDeployCritical = !!component.deploymentTracks?.[0]?.autoDeployEnabled && (environments[0]?.critical ?? true);
 
   return (
     <PageContent>
-      <BuildHistory componentId={componentId} versionId={versionId} envId={envId} branch={branch} builds={builds} buildsLoading={loadingBuilds} commits={commits} commitsLoading={loadingCommits} repository={repository ?? null} />
+      <BuildHistory
+        componentId={componentId}
+        versionId={versionId}
+        envId={envId}
+        branch={branch}
+        builds={builds}
+        buildsLoading={loadingBuilds}
+        commits={commits}
+        commitsLoading={loadingCommits}
+        repository={repository ?? null}
+        autoDeployCritical={autoDeployCritical}
+      />
     </PageContent>
   );
 }

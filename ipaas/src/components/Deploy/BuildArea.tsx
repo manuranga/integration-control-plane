@@ -39,6 +39,7 @@ import {
   Skeleton,
   Stack,
   Switch,
+  Tooltip,
   Typography,
 } from '@wso2/oxygen-ui';
 import { ChevronDown, Rocket, Settings } from '@wso2/oxygen-ui-icons-react';
@@ -51,7 +52,7 @@ import { useComponentDeployment, useDeploymentStatus, useDeploymentTrackImages }
 import type { DeploymentTrackImage } from '../../types/deployment';
 import ConfigureDrawer from '../EnvironmentCard/ConfigureDrawer';
 import { Scopes } from '../../constants/permissions';
-import { useCan } from '../../hooks/useCan';
+import { useCan, useGate } from '../../hooks/useCan';
 import BuildAreaImageDrawer from './BuildAreaImageDrawer';
 import BuildImageCard from './BuildImageCard';
 import ByoiBuildArea from './ByoiBuildArea';
@@ -70,6 +71,7 @@ export default function BuildArea({
   commits,
   firstEnvId,
   firstEnvTemplateId,
+  firstEnvCritical,
   autoDeployEnabled: initialAutoDeployEnabled,
   componentName,
   projectHandler,
@@ -106,6 +108,11 @@ export default function BuildArea({
   const deployTrack = useDeployDeploymentTrack();
   const updateAutoDeploy = useUpdateAutoDeployEnabled();
   const can = useCan();
+  const gate = useGate();
+  const firstEnv = { critical: firstEnvCritical };
+  const deployGate = gate(Scopes.INTEGRATION_DEPLOY, firstEnv);
+  // Turning auto-deploy off deploys nothing, so only turning it on is a production write.
+  const autoDeployOnRefusal = autoDeployEnabled ? '' : gate(Scopes.INTEGRATION_UPDATE, firstEnv).refusal;
 
   // When build completes, trigger an immediate image refetch and show skeleton while it loads
   useEffect(() => {
@@ -258,16 +265,18 @@ export default function BuildArea({
           <Divider sx={{ borderStyle: 'dashed', mb: 1.5 }} />
 
           {/* ── Auto Deploy on Build ── */}
-          <FormControlLabel
-            control={<Switch size="small" checked={autoDeployEnabled} onChange={(e) => handleAutoDeployToggle(e.target.checked)} disabled={updateAutoDeploy.isPending || !can(Scopes.INTEGRATION_UPDATE)} />}
-            label={
-              <Stack direction="row" alignItems="center" gap={0.5}>
-                <Typography variant="body2">Auto Deploy on Build</Typography>
-                {updateAutoDeploy.isPending && <CircularProgress size={12} />}
-              </Stack>
-            }
-            sx={{ mb: 2, ml: 0, mr: 0, width: '100%', justifyContent: 'space-between', flexDirection: 'row-reverse' }}
-          />
+          <Tooltip title={autoDeployOnRefusal}>
+            <FormControlLabel
+              control={<Switch size="small" checked={autoDeployEnabled} onChange={(e) => handleAutoDeployToggle(e.target.checked)} disabled={updateAutoDeploy.isPending || !can(Scopes.INTEGRATION_UPDATE) || !!autoDeployOnRefusal} />}
+              label={
+                <Stack direction="row" alignItems="center" gap={0.5}>
+                  <Typography variant="body2">Auto Deploy on Build</Typography>
+                  {updateAutoDeploy.isPending && <CircularProgress size={12} />}
+                </Stack>
+              }
+              sx={{ mb: 2, ml: 0, mr: 0, width: '100%', justifyContent: 'space-between', flexDirection: 'row-reverse' }}
+            />
+          </Tooltip>
 
           {/* ── Endpoint Configurations (only for deployed service integrations;
                hidden for file/event/AI-agent, which have no endpoints) ── */}
@@ -278,19 +287,21 @@ export default function BuildArea({
           )}
 
           {/* ── Deploy / Configure & Deploy split button ── */}
-          {can(Scopes.INTEGRATION_DEPLOY) && (
+          {deployGate.shown && (
             <Box sx={{ position: 'relative' }}>
-              <ButtonGroup variant="contained" size="small" ref={splitButtonRef} disabled={!canDeploy} sx={{ width: '100%' }}>
-                <Button
-                  startIcon={isDeploying || isBuildRunning ? <CircularProgress color="inherit" size={14} /> : selectedDeployAction === 'deploy' ? <Rocket size={14} /> : <Settings size={14} />}
-                  onClick={handleMainButtonClick}
-                  sx={{ whiteSpace: 'nowrap', flex: 1 }}>
-                  {isDeploying ? 'Deploying…' : isBuildRunning ? 'Building & Deploying' : isBuildPending ? 'Build queued' : selectedDeployAction === 'deploy' ? 'Deploy' : 'Configure & Deploy'}
-                </Button>
-                <Button size="small" sx={{ px: 0.5 }} aria-label="More deploy options" aria-expanded={splitOpen} onClick={() => setSplitOpen((prev) => !prev)}>
-                  <ChevronDown size={14} />
-                </Button>
-              </ButtonGroup>
+              <Tooltip title={deployGate.refusal}>
+                <ButtonGroup variant="contained" size="small" ref={splitButtonRef} disabled={!canDeploy || !!deployGate.refusal} sx={{ width: '100%' }}>
+                  <Button
+                    startIcon={isDeploying || isBuildRunning ? <CircularProgress color="inherit" size={14} /> : selectedDeployAction === 'deploy' ? <Rocket size={14} /> : <Settings size={14} />}
+                    onClick={handleMainButtonClick}
+                    sx={{ whiteSpace: 'nowrap', flex: 1 }}>
+                    {isDeploying ? 'Deploying…' : isBuildRunning ? 'Building & Deploying' : isBuildPending ? 'Build queued' : selectedDeployAction === 'deploy' ? 'Deploy' : 'Configure & Deploy'}
+                  </Button>
+                  <Button size="small" sx={{ px: 0.5 }} aria-label="More deploy options" aria-expanded={splitOpen} onClick={() => setSplitOpen((prev) => !prev)}>
+                    <ChevronDown size={14} />
+                  </Button>
+                </ButtonGroup>
+              </Tooltip>
               <Popper open={splitOpen} anchorEl={splitButtonRef.current} placement="bottom-start" transition style={{ zIndex: 1300 }}>
                 {({ TransitionProps }) => (
                   <Grow {...TransitionProps}>
