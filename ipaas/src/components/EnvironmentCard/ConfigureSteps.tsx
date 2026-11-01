@@ -16,9 +16,12 @@
  * under the License.
  */
 
-import { Alert, Box, Button, Checkbox, CircularProgress, Stack, Typography } from '@wso2/oxygen-ui';
+import { Alert, Box, Button, Checkbox, CircularProgress, Stack, Tooltip, Typography } from '@wso2/oxygen-ui';
 import { useState } from 'react';
+import { Scopes } from '../../constants/permissions';
+import { useGate } from '../../hooks/useCan';
 import { useUpdateEndpoint } from '../../hooks/useComponents';
+import { useAllEnvironments } from '../../hooks/useEnvironments';
 import type { EnvEndpoint } from '../../types/component';
 import { VISIBILITY_OPTS } from '../EndpointCard';
 
@@ -86,6 +89,9 @@ export function ManageEndpoint({ ep, componentId, projectId, versionId, releaseI
   const [visibilities, setVisibilities] = useState<string[]>(() => Array.from(new Set([...(ep.displayProjectUrl === false ? [] : ['Project']), ...(ep.networkVisibilities ?? []).filter((value) => value !== 'Project')])));
   const [saveError, setSaveError] = useState<string | null>(null);
   const updateEp = useUpdateEndpoint();
+  // Visibility acts on this environment only. Until environments load, it counts as production.
+  const { data: environments } = useAllEnvironments();
+  const update = useGate()(Scopes.ENDPOINT_EXPOSE, { critical: environments?.find((e) => e.id === environmentId)?.critical ?? true });
 
   const handleToggle = (key: string) => {
     setVisibilities((prev) => (prev.includes(key) ? prev.filter((v) => v !== key) : [...prev, key]));
@@ -173,9 +179,15 @@ export function ManageEndpoint({ ep, componentId, projectId, versionId, releaseI
 
       <Stack direction="row" justifyContent="flex-end" gap={1}>
         <Button onClick={onBack}>Cancel</Button>
-        <Button variant="contained" onClick={handleSave} disabled={updateEp.isPending || visibilities.length === 0} startIcon={updateEp.isPending ? <CircularProgress color="inherit" size={16} /> : undefined}>
-          {updateEp.isPending ? 'Updating…' : 'Update'}
-        </Button>
+        {update.shown && (
+          <Tooltip title={update.refusal}>
+            <span>
+              <Button variant="contained" onClick={handleSave} disabled={updateEp.isPending || visibilities.length === 0 || !!update.refusal} startIcon={updateEp.isPending ? <CircularProgress color="inherit" size={16} /> : undefined}>
+                {updateEp.isPending ? 'Updating…' : 'Update'}
+              </Button>
+            </span>
+          </Tooltip>
+        )}
       </Stack>
     </Box>
   );

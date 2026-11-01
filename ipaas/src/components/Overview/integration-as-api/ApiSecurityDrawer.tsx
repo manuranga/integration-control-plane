@@ -22,6 +22,8 @@ import { X } from '@wso2/oxygen-ui-icons-react';
 import { useEffect, useRef, useState, type JSX } from 'react';
 import { API_KEY_SCHEME_DESCRIPTION, COMING_SOON_OAUTH, COMING_SOON_UPSTREAM_ATTRS, DEFAULT_API_KEY_HEADER, OAUTH_HEADER, OAUTH_SCHEME_DESCRIPTION } from '../../../constants/apiConsumption';
 import { useEndpointSecurity, useSetEndpointSecurity } from '../../../hooks/useConsumers';
+import { Scopes } from '../../../constants/permissions';
+import { useIntegrationGate } from '../../../hooks/useIntegrationGate';
 import type { EndpointOption, SecurityConfig, SecurityMode } from '../../../types/consumers';
 import { endpointLoadNotice, friendlyApiError } from '../../../utils/apiSecurity';
 import { useEndpointDrawer } from './useEndpointDrawer';
@@ -46,6 +48,7 @@ interface ApiSecurityDrawerProps {
  * minus the Resources section, which has no cloud equivalent.
  */
 export default function ApiSecurityDrawer({ open, onClose, componentName, envName, endpoints, activeEndpointName }: ApiSecurityDrawerProps): JSX.Element {
+  const apply = useIntegrationGate(componentName)(Scopes.ENDPOINT_UPDATE);
   const [mode, setMode] = useState<SecurityMode>('none');
   const [apiKeyHeader, setApiKeyHeader] = useState(DEFAULT_API_KEY_HEADER);
   const [error, setError] = useState<string | null>(null);
@@ -193,9 +196,15 @@ export default function ApiSecurityDrawer({ open, onClose, componentName, envNam
           <Button variant="outlined" onClick={handleCancel} disabled={saving}>
             Cancel
           </Button>
-          <Button variant="contained" onClick={() => void handleApply()} disabled={saving || !selectedEndpoint || loadingSecurity || Boolean(securityError)}>
-            {saving ? <CircularProgress size={16} color="inherit" /> : 'Apply'}
-          </Button>
+          {apply.shown && (
+            <Tooltip title={apply.refusal}>
+              <span>
+                <Button variant="contained" onClick={() => void handleApply()} disabled={saving || !selectedEndpoint || loadingSecurity || Boolean(securityError) || !!apply.refusal}>
+                  {saving ? <CircularProgress size={16} color="inherit" /> : 'Apply'}
+                </Button>
+              </span>
+            </Tooltip>
+          )}
         </Box>
       </Box>
     </Drawer>

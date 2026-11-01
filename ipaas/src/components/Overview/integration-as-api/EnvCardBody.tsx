@@ -133,7 +133,7 @@ export default function EnvCardBody({ component, env, prevEnv, projectId, versio
           component/environment/endpoint triple — the component name is the
           component id and the endpoint name is the endpoint id. */}
       {showEndpointPanel && deploymentStatusV2 !== 'IN_PROGRESS' && !!activeEndpoint && gatewayExposureEnabled && (
-        <ConsumersPanel componentName={component.id} projectName={projectId} envName={env.id} envLabel={env.name} envCritical={!!env.critical} endpointName={activeEndpoint.id} endpoints={toEndpointOptions(envEndpoints)} />
+        <ConsumersPanel componentName={component.id} projectName={projectId} envName={env.id} envLabel={env.name} endpointName={activeEndpoint.id} endpoints={toEndpointOptions(envEndpoints)} />
       )}
 
       {showEndpointPanel && deploymentStatusV2 !== 'IN_PROGRESS' && !!activeEndpoint && !gatewayExposureEnabled && (

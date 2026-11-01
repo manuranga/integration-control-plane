@@ -58,3 +58,6 @@ export const button = (container: HTMLElement, name: string): HTMLButtonElement 
 
 /** The reason a tooltip gives for a disabled control: the aria-label MUI puts on its wrapper. */
 export const reasonFor = (b: HTMLElement | undefined): string | null => b?.closest('[aria-label]:not(button)')?.getAttribute('aria-label') ?? null;
+
+/** Lets pending queries settle and re-render. */
+export const flush = (): Promise<void> => act(async () => new Promise((resolve) => setTimeout(resolve, 0)));

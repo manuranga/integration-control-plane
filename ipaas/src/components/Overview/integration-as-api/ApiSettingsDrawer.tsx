@@ -21,6 +21,8 @@ import TextField from '../../common/TextField';
 import { X } from '@wso2/oxygen-ui-icons-react';
 import { useEffect, useMemo, useRef, useState, type JSX } from 'react';
 import { useEndpointPolicies, useSetEndpointPolicies } from '../../../hooks/useConsumers';
+import { Scopes } from '../../../constants/permissions';
+import { useIntegrationGate } from '../../../hooks/useIntegrationGate';
 import type { EndpointOption } from '../../../types/consumers';
 import type { CorsConfig, RateLimitConfig } from '../../../types/policy';
 import { configToPolicy, policyToConfig, toRateLimitOperations } from '../../../utils/endpointPolicy';
@@ -49,6 +51,7 @@ interface ApiSettingsDrawerProps {
 
 /** Cloud-only "API Settings" drawer: CORS and rate limiting. Authentication lives in ApiSecurityDrawer. */
 export default function ApiSettingsDrawer({ open, onClose, componentName, envName, endpoints, activeEndpointName }: ApiSettingsDrawerProps): JSX.Element {
+  const apply = useIntegrationGate(componentName)(Scopes.ENDPOINT_UPDATE);
   const [cors, setCors] = useState<CorsConfig | null>(null);
   const [rateLimit, setRateLimit] = useState<RateLimitConfig | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -182,9 +185,15 @@ export default function ApiSettingsDrawer({ open, onClose, componentName, envNam
           <Button variant="outlined" onClick={handleCancel} disabled={saving}>
             Cancel
           </Button>
-          <Button variant="contained" onClick={() => void handleApply()} disabled={!canApply}>
-            {saving ? <CircularProgress size={16} color="inherit" /> : 'Apply'}
-          </Button>
+          {apply.shown && (
+            <Tooltip title={apply.refusal}>
+              <span>
+                <Button variant="contained" onClick={() => void handleApply()} disabled={!canApply || !!apply.refusal}>
+                  {saving ? <CircularProgress size={16} color="inherit" /> : 'Apply'}
+                </Button>
+              </span>
+            </Tooltip>
+          )}
         </Box>
       </Box>
     </Drawer>
