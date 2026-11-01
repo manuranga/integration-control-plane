@@ -42,3 +42,11 @@ export function useGate(): (scope: string, environment: { critical: boolean }) =
   const can = useCan();
   return (scope, environment) => ({ shown: can(scope), refusal: can(scope) && !can(scope, environment) ? PRODUCTION_REFUSAL : '' });
 }
+
+export const AGENT_REFUSAL = "Your role doesn't allow this for AI agents.";
+
+/** Why the role may not make an AI-agent write that agent-manager checks against `agentScope`; empty when it may. */
+export function useAgentRefusal(): (agentScope: string) => string {
+  const can = useCan();
+  return (agentScope) => (can(agentScope) ? '' : AGENT_REFUSAL);
+}
