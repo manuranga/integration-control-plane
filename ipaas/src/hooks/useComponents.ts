@@ -34,6 +34,9 @@ import {
   deleteDeploymentTrack,
   checkDeploymentTrackDeletable,
 } from '../api/components';
+import { fetchEnvironments } from '../api/environments';
+import { Scopes } from '../constants/permissions';
+import { useCan } from './useCan';
 import { trackEvent } from '../services/tracking/tracking';
 import { pollWhileDeleting } from '../utils/deletionPolling';
 import type { Component, CreateComponentInput, UpdateComponentInput, UpdateAutoDeployInput, UpdateEndpointInput, GenerateComponentEndpointsInput, CreateDeploymentTrackInput } from '../types/component';
@@ -66,10 +69,11 @@ export function useComponentEndpoints(componentId: string, versionId: string) {
 
 export function useCreateComponent() {
   const qc = useQueryClient();
+  const canWriteProduction = useCan()(Scopes.PRODUCTION_WRITE);
   return useMutation({
-    mutationFn: (input: CreateComponentInput) => {
+    mutationFn: async (input: CreateComponentInput) => {
       trackEvent('component-create-start');
-      return createComponent(input);
+      return createComponent(canWriteProduction ? input : await withoutProductionAutoDeploy(input));
     },
     onSuccess: () => {
       trackEvent('component-create-end');
@@ -184,4 +188,15 @@ export function useGenerateComponentEndpoints() {
       qc.invalidateQueries({ queryKey: ['componentEndpoints', input.componentId, input.versionId] });
     },
   });
+}
+
+/**
+ * Auto-deploy deploys to the first environment of the project's pipeline, so ipaas-service refuses a
+ * create with auto-deploy on there when that environment is production. Without production-write the
+ * integration is created without it. When the environments can't be read, ipaas-service decides.
+ */
+async function withoutProductionAutoDeploy(input: CreateComponentInput): Promise<CreateComponentInput> {
+  if (input.enableAutoDeploy === false) return input;
+  const environments = await fetchEnvironments('', input.projectId).catch(() => []);
+  return environments[0]?.critical ? { ...input, enableAutoDeploy: false } : input;
 }
