@@ -54,7 +54,7 @@ import {
 import { CARD_TABLE_SX } from '../constants/styles';
 import TextField from '../components/common/TextField';
 import ProjectHomeSkeleton from '../components/ProjectHomeSkeleton';
-import { ChevronDown, ChevronUp, Cloud, ExternalLink, FileText, Filter, GitHub, GitBranch, Info, Link2, Pencil, Plus, PlugZap, RefreshCw, Search, Trash2 } from '@wso2/oxygen-ui-icons-react';
+import { ChevronDown, ChevronUp, Cloud, ExternalLink, FileText, Filter, GitHub, GitBranch, Info, Link2, Pencil, Plus, PlugZap, RefreshCw, Search } from '@wso2/oxygen-ui-icons-react';
 import CreateIntegrationPanels from '../components/CreateIntegrationPanels';
 import EmptyListing from '../components/EmptyListing';
 import IntegrationTypesCard from '../components/IntegrationTypesCard';
@@ -72,6 +72,7 @@ import { useOrgs, useOrgComponentLimits, useOrgSubscriptions } from '../hooks/us
 import { useChoreoSampleImages, useComponentRepositories } from '../hooks/useRepository';
 import type { Component, ComponentDeletionError, ComponentSubscription, SubscriptionInfo } from '../types/component';
 import { useDeleteComponent } from '../hooks/useComponents';
+import DeleteIntegrationButton from '../components/DeleteIntegrationButton';
 import NotFound from '../components/NotFound';
 import { formatDistanceToNow } from '../utils/time';
 import { resourceUrl, broaden, newComponentUrl, type ProjectScope } from '../nav';
@@ -514,18 +515,7 @@ function IntegrationsTable({
                                   </Typography>
                                 </Box>
                               ) : (
-                                <Tooltip title="Delete">
-                                  <IconButton
-                                    size="small"
-                                    color="error"
-                                    aria-label={`Delete ${c.displayName}`}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setDeleting(c);
-                                    }}>
-                                    <Trash2 size={16} />
-                                  </IconButton>
-                                </Tooltip>
+                                <DeleteIntegrationButton component={c} onClick={() => setDeleting(c)} />
                               )}
                             </ListingTable.Cell>
                           </Authorized>
