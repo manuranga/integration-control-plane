@@ -16,9 +16,11 @@
  * under the License.
  */
 
-import { Button, ButtonGroup, ClickAwayListener, Grow, MenuItem, MenuList, Paper, Popper } from '@wso2/oxygen-ui';
+import { Button, ButtonGroup, ClickAwayListener, Grow, MenuItem, MenuList, Paper, Popper, Tooltip } from '@wso2/oxygen-ui';
 import { ChevronDown, Play } from '@wso2/oxygen-ui-icons-react';
 import { useRef, useState } from 'react';
+import { Scopes } from '../../../constants/permissions';
+import { useGate } from '../../../hooks/useCan';
 
 interface RunButtonProps {
   envCritical?: boolean | null;
@@ -35,6 +37,7 @@ export default function RunButton({ envCritical, disabled, pending, onRun, onRun
   const [selectedAction, setSelectedAction] = useState<SelectedAction>('run');
   const anchorRef = useRef<HTMLDivElement>(null);
   const label = envCritical ? 'Run' : 'Test';
+  const gate = useGate()(Scopes.INTEGRATION_EXECUTE, { critical: !!envCritical });
 
   const handlePrimaryClick = () => {
     if (selectedAction === 'runWithArgs') {
@@ -54,16 +57,21 @@ export default function RunButton({ envCritical, disabled, pending, onRun, onRun
     }
   };
 
+  if (!gate.shown) return null;
   return (
     <>
-      <ButtonGroup variant="contained" size="small" ref={anchorRef} disabled={disabled || pending}>
-        <Button startIcon={<Play size={14} />} aria-label={selectedAction === 'runWithArgs' ? `${label} with Arguments` : label} onClick={handlePrimaryClick}>
-          {selectedAction === 'runWithArgs' ? `${label} with Arguments` : label}
-        </Button>
-        <Button size="small" sx={{ px: 0.5 }} aria-label="More run options" aria-expanded={splitOpen} aria-haspopup="menu" aria-controls="menu-run-options" onClick={() => setSplitOpen((prev) => !prev)}>
-          <ChevronDown size={14} />
-        </Button>
-      </ButtonGroup>
+      <Tooltip title={gate.refusal} placement="top">
+        <span>
+          <ButtonGroup variant="contained" size="small" ref={anchorRef} disabled={disabled || pending || !!gate.refusal}>
+            <Button startIcon={<Play size={14} />} aria-label={selectedAction === 'runWithArgs' ? `${label} with Arguments` : label} onClick={handlePrimaryClick}>
+              {selectedAction === 'runWithArgs' ? `${label} with Arguments` : label}
+            </Button>
+            <Button size="small" sx={{ px: 0.5 }} aria-label="More run options" aria-expanded={splitOpen} aria-haspopup="menu" aria-controls="menu-run-options" onClick={() => setSplitOpen((prev) => !prev)}>
+              <ChevronDown size={14} />
+            </Button>
+          </ButtonGroup>
+        </span>
+      </Tooltip>
 
       <Popper open={splitOpen} anchorEl={anchorRef.current} placement="bottom-end" transition disablePortal style={{ zIndex: 1300 }}>
         {({ TransitionProps }) => (

@@ -16,7 +16,7 @@
  * under the License.
  */
 
-import { Alert, Box, Button, Card, CircularProgress, Divider, PageTitle, Skeleton, Stack, Typography } from '@wso2/oxygen-ui';
+import { Alert, Box, Button, Card, CircularProgress, Divider, PageTitle, Skeleton, Stack, Tooltip, Typography } from '@wso2/oxygen-ui';
 import { Activity, Play, RefreshCw } from '@wso2/oxygen-ui-icons-react';
 import { useEffect, useMemo, useState, type JSX } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -37,6 +37,8 @@ import { useComponentDeployment } from '../hooks/useDeployments';
 import { useEnvironments } from '../hooks/useEnvironments';
 import { useExecutionArguments, useRuntimeArguments, useTaskExecutionCount, useTaskExecutions, useTriggerComponent } from '../hooks/useExecutions';
 import { useOrgUuid } from '../hooks/useOrgUuid';
+import { useGate } from '../hooks/useCan';
+import { Scopes } from '../constants/permissions';
 import { useProjectId } from '../hooks/useProjects';
 import { buildExecutionArgumentsFromForm, formDataEqual, hasAnyFormData, parseArgumentsToFormData, parseRuntimeArgumentsToFormFields, validateRequiredFields } from '../utils/runtimeArguments';
 import { isNotFoundError, isUnsupportedError } from '../utils/apiErrors';
@@ -97,6 +99,7 @@ export default function AutomationTest({ org, project, component }: ComponentSco
 
   const { data: executionCount, isLoading: loadingExecutionCount } = useTaskExecutionCount(releaseId, comp?.id ?? '', envId, projectId);
   const trigger = useTriggerComponent();
+  const gate = useGate();
   const executionArgs = useMemo(() => buildExecutionArgumentsFromForm(runtimeArguments, formData), [runtimeArguments, formData]);
 
   const { data: executions = [] } = useTaskExecutions(releaseId, comp?.id ?? '', envId, projectId, polling ? 4000 : false);
@@ -249,6 +252,7 @@ export default function AutomationTest({ org, project, component }: ComponentSco
   const envCritical = !!environments.find((e) => e.id === envId)?.critical;
   const runLabel = envCritical ? 'Run' : 'Test';
   const runningLabel = envCritical ? 'Running…' : 'Testing…';
+  const run = gate(Scopes.INTEGRATION_EXECUTE, { critical: envCritical });
 
   const envSelect = environments.length > 1 && <EnvironmentSelect environments={environments} value={envId} onChange={setEnvId} deployment={{ orgHandler: org, orgUuid: orgUuid ?? '', componentId: comp?.id ?? '', versionId: trackId }} />;
 
@@ -299,9 +303,15 @@ export default function AutomationTest({ org, project, component }: ComponentSco
             <Button variant="text" size="small" startIcon={<RefreshCw size={16} />} onClick={() => queryClient.invalidateQueries({ queryKey: ['taskExecutions'] })}>
               Refresh
             </Button>
-            <Button variant="contained" size="small" startIcon={trigger.isPending ? <CircularProgress size={14} color="inherit" /> : <Play size={16} />} onClick={handleDirectRun} disabled={trigger.isPending}>
-              {trigger.isPending ? runningLabel : runLabel}
-            </Button>
+            {run.shown && (
+              <Tooltip title={run.refusal} placement="top">
+                <span>
+                  <Button variant="contained" size="small" startIcon={trigger.isPending ? <CircularProgress size={14} color="inherit" /> : <Play size={16} />} onClick={handleDirectRun} disabled={trigger.isPending || !!run.refusal}>
+                    {trigger.isPending ? runningLabel : runLabel}
+                  </Button>
+                </span>
+              </Tooltip>
+            )}
           </Stack>
         </Stack>
       </Card>

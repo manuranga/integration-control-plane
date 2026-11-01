@@ -24,6 +24,8 @@ import { useExecutionArguments } from '../../hooks/useExecutions';
 import type { TaskExecution } from '../../types/executions';
 import { executionIdTail } from '../../utils/executionStatus';
 import { useTriggerComponent } from '../../hooks/useExecutions';
+import { Scopes } from '../../constants/permissions';
+import { useGate } from '../../hooks/useCan';
 
 interface ExecutionDrawerProps {
   execution: TaskExecution | null;
@@ -36,6 +38,8 @@ interface ExecutionDrawerProps {
   projectId: string;
   componentId: string;
   releaseId: string;
+  /** Production: executing also needs production-write. */
+  envCritical: boolean;
 }
 
 function formatTriggeredAt(unixSeconds: string): string {
@@ -73,7 +77,8 @@ const drawerSx = {
   },
 };
 
-export default function ExecutionDrawer({ execution, open, onClose, onRunSuccess, orgHandler, projectId, componentId, releaseId }: ExecutionDrawerProps) {
+export default function ExecutionDrawer({ execution, open, onClose, onRunSuccess, orgHandler, projectId, componentId, releaseId, envCritical }: ExecutionDrawerProps) {
+  const execute = useGate()(Scopes.INTEGRATION_EXECUTE, { critical: envCritical });
   const handleClose = () => {
     (document.activeElement as HTMLElement)?.blur();
     onClose();
@@ -247,9 +252,15 @@ export default function ExecutionDrawer({ execution, open, onClose, onRunSuccess
           {!argsLoading && (
             <Stack direction="row" justifyContent="flex-end" gap={1} sx={{ px: 2, py: 1.5, borderTop: '1px solid', borderColor: 'divider', flexShrink: 0 }}>
               <Button onClick={onClose}>Cancel</Button>
-              <Button variant="contained" onClick={handleRun} disabled={trigger.isPending || !releaseId} startIcon={trigger.isPending ? <CircularProgress color="inherit" size={16} /> : undefined}>
-                {trigger.isPending ? 'Executing…' : 'Execute'}
-              </Button>
+              {execute.shown && (
+                <Tooltip title={execute.refusal} placement="top">
+                  <span>
+                    <Button variant="contained" onClick={handleRun} disabled={trigger.isPending || !releaseId || !!execute.refusal} startIcon={trigger.isPending ? <CircularProgress color="inherit" size={16} /> : undefined}>
+                      {trigger.isPending ? 'Executing…' : 'Execute'}
+                    </Button>
+                  </span>
+                </Tooltip>
+              )}
             </Stack>
           )}
         </>

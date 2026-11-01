@@ -31,3 +31,14 @@ export function useCanReadLogs(): (environment?: { critical: boolean }) => boole
   const { hasAllPermissions } = useAccessControl();
   return (environment) => hasAllPermissions(environment?.critical ? [Scopes.LOG_READ, Scopes.LOG_PRODUCTION_READ] : [Scopes.LOG_READ]);
 }
+
+export const PRODUCTION_REFUSAL = "Your role doesn't allow this in production.";
+
+/**
+ * A control that acts in `environment`: hidden when the role lacks `scope`; shown but refused, with
+ * `PRODUCTION_REFUSAL`, when the role holds `scope` and only production-write is missing.
+ */
+export function useGate(): (scope: string, environment: { critical: boolean }) => { shown: boolean; refusal: string } {
+  const can = useCan();
+  return (scope, environment) => ({ shown: can(scope), refusal: can(scope) && !can(scope, environment) ? PRODUCTION_REFUSAL : '' });
+}

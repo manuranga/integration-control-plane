@@ -29,7 +29,7 @@ import { hasMissingRequiredConfigs } from './configStatus';
 import NextRunLabel from '../../NextRunLabel';
 import ScheduleButton from './ScheduleButton';
 import { Scopes } from '../../../constants/permissions';
-import { useCan } from '../../../hooks/useCan';
+import { useGate } from '../../../hooks/useCan';
 
 /**
  * Automation's right-header slot. Test only leaves the card when the task takes runtime arguments.
@@ -75,7 +75,7 @@ export default function EnvCardActions({
   const actionsDisabled = !!blockedReason;
 
   const triggerRun = useTriggerComponent();
-  const canRun = useCan()(Scopes.INTEGRATION_EXECUTE);
+  const run = useGate()(Scopes.INTEGRATION_EXECUTE, env);
 
   const handleTest = () => {
     triggerRun.mutate(
@@ -98,6 +98,7 @@ export default function EnvCardActions({
       <ScheduleButton
         envId={env.id}
         envName={env.name}
+        envCritical={env.critical}
         componentId={component.id}
         orgHandler={orgHandler}
         releaseId={releaseId}
@@ -111,10 +112,10 @@ export default function EnvCardActions({
         onSaveError={() => onNotify({ text: 'Failed to save schedule. Please try again.', severity: 'error' })}
         onStopSuccess={() => onNotify({ text: 'Schedule stopped successfully', severity: 'success' })}
       />
-      {canRun && (
-        <Tooltip title={blockedReason} placement="top">
+      {run.shown && (
+        <Tooltip title={run.refusal || blockedReason} placement="top">
           <span>
-            <Button variant="contained" size="small" startIcon={<Play size={14} />} disabled={actionsDisabled || triggerRun.isPending} onClick={handleTest}>
+            <Button variant="contained" size="small" startIcon={<Play size={14} />} disabled={actionsDisabled || !!run.refusal || triggerRun.isPending} onClick={handleTest}>
               Test
             </Button>
           </span>

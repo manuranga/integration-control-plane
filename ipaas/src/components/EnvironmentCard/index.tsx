@@ -246,6 +246,7 @@ export default function Environment({ env, prevEnv, componentId, projectId, comp
               ? {
                   envId: env.id,
                   envName: env.name,
+                  envCritical: env.critical,
                   componentId,
                   orgHandler,
                   releaseId: envReleaseId,
@@ -259,7 +260,7 @@ export default function Environment({ env, prevEnv, componentId, projectId, comp
                 }
               : undefined
           }
-          onRun={can(Scopes.INTEGRATION_EXECUTE) ? handleRun : undefined}
+          onRun={handleRun}
           onRunWithArgs={() => setRunWithArgsOpen(true)}
           onRefresh={handleRefresh}
           onConfigure={can(Scopes.CONFIG_MANAGE, env) ? () => setConfigureOpen(true) : undefined}

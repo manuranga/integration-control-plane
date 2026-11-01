@@ -19,14 +19,16 @@
 import { Button, ButtonGroup, ClickAwayListener, Grow, MenuItem, MenuList, Paper, Popper, Tooltip } from '@wso2/oxygen-ui';
 import { CalendarClock, ChevronDown } from '@wso2/oxygen-ui-icons-react';
 import { useRef, useState } from 'react';
-import Authorized from '../../Authorized';
 import { Scopes } from '../../../constants/permissions';
+import { useGate } from '../../../hooks/useCan';
 import { useStopSchedule } from '../../../hooks/useExecutions';
 import ScheduleDialog from './ScheduleDialog';
 
 export interface ScheduleButtonProps {
   envId: string;
   envName: string;
+  /** Production: changing the schedule also needs production-write. */
+  envCritical: boolean;
   componentId: string;
   orgHandler: string;
   releaseId: string;
@@ -42,11 +44,14 @@ export interface ScheduleButtonProps {
   onStopSuccess?: () => void;
 }
 
-export default function ScheduleButton({ hasSchedule, disabled, disabledReason, onSaveSuccess, onSaveError, onStopSuccess, ...dialogProps }: ScheduleButtonProps) {
+export default function ScheduleButton({ envCritical, hasSchedule, disabled: blocked, disabledReason: blockedReason, onSaveSuccess, onSaveError, onStopSuccess, ...dialogProps }: ScheduleButtonProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [splitOpen, setSplitOpen] = useState(false);
   const splitButtonRef = useRef<HTMLDivElement>(null);
   const stopSchedule = useStopSchedule();
+  const gate = useGate()(Scopes.INTEGRATION_UPDATE, { critical: envCritical });
+  const disabled = blocked || !!gate.refusal;
+  const disabledReason = gate.refusal || blockedReason;
 
   // Suspends the CronJob only — the deployment has its own Stop/Start control.
   const handleStopSchedule = () => {
@@ -54,12 +59,12 @@ export default function ScheduleButton({ hasSchedule, disabled, disabledReason, 
     stopSchedule.mutate({ componentId: dialogProps.componentId, envId: dialogProps.envId, orgHandler: dialogProps.orgHandler, releaseId: dialogProps.releaseId }, { onSuccess: () => onStopSuccess?.() });
   };
 
+  if (!gate.shown) return null;
   return (
     <>
-      <Authorized permissions={Scopes.INTEGRATION_UPDATE}>
-        {hasSchedule ? (
-          <Tooltip title={disabled ? (disabledReason ?? '') : ''} placement="top">
-            <span>
+      {hasSchedule ? (
+        <Tooltip title={disabled ? (disabledReason ?? '') : ''} placement="top">
+          <span>
             <ButtonGroup variant="contained" size="small" ref={splitButtonRef} disabled={disabled || stopSchedule.isPending}>
               <Button startIcon={<CalendarClock size={14} />} onClick={handleStopSchedule}>
                 Stop Schedule
@@ -87,18 +92,17 @@ export default function ScheduleButton({ hasSchedule, disabled, disabledReason, 
                 </Grow>
               )}
             </Popper>
-            </span>
-          </Tooltip>
-        ) : (
-          <Tooltip title={disabled ? (disabledReason ?? '') : ''} placement="top">
-            <span>
-              <Button variant="contained" size="small" startIcon={<CalendarClock size={14} />} disabled={disabled} onClick={() => setDialogOpen(true)}>
-                Schedule
-              </Button>
-            </span>
-          </Tooltip>
-        )}
-      </Authorized>
+          </span>
+        </Tooltip>
+      ) : (
+        <Tooltip title={disabled ? (disabledReason ?? '') : ''} placement="top">
+          <span>
+            <Button variant="contained" size="small" startIcon={<CalendarClock size={14} />} disabled={disabled} onClick={() => setDialogOpen(true)}>
+              Schedule
+            </Button>
+          </span>
+        </Tooltip>
+      )}
       <ScheduleDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSaveSuccess={onSaveSuccess} onSaveError={onSaveError} {...dialogProps} />
     </>
   );

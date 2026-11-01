@@ -16,11 +16,13 @@
  * under the License.
  */
 
-import { Box, Button, CircularProgress, Link, Stack, Typography } from '@wso2/oxygen-ui';
+import { Box, Button, CircularProgress, Link, Stack, Tooltip, Typography } from '@wso2/oxygen-ui';
 import { Play } from '@wso2/oxygen-ui-icons-react';
 import type { JSX } from 'react';
 import type { DynamicFormData, DynamicFormFieldValue, DynamicFormValidationErrors, FormField } from '../../types/executions';
 import { RUNTIME_ARGS_DOC_URL } from '../../constants/docs';
+import { Scopes } from '../../constants/permissions';
+import { useGate } from '../../hooks/useCan';
 import FormFieldTile from './FormFieldTile';
 
 interface ExecutionFormProps {
@@ -45,6 +47,7 @@ interface ExecutionFormProps {
 export default function ExecutionForm({ formFields, formData, validationErrors, showErrors, onFieldChange, onRun, onClear, isRunDisabled, isClearDisabled, isTriggering, envCritical }: ExecutionFormProps): JSX.Element {
   const runLabel = envCritical ? 'Run' : 'Test';
   const runningLabel = envCritical ? 'Running…' : 'Testing…';
+  const run = useGate()(Scopes.INTEGRATION_EXECUTE, { critical: !!envCritical });
   return (
     <Box>
       <Stack gap={2}>
@@ -70,9 +73,15 @@ export default function ExecutionForm({ formFields, formData, validationErrors, 
         <Button variant="outlined" size="small" onClick={onClear} disabled={isClearDisabled}>
           Clear
         </Button>
-        <Button variant="contained" size="small" startIcon={isTriggering ? <CircularProgress size={12} color="inherit" /> : <Play size={14} />} onClick={onRun} disabled={isRunDisabled}>
-          {isTriggering ? runningLabel : runLabel}
-        </Button>
+        {run.shown && (
+          <Tooltip title={run.refusal} placement="top">
+            <span>
+              <Button variant="contained" size="small" startIcon={isTriggering ? <CircularProgress size={12} color="inherit" /> : <Play size={14} />} onClick={onRun} disabled={isRunDisabled || !!run.refusal}>
+                {isTriggering ? runningLabel : runLabel}
+              </Button>
+            </span>
+          </Tooltip>
+        )}
       </Stack>
     </Box>
   );
