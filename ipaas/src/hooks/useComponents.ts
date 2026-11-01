@@ -162,6 +162,9 @@ export function useUpdateEndpoint() {
       qc.invalidateQueries({ queryKey: ['componentDeployment'] });
       qc.invalidateQueries({ queryKey: ['envEndpoints'] });
       qc.invalidateQueries({ queryKey: ['componentEndpoints', input.componentId, input.versionId] });
+      qc.invalidateQueries({ queryKey: ['consumers'] });
+      qc.invalidateQueries({ queryKey: ['endpoint-security'] });
+      qc.invalidateQueries({ queryKey: ['endpoint-policies'] });
     },
   });
 }
