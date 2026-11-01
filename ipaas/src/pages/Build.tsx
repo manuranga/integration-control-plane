@@ -29,6 +29,7 @@ import type { ComponentScope } from '../nav';
 import { UUID_RE } from '../utils/string';
 import { useProjectId } from '../hooks/useProjects';
 import { RAG_NO_SOURCE_SUBTYPES } from '../constants/ragIngestion';
+import { identifyIntegration } from '../utils/identifyIntegration';
 
 export default function Build(scope: ComponentScope): JSX.Element {
   const isProjectUuid = UUID_RE.test(scope.project);
@@ -103,6 +104,7 @@ export default function Build(scope: ComponentScope): JSX.Element {
         commitsLoading={loadingCommits}
         repository={repository ?? null}
         autoDeployCritical={autoDeployCritical}
+        aiAgent={identifyIntegration(component.displayType ?? '', component.componentSubType ?? null).type === 'ai-agent'}
       />
     </PageContent>
   );

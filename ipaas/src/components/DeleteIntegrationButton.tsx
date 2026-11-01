@@ -20,17 +20,24 @@ import { IconButton, Tooltip } from '@wso2/oxygen-ui';
 import { Trash2 } from '@wso2/oxygen-ui-icons-react';
 import type { JSX } from 'react';
 import { Scopes } from '../constants/permissions';
+import { useAgentRefusal } from '../hooks/useCan';
 import { useIntegrationGate } from '../hooks/useIntegrationGate';
+import { identifyIntegration } from '../utils/identifyIntegration';
 import type { Component } from '../types/component';
 
-/** A project list row's Delete. Deleting is a production write when the integration runs in production. */
+/**
+ * A project list row's Delete. Deleting is a production write when the integration runs in production,
+ * and agent-manager deletes an AI agent only for a role that may delete agents.
+ */
 export default function DeleteIntegrationButton({ component, onClick }: { component: Component; onClick: () => void }): JSX.Element {
-  const remove = useIntegrationGate(component.id)(Scopes.INTEGRATION_DELETE);
+  const productionRefusal = useIntegrationGate(component.id)(Scopes.INTEGRATION_DELETE).refusal;
+  const agentRefusal = useAgentRefusal()(Scopes.AGENT_DELETE);
+  const refusal = productionRefusal || (identifyIntegration(component.displayType ?? '', component.componentSubType ?? null).type === 'ai-agent' ? agentRefusal : '');
   return (
-    <Tooltip title={remove.refusal || 'Delete'}>
+    <Tooltip title={refusal || 'Delete'}>
       {/* Keeps the row from opening the integration, also when the button is disabled. */}
       <span onClick={(e) => e.stopPropagation()}>
-        <IconButton size="small" color="error" aria-label={`Delete ${component.displayName}`} disabled={!!remove.refusal} onClick={onClick}>
+        <IconButton size="small" color="error" aria-label={`Delete ${component.displayName}`} disabled={!!refusal} onClick={onClick}>
           <Trash2 size={16} />
         </IconButton>
       </span>

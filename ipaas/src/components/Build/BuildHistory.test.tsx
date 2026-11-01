@@ -35,7 +35,7 @@ afterEach(() => unmount());
 async function buildLatest(autoDeployCritical: boolean) {
   const r = await renderWithScopes(
     <MemoryRouter>
-      <BuildHistory componentId="orders" versionId="v1" envId="production" branch="main" builds={[]} buildsLoading={false} commits={commits} commitsLoading={false} repository={{} as Repository} autoDeployCritical={autoDeployCritical} />
+      <BuildHistory componentId="orders" versionId="v1" envId="production" branch="main" builds={[]} buildsLoading={false} commits={commits} commitsLoading={false} repository={{} as Repository} autoDeployCritical={autoDeployCritical} aiAgent={false} />
     </MemoryRouter>,
     DEVELOPER,
   );

@@ -17,7 +17,7 @@
  */
 
 import { Scopes } from '../../constants/permissions';
-import { useCan, useGate } from '../../hooks/useCan';
+import { useAgentRefusal, useCan, useGate } from '../../hooks/useCan';
 import { Alert, Button, Chip, CircularProgress, IconButton, ListingTable, Snackbar, Stack, TablePagination, Tooltip, Typography } from '@wso2/oxygen-ui';
 import { GitCommit, Settings } from '@wso2/oxygen-ui-icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -44,9 +44,11 @@ interface BuildHistoryProps {
   repository: Repository | null;
   /** Builds deploy automatically to a production environment, so building needs production-write. */
   autoDeployCritical: boolean;
+  /** An AI agent, whose build parameters agent-manager changes only for a role that may update agents. */
+  aiAgent: boolean;
 }
 
-export default function BuildHistory({ componentId, versionId, envId, branch, builds, buildsLoading, commits, commitsLoading, repository, autoDeployCritical }: BuildHistoryProps) {
+export default function BuildHistory({ componentId, versionId, envId, branch, builds, buildsLoading, commits, commitsLoading, repository, autoDeployCritical, aiAgent }: BuildHistoryProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerType, setDrawerType] = useState<BuildDrawerType | null>(null);
   const [selectedBuild, setSelectedBuild] = useState<BuildRun | null>(null);
@@ -60,6 +62,8 @@ export default function BuildHistory({ componentId, versionId, envId, branch, bu
   const triggerBuild = useTriggerBuild();
   const can = useCan();
   const build = useGate()(Scopes.INTEGRATION_BUILD, { critical: autoDeployCritical });
+  const agentRefusal = useAgentRefusal()(Scopes.AGENT_UPDATE);
+  const configRefusal = aiAgent ? agentRefusal : '';
 
   const handleAutoOpen = useCallback((build: BuildRun) => {
     setSelectedBuild(build);
@@ -167,9 +171,9 @@ export default function BuildHistory({ componentId, versionId, envId, branch, bu
           </>
           )}
 
-          <Tooltip title={isBuilding ? 'A build is already in progress' : 'Build configuration'}>
+          <Tooltip title={configRefusal || (isBuilding ? 'A build is already in progress' : 'Build configuration')}>
             <span>
-              <IconButton size="small" onClick={handleOpenConfig} disabled={!repository || isBuilding || !can(Scopes.INTEGRATION_UPDATE)}>
+              <IconButton size="small" aria-label="Build configuration" onClick={handleOpenConfig} disabled={!repository || isBuilding || !can(Scopes.INTEGRATION_UPDATE) || !!configRefusal}>
                 <Settings size={18} />
               </IconButton>
             </span>
