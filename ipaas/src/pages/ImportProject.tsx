@@ -25,6 +25,8 @@ import GitProviderCards from '../components/ProjectCreate/GitProviderCards';
 import GitHubAuthArea from '../components/Import/GitHubAuthArea';
 import { useState, useLayoutEffect, type JSX } from 'react';
 import { useAppNavigate } from '../hooks/useAppNavigate';
+import { Scopes } from '../constants/permissions';
+import { useCan } from '../hooks/useCan';
 import BusyFields from '../components/common/BusyFields';
 import { useCreateMonoRepoProject } from '../hooks/useProjects';
 import { useCreateComponent } from '../hooks/useComponents';
@@ -108,6 +110,7 @@ export default function ImportProject(scope: OrgScope): JSX.Element {
 
   const { handler: effectiveHandler, handlerEdited, isCheckingAvailability, availability, availabilityError, startEditing, stopEditing, onHandlerChange } = useProjectHandler(displayName);
   const createMonoRepoProject = useCreateMonoRepoProject();
+  const canCreate = useCan()(Scopes.PROJECT_CREATE);
   const createComponent = useCreateComponent();
   const orgHomeUrl = resourceUrl(scope, 'overview');
 
@@ -124,7 +127,7 @@ export default function ImportProject(scope: OrgScope): JSX.Element {
   const handlerTaken = availability && !availability.handlerUnique ? 'This project id is already taken.' : null;
 
   const availabilityReady = !effectiveHandler || effectiveHandler.length < 2 || availability !== undefined || availabilityError;
-  const canSubmit = !!displayName.trim() && !nameError && !!effectiveHandler && !handlerError && !handlerTaken && !isCheckingAvailability && availabilityReady && pathReady && isWorkspace && workspaceModules.length > 0;
+  const canSubmit = canCreate && !!displayName.trim() && !nameError && !!effectiveHandler && !handlerError && !handlerTaken && !isCheckingAvailability && availabilityReady && pathReady && isWorkspace && workspaceModules.length > 0;
 
   const handleImport = async () => {
     setIsImporting(true);

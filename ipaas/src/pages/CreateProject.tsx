@@ -26,6 +26,8 @@ import GitHubAuthArea from '../components/Import/GitHubAuthArea';
 import { useGitRepoSource } from '../hooks/useGitRepoSource';
 import { useState, useEffect, useLayoutEffect, type JSX } from 'react';
 import { useAppNavigate } from '../hooks/useAppNavigate';
+import { Scopes } from '../constants/permissions';
+import { useCan } from '../hooks/useCan';
 import BusyFields from '../components/common/BusyFields';
 import { useCreateProject, useCreateMonoRepoProject } from '../hooks/useProjects';
 import { useCreateComponent } from '../hooks/useComponents';
@@ -97,6 +99,7 @@ export default function CreateProject(scope: OrgScope): JSX.Element {
 
   const { handler: effectiveHandler, handlerEdited, isCheckingAvailability, availability, availabilityError, startEditing, stopEditing, onHandlerChange } = useProjectHandler(displayName);
   const createProject = useCreateProject();
+  const canCreate = useCan()(Scopes.PROJECT_CREATE);
   const createMonoRepoProject = useCreateMonoRepoProject();
   const createComponent = useCreateComponent();
   const navigate = useAppNavigate();
@@ -136,7 +139,7 @@ export default function CreateProject(scope: OrgScope): JSX.Element {
   const gitReady = !attachGit || (showBranchAndSubPath && !!selectedBranch);
   // A failed availability check must not hard-block submit — the create call still validates uniqueness.
   const availabilityReady = !effectiveHandler || effectiveHandler.length < 2 || availability !== undefined || availabilityError;
-  const canSubmit = !!displayName.trim() && !nameError && !!effectiveHandler && !handlerError && !handlerTaken && !isCheckingAvailability && availabilityReady && gitReady;
+  const canSubmit = canCreate && !!displayName.trim() && !nameError && !!effectiveHandler && !handlerError && !handlerTaken && !isCheckingAvailability && availabilityReady && gitReady;
 
   const handleSubmit = async () => {
     setIsCreating(true);
