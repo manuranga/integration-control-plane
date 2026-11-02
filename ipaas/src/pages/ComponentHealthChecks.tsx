@@ -57,7 +57,7 @@ export default function ComponentHealthChecks({ org, project, component }: Compo
 
   const { data: deployment, isLoading: loadingDeployment } = useComponentDeployment(org, orgUuid ?? '', comp?.id ?? '', trackId, envId);
   const releaseId = deployment?.releaseId ?? '';
-  const { data: release, isLoading: loadingRelease } = useRelease(projectId, comp?.id, releaseId);
+  const { data: release, isLoading: loadingRelease } = useRelease(projectId, comp?.id, envId, releaseId);
   const containers = useMemo(() => release?.containers ?? [], [release]);
   const mainC = useMemo(() => mainContainer(containers), [containers]);
 

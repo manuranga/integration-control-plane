@@ -66,11 +66,11 @@ export function useComponentDeployments(orgHandler: string, orgUuid: string, com
   });
 }
 
-export function useEnvEndpoints(componentId: string, versionId: string, releaseId: string) {
+export function useEnvEndpoints(componentId: string, versionId: string, environmentId: string, releaseId: string) {
   return useQuery({
-    queryKey: ['envEndpoints', componentId, versionId, releaseId],
-    queryFn: () => fetchEnvEndpoints(componentId, versionId, releaseId),
-    enabled: !!componentId && !!versionId && !!releaseId,
+    queryKey: ['envEndpoints', componentId, versionId, environmentId, releaseId],
+    queryFn: () => fetchEnvEndpoints(componentId, versionId, environmentId, releaseId),
+    enabled: !!componentId && !!versionId && !!environmentId && !!releaseId,
     staleTime: 30_000,
     retry: false,
     refetchInterval: (query) => {
@@ -212,7 +212,7 @@ export function useStopDeployment() {
 export function useRedeployDeployment() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: { orgHandler: string; componentId: string; releaseId: string; type: string; releaseMgtReleaseId?: string; releaseMgtDeploymentId?: string }) => redeployDeployment(input),
+    mutationFn: (input: { orgHandler: string; componentId: string; environmentId: string; releaseId: string; type: string; releaseMgtReleaseId?: string; releaseMgtDeploymentId?: string }) => redeployDeployment(input),
     onSuccess: () => {
       trackEvent('component-deploy');
       qc.invalidateQueries({ queryKey: ['componentDeployment'] });

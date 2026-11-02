@@ -33,7 +33,7 @@ interface EndpointConfigDrawerProps {
 
 /** Endpoint security settings, scoped to the first environment's endpoints. */
 export default function EndpointConfigDrawer({ open, onClose, componentId, versionId, firstEnvReleaseId, firstEnvId }: EndpointConfigDrawerProps) {
-  const { data: endpoints = [] } = useEnvEndpoints(componentId, versionId, firstEnvReleaseId);
+  const { data: endpoints = [] } = useEnvEndpoints(componentId, versionId, firstEnvId ?? '', firstEnvReleaseId);
 
   const handleClose = () => {
     (document.activeElement as HTMLElement)?.blur();
