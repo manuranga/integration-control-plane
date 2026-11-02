@@ -27,7 +27,7 @@
  * for the Configs & Secrets page. This file is the plain, component-scoped view.
  */
 
-import { bff, q, seg } from './_client';
+import { bff, seg } from './_client';
 import type { EnvGroup } from '../types/envGroups';
 
 interface BffEnvGroup {
@@ -42,18 +42,18 @@ const toEnvGroup = (g: BffEnvGroup): EnvGroup => ({ name: g.name, sensitive: g.s
 const groupsPath = (componentId: string, envId: string): string => `/components/${seg(componentId)}/environments/${seg(envId)}/env-groups`;
 
 /** Lists the groups with their keys; values are not included. */
-export const listEnvGroups = async (projectId: string, componentId: string, envId: string): Promise<EnvGroup[]> => {
-  const r = await bff.get<{ groups?: BffEnvGroup[] }>(`${groupsPath(componentId, envId)}${q({ projectName: projectId })}`);
+export const listEnvGroups = async (componentId: string, envId: string): Promise<EnvGroup[]> => {
+  const r = await bff.get<{ groups?: BffEnvGroup[] }>(groupsPath(componentId, envId));
   return (r?.groups ?? []).map(toEnvGroup);
 };
 
 /** One group with its values (blank for a sensitive group). */
-export const getEnvGroup = async (projectId: string, componentId: string, envId: string, name: string): Promise<EnvGroup> => toEnvGroup(await bff.get<BffEnvGroup>(`${groupsPath(componentId, envId)}/${seg(name)}${q({ projectName: projectId })}`));
+export const getEnvGroup = async (componentId: string, envId: string, name: string): Promise<EnvGroup> => toEnvGroup(await bff.get<BffEnvGroup>(`${groupsPath(componentId, envId)}/${seg(name)}`));
 
-export const putEnvGroup = async (projectId: string, componentId: string, envId: string, name: string, sensitive: boolean, data: Record<string, string>): Promise<void> => {
-  await bff.put(`${groupsPath(componentId, envId)}/${seg(name)}${q({ projectName: projectId })}`, { name, sensitive, data });
+export const putEnvGroup = async (componentId: string, envId: string, name: string, sensitive: boolean, data: Record<string, string>): Promise<void> => {
+  await bff.put(`${groupsPath(componentId, envId)}/${seg(name)}`, { name, sensitive, data });
 };
 
-export const deleteEnvGroup = async (projectId: string, componentId: string, envId: string, name: string): Promise<void> => {
-  await bff.delete(`${groupsPath(componentId, envId)}/${seg(name)}${q({ projectName: projectId })}`);
+export const deleteEnvGroup = async (componentId: string, envId: string, name: string): Promise<void> => {
+  await bff.delete(`${groupsPath(componentId, envId)}/${seg(name)}`);
 };
