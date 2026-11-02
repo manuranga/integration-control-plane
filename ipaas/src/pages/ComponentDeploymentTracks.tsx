@@ -20,12 +20,12 @@ import { Alert, Button, Chip, CircularProgress, Dialog, DialogActions, DialogCon
 import TextField from '../components/common/TextField';
 import { GitBranch, Pencil, Plus } from '@wso2/oxygen-ui-icons-react';
 import { useState, type JSX } from 'react';
-import Authorized from '../components/Authorized';
 import EmptyListing from '../components/EmptyListing';
 import NotFound from '../components/NotFound';
 import ComponentSettingsTabs from '../components/Settings/ComponentSettingsTabs';
 import TrackDeleteButton from '../components/Settings/TrackDeleteButton';
-import { Permissions } from '../constants/permissions';
+import { Scopes } from '../constants/permissions';
+import { useCan } from '../hooks/useCan';
 import { useComponentByHandler, useCreateDeploymentTrack, useUpdateDeploymentTrack } from '../hooks/useComponents';
 import { useEnvironments } from '../hooks/useEnvironments';
 import { useOrgUuid } from '../hooks/useOrgUuid';
@@ -218,6 +218,8 @@ function TracksBody({ scope, projectId, componentId, tracks, deploymentTracksEna
   const { data: repository = null } = useComponentRepository(projectId, scope.component);
   const [dialog, setDialog] = useState<{ track?: DeploymentTrack } | null>(null);
   const [notice, setNotice] = useState<Notice | null>(null);
+  const canUpdate = useCan()(Scopes.INTEGRATION_UPDATE);
+  const editable = deploymentTracksEnabled && canUpdate;
 
   return (
     <>
@@ -228,13 +230,13 @@ function TracksBody({ scope, projectId, componentId, tracks, deploymentTracksEna
       )}
 
       {deploymentTracksEnabled ? (
-        <Stack direction="row" justifyContent="flex-end" sx={{ mb: 2 }}>
-          <Authorized permissions={Permissions.INTEGRATION_MANAGE}>
+        editable && (
+          <Stack direction="row" justifyContent="flex-end" sx={{ mb: 2 }}>
             <Button variant="contained" startIcon={<Plus size={16} />} onClick={() => setDialog({})} disabled={!orgUuid}>
               Create Deployment Track
             </Button>
-          </Authorized>
-        </Stack>
+          </Stack>
+        )
       ) : (
         <Alert severity="info" sx={{ mb: 2 }}>
           This integration builds and deploys a single branch, its default deployment track.
@@ -253,7 +255,7 @@ function TracksBody({ scope, projectId, componentId, tracks, deploymentTracksEna
                 <ListingTable.Cell>Description</ListingTable.Cell>
                 <ListingTable.Cell>Auto Deploy</ListingTable.Cell>
                 <ListingTable.Cell>Environments</ListingTable.Cell>
-                {deploymentTracksEnabled && <ListingTable.Cell align="right">Actions</ListingTable.Cell>}
+                {editable && <ListingTable.Cell align="right">Actions</ListingTable.Cell>}
               </ListingTable.Row>
             </ListingTable.Head>
             <ListingTable.Body>
@@ -272,36 +274,34 @@ function TracksBody({ scope, projectId, componentId, tracks, deploymentTracksEna
                   <ListingTable.Cell>
                     <TrackEnvironments track={t} environments={environments} />
                   </ListingTable.Cell>
-                  {deploymentTracksEnabled && (
+                  {editable && (
                     <ListingTable.Cell align="right">
-                      <Authorized permissions={Permissions.INTEGRATION_MANAGE}>
-                        <Stack direction="row" justifyContent="flex-end" gap={0.5}>
-                          {/* The default track is the integration itself: its branch, API and description are the integration's. */}
-                          {!t.latest && (
-                            <Tooltip title="Edit">
-                              <IconButton size="small" aria-label={`Edit ${t.branch || 'deployment track'}`} onClick={() => setDialog({ track: t })}>
-                                <Pencil size={16} />
-                              </IconButton>
-                            </Tooltip>
-                          )}
-                          <TrackDeleteButton
-                            orgHandler={scope.org}
-                            projectId={projectId}
-                            componentId={componentId}
-                            trackId={t.id}
-                            label={t.branch || 'deployment track'}
-                            disabled={!!t.latest}
-                            disabledTooltip="The default deployment track is deleted with the integration"
-                            confirmTitle="Delete deployment track?"
-                            confirmBody={
-                              <>
-                                This permanently deletes the <strong>{t.branch}</strong> deployment track, undeploys it from every environment, and deletes its configs and secrets.
-                              </>
-                            }
-                            onResult={setNotice}
-                          />
-                        </Stack>
-                      </Authorized>
+                      <Stack direction="row" justifyContent="flex-end" gap={0.5}>
+                        {/* The default track is the integration itself: its branch, API and description are the integration's. */}
+                        {!t.latest && (
+                          <Tooltip title="Edit">
+                            <IconButton size="small" aria-label={`Edit ${t.branch || 'deployment track'}`} onClick={() => setDialog({ track: t })}>
+                              <Pencil size={16} />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                        <TrackDeleteButton
+                          orgHandler={scope.org}
+                          projectId={projectId}
+                          componentId={componentId}
+                          trackId={t.id}
+                          label={t.branch || 'deployment track'}
+                          disabled={!!t.latest}
+                          disabledTooltip="The default deployment track is deleted with the integration"
+                          confirmTitle="Delete deployment track?"
+                          confirmBody={
+                            <>
+                              This permanently deletes the <strong>{t.branch}</strong> deployment track, undeploys it from every environment, and deletes its configs and secrets.
+                            </>
+                          }
+                          onResult={setNotice}
+                        />
+                      </Stack>
                     </ListingTable.Cell>
                   )}
                 </ListingTable.Row>
