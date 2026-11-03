@@ -36,6 +36,7 @@ interface ExecutionDrawerProps {
   componentHandler: string;
   projectId: string;
   componentId: string;
+  environmentId: string;
   releaseId: string;
 }
 
@@ -63,7 +64,7 @@ function StatusIcon({ status }: { status: string }) {
   return <XCircle size={16} color="red" />;
 }
 
-export default function ExecutionDrawer({ execution, open, onClose, onRunSuccess, orgHandler, projectId, componentId, releaseId }: ExecutionDrawerProps) {
+export default function ExecutionDrawer({ execution, open, onClose, onRunSuccess, orgHandler, projectId, componentId, environmentId, releaseId }: ExecutionDrawerProps) {
   const canExecute = useCan()(Scopes.INTEGRATION_EXECUTE);
   const handleClose = () => {
     (document.activeElement as HTMLElement)?.blur();
@@ -115,7 +116,7 @@ export default function ExecutionDrawer({ execution, open, onClose, onRunSuccess
     setRunError(null);
     const execArgs = args.filter((a) => a.trim() !== '').map((a) => ({ argument_name: '', argument_value: a }));
     trigger.mutate(
-      { orgHandler, projectId, componentId, releaseId, args: execArgs },
+      { orgHandler, projectId, componentId, environmentId, releaseId, args: execArgs },
       {
         onSuccess: () => {
           onClose();
