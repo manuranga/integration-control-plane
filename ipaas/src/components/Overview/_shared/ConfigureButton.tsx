@@ -24,7 +24,7 @@ import { configureControl } from '../../../utils/configValues';
 
 interface ConfigureButtonProps {
   onClick: () => void;
-  /** When true, renders an error-coloured "Configure to Continue" affordance. */
+  /** When true, renders an error-coloured "Configure to continue" affordance. */
   hasMissingConfigs?: boolean;
   /** The drawer opens read-only: the button offers a view instead. */
   readOnly?: boolean;

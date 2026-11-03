@@ -49,7 +49,7 @@ async function page(scopes: string[]) {
   return r.container;
 }
 
-const controls = ['Create Deployment Track', 'Edit next', 'Delete next'];
+const controls = ['Create deployment track', 'Edit next', 'Delete next'];
 const tab = (scopes: string[]) => visibleComponentSettingsSections(identifyIntegration('ballerinaService', null), (perms) => perms.some((p) => scopes.includes(p))).map((s) => s.label);
 
 describe('Deployment Tracks', () => {
@@ -68,7 +68,7 @@ describe('Deployment Tracks', () => {
   it('lets a Developer, who may update but not delete integrations, create and edit a track, not delete it', async () => {
     expect(tab(DEVELOPER)).toContain('Deployment Tracks');
     const c = await page(DEVELOPER);
-    expect(button(c, 'Create Deployment Track')?.disabled).toBe(false);
+    expect(button(c, 'Create deployment track')?.disabled).toBe(false);
     expect(button(c, 'Edit next')?.disabled).toBe(false);
     expect(button(c, 'Delete next')).toBeUndefined();
   });

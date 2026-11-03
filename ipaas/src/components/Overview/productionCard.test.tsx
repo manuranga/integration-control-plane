@@ -77,7 +77,7 @@ describe('a production card', () => {
     expect(button(await render(configure, VIEWER), 'Configure')).toBeUndefined();
   });
 
-  it('offers a Developer, who may only read configuration, View Configuration', async () => {
-    expect(button(await render(<ApiHeaderStatus {...(slot('ACTIVE') as unknown as HeaderStatusProps)} />, DEVELOPER), 'View Configuration')?.disabled).toBe(false);
+  it('offers a Developer, who may only read configuration, View configuration', async () => {
+    expect(button(await render(<ApiHeaderStatus {...(slot('ACTIVE') as unknown as HeaderStatusProps)} />, DEVELOPER), 'View configuration')?.disabled).toBe(false);
   });
 });

@@ -70,8 +70,8 @@ describe('Runtime', () => {
   });
 
   it('lets a Developer redeploy a production release, and not a Viewer', async () => {
-    expect(button(await runtime(production, DEVELOPER), 'Redeploy Release')?.disabled).toBe(false);
+    expect(button(await runtime(production, DEVELOPER), 'Redeploy release')?.disabled).toBe(false);
     unmount();
-    expect(button(await runtime(production, VIEWER), 'Redeploy Release')?.disabled).toBe(true);
+    expect(button(await runtime(production, VIEWER), 'Redeploy release')?.disabled).toBe(true);
   });
 });

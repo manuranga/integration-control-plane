@@ -16,12 +16,12 @@
  * under the License.
  */
 
-import { Box, Button, Chip, Divider, IconButton, Skeleton, Stack, Tooltip, Typography } from '@wso2/oxygen-ui';
+import { Box, Button, Chip, Divider, IconButton, Skeleton, Stack, Tooltip, Typography, RelativeTime } from '@wso2/oxygen-ui';
 import { CalendarClock, Clock, Eye, Settings } from '@wso2/oxygen-ui-icons-react';
 import type { JSX } from 'react';
 import { DeploymentStatus } from '../../../types/deployment';
 import type { DeployEnvironmentCardBodyProps } from '../../../types/deploy';
-import { formatDistanceToNow } from '../../../utils/time';
+import { formatDateTime, formatDistanceToNow } from '../../../utils/time';
 import { getDeploymentStatusColor, getDeploymentStatusLabel } from '../../../utils/deploy';
 import BuildImageCard from '../../Deploy/BuildImageCard';
 
@@ -96,15 +96,7 @@ export default function DeployEnvironmentCardBody({
     <Stack gap={2}>
       {/* Deployed time — from per-env deployedAt, not image build time. Hidden when suspended (matches Devant).
           An automation has no deployment to date: it runs on its schedule, which the status below reports. */}
-      {!flags.isAutomation && !isSuspended && deployedAt && (
-        <Stack direction="row" alignItems="center" gap={0.5}>
-          <Clock size={14} style={{ opacity: 0.6 }} />
-          <Typography variant="body2">Deployed</Typography>
-          <Typography variant="body2" fontWeight={600}>
-            {formatDistanceToNow(deployedAt)}
-          </Typography>
-        </Stack>
-      )}
+      {!flags.isAutomation && !isSuspended && deployedAt && <RelativeTime time={formatDistanceToNow(deployedAt)} dateTime={deployedAt} tooltip={formatDateTime(deployedAt)} action="Deployed" />}
 
       {/* An automation reports its schedule here; every other type reports its workload. */}
       <Stack gap={0.5}>
@@ -211,7 +203,7 @@ export default function DeployEnvironmentCardBody({
           {configurablesCount !== undefined && configurablesCount >= 0 && <Chip size="small" label={configurablesCount} sx={{ height: 18, fontSize: '0.65rem', borderRadius: 0.75 }} />}
         </Stack>
         {onConfigClick && (
-          <Tooltip title={configReadOnly ? 'View Configuration' : 'Configure environment variables'}>
+          <Tooltip title={configReadOnly ? 'View configuration' : 'Configure environment variables'}>
             <IconButton size="small" onClick={onConfigClick}>
               <Settings size={16} />
             </IconButton>

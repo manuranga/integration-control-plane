@@ -43,6 +43,7 @@ import { useCan } from '../hooks/useCan';
 import { Scopes } from '../constants/permissions';
 import { buildExecutionArgumentsFromForm, formDataEqual, hasAnyFormData, parseArgumentsToFormData, parseRuntimeArgumentsToFormFields, validateRequiredFields } from '../utils/runtimeArguments';
 import { isNotFoundError, isUnsupportedError } from '../utils/apiErrors';
+import { useUnsavedChanges } from '../contexts/UnsavedChangesContext';
 import { isTerminalStatus } from '../utils/executionStatus';
 import type { DynamicFormData, DynamicFormFieldValue, DynamicFormValidationErrors, TaskExecution } from '../types/executions';
 import type { ComponentScope } from '../nav';
@@ -110,6 +111,8 @@ export default function AutomationTest({ org, project, component }: ComponentSco
   }, [currentRunId, execution, isTerminal]);
 
   const hasUnsavedChanges = !formDataEqual(formData, committedFormData);
+  // Once a run is started its arguments have been sent, so only input not yet run is at risk.
+  useUnsavedChanges(hasUnsavedChanges && currentRunId === null);
 
   // Reset the form + run state. Keeps any saved draft unless `clearDraft` is set.
   const resetTest = (opts?: { clearDraft?: boolean }) => {

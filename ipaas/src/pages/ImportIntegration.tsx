@@ -16,9 +16,9 @@
  * under the License.
  */
 
-import { Alert, Box, Button, CircularProgress, FormHelperText, FormLabel, Grid, IconButton, InputAdornment, Link, MenuItem, PageContent, Skeleton, Stack, Tooltip, Typography } from '@wso2/oxygen-ui';
+import { Alert, Box, Button, CircularProgress, FormHelperText, FormLabel, Grid, IconButton, InputAdornment, Link, MenuItem, PageContent, Skeleton, Stack, Tooltip, Typography, TextField } from '@wso2/oxygen-ui';
 import { PUBLIC_REPO_URL_HELP, PUBLIC_REPO_URL_PLACEHOLDER } from '../constants/import';
-import TextField from '../components/common/TextField';
+import { useUnsavedChanges } from '../contexts/UnsavedChangesContext';
 import { ArrowLeft, GitBranch, RefreshCw, GitHub } from '@wso2/oxygen-ui-icons-react';
 import { MENU_SEARCH_THRESHOLD } from '../components/MenuSearchField';
 import { useState, useEffect, useRef, type JSX } from 'react';
@@ -200,6 +200,8 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
   })();
 
   const handlerValid = effectiveHandler.length >= 3 && effectiveHandler.length <= 64;
+  // The auto-selected org and default branch are not input the user would lose.
+  const allowLeave = useUnsavedChanges(repoUrl !== '' || selectedRepo !== '' || selectedAdoProject !== '' || displayName !== '' || description !== '' || selectedIntegrationType !== null || ballerinaTokenInput !== '');
 
   // Technology detection
   useEffect(() => {
@@ -416,7 +418,10 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
         ...(isPublicRepo ? { enableAutoDeploy: true } : isAzureDevOps ? { azureDevOps: { organization: activeOrg, project: selectedAdoProject, repo: activeRepo } } : { gitHubAppInstallationId: userRepos?.find((o) => o.orgName === activeOrg)?.installationId }),
       },
       {
-        onSuccess: (component) => navigate(resourceUrl(narrow(scope, component.handler), 'overview')),
+        onSuccess: (component) => {
+          allowLeave();
+          navigate(resourceUrl(narrow(scope, component.handler), 'overview'));
+        },
         onError: () => {},
       },
     );
@@ -570,6 +575,7 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
       {isPublicRepo ? (
         <Grid size={{ xs: 12, md: 3 }}>
           <TextField
+            labelPlacement="top"
             label="Repository URL"
             required
             value={repoUrl}
@@ -601,6 +607,7 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
             <>
               <Grid size={{ xs: 12, md: 3 }}>
                 <TextField
+                  labelPlacement="top"
                   label="Organization"
                   select
                   required
@@ -631,6 +638,7 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
               </Grid>
               <Grid size={{ xs: 12, md: 3 }}>
                 <TextField
+                  labelPlacement="top"
                   label="Project"
                   select
                   required
@@ -654,6 +662,7 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
               </Grid>
               <Grid size={{ xs: 12, md: 3 }}>
                 <TextField
+                  labelPlacement="top"
                   label="Repository"
                   select
                   required
@@ -684,6 +693,7 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
               <Grid size={{ xs: 12, md: 3 }}>
                 <Stack direction="row" alignItems="center" spacing={0.5}>
                   <TextField
+                    labelPlacement="top"
                     label="Organization"
                     select
                     required
@@ -733,6 +743,7 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
               <Grid size={{ xs: 12, md: 3 }}>
                 <Stack direction="row" alignItems="center" spacing={0.5}>
                   <TextField
+                    labelPlacement="top"
                     label="Repository"
                     select
                     required
@@ -787,6 +798,7 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
         <Grid size={{ xs: 12, md: 3 }}>
           <Stack direction="row" alignItems="center" spacing={0.5}>
             <TextField
+              labelPlacement="top"
               label="Branch"
               select
               required
@@ -867,9 +879,9 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
 
   if (!isPublicRepo && !isAzureDevOps && (authStatus === 'authenticating' || authStatus === 'installing')) {
     return (
-      <PageContent sx={{ pt: 5 }}>
+      <PageContent fullWidth sx={{ pt: 5 }}>
         <Button startIcon={<ArrowLeft size={16} />} onClick={() => navigate(backUrl)} sx={{ mb: 3 }}>
-          Back
+          Back to create integration
         </Button>
         <Typography variant="h1" sx={{ mb: 0.5 }}>
           Import an Integration
@@ -902,7 +914,7 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
                 ? 'MCP Server'
                 : 'Integration as API';
     return (
-      <PageContent sx={{ pt: 5, display: 'flex', flexDirection: 'column', flex: 1 }}>
+      <PageContent fullWidth sx={{ pt: 5, display: 'flex', flexDirection: 'column', flex: 1 }}>
         <IntegrationCreationLoader
           label={integrationLabel}
           isPending={createComponent.isPending}
@@ -918,9 +930,9 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
   // Main form
 
   return (
-    <PageContent sx={{ pt: 5 }}>
+    <PageContent fullWidth sx={{ pt: 5 }}>
       <Button startIcon={<ArrowLeft size={16} />} onClick={() => navigate(backUrl)} sx={{ mb: 3 }}>
-        Back
+        Back to create integration
       </Button>
 
       <Typography variant="h1" sx={{ mb: 0.5 }}>
@@ -936,7 +948,7 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
 
       {!isPublicRepo && (isAzureDevOps ? renderAzureDevOpsArea() : renderGitHubArea())}
 
-      <Box sx={{ '& .MuiFormLabel-asterisk': { color: 'error.main' } }}>
+      <Box>
         <BusyFields busy={createComponent.isPending}>
           {/* Row 1 — source pickers (mode-aware) + Branch + Directory */}
           {renderRepoPickers()}
@@ -945,6 +957,7 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
           <Grid container columnSpacing={3} rowSpacing={1} sx={{ mt: 2, mb: 1 }}>
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField
+                labelPlacement="top"
                 label="Integration Name"
                 required
                 value={displayName}
@@ -960,6 +973,7 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
 
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField
+                labelPlacement="top"
                 label="Integration Id"
                 value={effectiveHandler}
                 fullWidth
@@ -980,7 +994,7 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
           {/* Row 3 — Description */}
           <Grid container columnSpacing={3} rowSpacing={1} sx={{ mb: 1 }}>
             <Grid size={{ xs: 12, md: 6 }}>
-              <TextField label="Description" value={description} onChange={(e) => setDescription(e.target.value)} fullWidth multiline minRows={1} />
+              <TextField labelPlacement="top" label="Description" optional value={description} onChange={(e) => setDescription(e.target.value)} fullWidth multiline minRows={1} />
             </Grid>
           </Grid>
 
@@ -1024,11 +1038,18 @@ export default function ImportIntegration(scope: ProjectScope): JSX.Element {
         </BusyFields>
 
         <Stack direction="row" gap={2} sx={{ mt: 2 }}>
-          <Button variant="outlined" onClick={() => navigate(backUrl)} disabled={createComponent.isPending}>
+          <Button
+            variant="outlined"
+            color="inherit"
+            onClick={() => {
+              allowLeave();
+              navigate(backUrl);
+            }}
+            disabled={createComponent.isPending}>
             Cancel
           </Button>
           <Button variant="contained" onClick={handleSubmit} disabled={!canSubmit || createComponent.isPending}>
-            {createComponent.isPending ? <CircularProgress size={18} color="inherit" /> : 'Import Integration'}
+            {createComponent.isPending ? <CircularProgress size={18} color="inherit" /> : 'Import integration'}
           </Button>
         </Stack>
       </Box>

@@ -29,7 +29,7 @@ afterEach(() => unmount());
 async function quickDeploy(scopes: string[]) {
   const r = await renderWithScopes(<SampleGridCard sample={sample} onDeploy={() => {}} isDeploying={false} />, scopes);
   unmount = r.unmount;
-  return button(r.container, 'Quick Deploy');
+  return button(r.container, 'Quick deploy');
 }
 
 describe('SampleGridCard', () => {

@@ -16,15 +16,15 @@
  * under the License.
  */
 
-import { Alert, Box, Button, CircularProgress, Grid, IconButton, InputAdornment, MenuItem, PageContent, Stack, Tooltip, Typography } from '@wso2/oxygen-ui';
+import { Alert, Box, Button, CircularProgress, Grid, IconButton, InputAdornment, MenuItem, PageContent, Stack, Tooltip, Typography, TextField } from '@wso2/oxygen-ui';
 import { PUBLIC_REPO_URL_HELP, PUBLIC_REPO_URL_PLACEHOLDER } from '../constants/import';
-import TextField from '../components/common/TextField';
 import { ArrowLeft, Building2, Check, CheckCircle2, Edit, GitHub, GitBranch } from '@wso2/oxygen-ui-icons-react';
 import GitLogoIcon from '../assets/icons/GitLogoIcon';
 import GitProviderCards from '../components/ProjectCreate/GitProviderCards';
 import GitHubAuthArea from '../components/Import/GitHubAuthArea';
 import { useState, useLayoutEffect, type JSX } from 'react';
 import { useAppNavigate } from '../hooks/useAppNavigate';
+import { useUnsavedChanges } from '../contexts/UnsavedChangesContext';
 import { Scopes } from '../constants/permissions';
 import { useCan } from '../hooks/useCan';
 import BusyFields from '../components/common/BusyFields';
@@ -108,11 +108,13 @@ export default function ImportProject(scope: OrgScope): JSX.Element {
   const orgBillableCount = isUpgraded ? 0 : (orgLimits?.billableComponentCount ?? 0);
   const quotaRemaining = isUpgraded ? undefined : Math.max(0, FREE_COMPONENT_LIMIT - orgBillableCount);
 
-  const { handler: effectiveHandler, handlerEdited, isCheckingAvailability, availability, availabilityError, startEditing, stopEditing, onHandlerChange } = useProjectHandler(displayName);
+  const { handler: effectiveHandler, handlerEdited, isCheckingAvailability, availability, availabilityError, handlerTaken: isHandlerTaken, replacedHandler, startEditing, stopEditing, onHandlerChange } = useProjectHandler(displayName);
   const createMonoRepoProject = useCreateMonoRepoProject();
   const canCreate = useCan()(Scopes.PROJECT_CREATE);
   const createComponent = useCreateComponent();
   const orgHomeUrl = resourceUrl(scope, 'overview');
+  // The provider choice and the auto-selected GitHub org are not input the user would lose.
+  const allowLeave = useUnsavedChanges(displayName !== '' || description !== '' || effectiveHandler !== '' || repoUrl !== '' || selectedRepo !== '');
 
   // Stabilize scrollbar gutter to prevent layout shift when content height changes
   useLayoutEffect(() => {
@@ -124,7 +126,7 @@ export default function ImportProject(scope: OrgScope): JSX.Element {
 
   const nameError = displayName ? validateProjectName(displayName) : null;
   const handlerError = effectiveHandler ? validateProjectHandler(effectiveHandler) : null;
-  const handlerTaken = availability && !availability.handlerUnique ? 'This project id is already taken.' : null;
+  const handlerTaken = isHandlerTaken ? 'This project id is already taken.' : null;
 
   const availabilityReady = !effectiveHandler || effectiveHandler.length < 2 || availability !== undefined || availabilityError;
   const canSubmit = canCreate && !!displayName.trim() && !nameError && !!effectiveHandler && !handlerError && !handlerTaken && !isCheckingAvailability && availabilityReady && pathReady && isWorkspace && workspaceModules.length > 0;
@@ -177,6 +179,7 @@ export default function ImportProject(scope: OrgScope): JSX.Element {
       );
     }
 
+    allowLeave();
     navigate(resourceUrl(narrow(scope, project.handler), 'overview'));
   };
 
@@ -188,6 +191,7 @@ export default function ImportProject(scope: OrgScope): JSX.Element {
       const alt = availability?.alternateHandlerCandidate;
       return alt ? `This project id is already taken. Try "${alt}" instead.` : handlerTaken;
     }
+    if (replacedHandler) return `"${replacedHandler}" is taken, so "${effectiveHandler}" is used instead.`;
     return undefined;
   };
 
@@ -199,6 +203,7 @@ export default function ImportProject(scope: OrgScope): JSX.Element {
       {isPublicRepo ? (
         <Grid size={{ xs: 12, md: colSize }}>
           <TextField
+            labelPlacement="top"
             label="Repository URL"
             required
             value={repoUrl}
@@ -228,6 +233,7 @@ export default function ImportProject(scope: OrgScope): JSX.Element {
         <>
           <Grid size={{ xs: 12, md: colSize }}>
             <TextField
+              labelPlacement="top"
               label="Organization"
               select
               required
@@ -263,6 +269,7 @@ export default function ImportProject(scope: OrgScope): JSX.Element {
           </Grid>
           <Grid size={{ xs: 12, md: colSize }}>
             <TextField
+              labelPlacement="top"
               label="Repository"
               select
               required
@@ -306,6 +313,7 @@ export default function ImportProject(scope: OrgScope): JSX.Element {
       {showBranchAndSubPath && (
         <Grid size={{ xs: 12, md: colSize }}>
           <TextField
+            labelPlacement="top"
             label="Branch"
             select
             required
@@ -361,16 +369,13 @@ export default function ImportProject(scope: OrgScope): JSX.Element {
   );
 
   return (
-    <PageContent sx={{ pt: 5, '& .MuiFormLabel-asterisk': { color: 'error.main' } }}>
+    <PageContent fullWidth sx={{ pt: 5 }}>
       <Button startIcon={<ArrowLeft size={16} />} onClick={() => navigate(orgHomeUrl)} sx={{ mb: 2 }}>
-        Back to Home
+        Back to projects
       </Button>
 
-      <Typography variant="h1" sx={{ mb: 1 }}>
+      <Typography variant="h1" sx={{ mb: 4 }}>
         Import a Project
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-        Choose a repository with your existing Ballerina workspace project.
       </Typography>
 
       {submitError && (
@@ -412,6 +417,7 @@ export default function ImportProject(scope: OrgScope): JSX.Element {
             <Grid container columnSpacing={3} rowSpacing={1} sx={{ mb: 2 }}>
               <Grid size={{ xs: 12, md: 4 }}>
                 <TextField
+                  labelPlacement="top"
                   label="Project Name"
                   required
                   value={displayName}
@@ -427,6 +433,7 @@ export default function ImportProject(scope: OrgScope): JSX.Element {
               </Grid>
               <Grid size={{ xs: 12, md: 4 }}>
                 <TextField
+                  labelPlacement="top"
                   label="Project Id"
                   value={effectiveHandler}
                   onChange={(e) => onHandlerChange(e.target.value)}
@@ -459,7 +466,7 @@ export default function ImportProject(scope: OrgScope): JSX.Element {
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 4 }}>
-                <TextField label="Description (Optional)" value={description} onChange={(e) => setDescription(e.target.value)} fullWidth multiline minRows={1} slotProps={{ htmlInput: { 'aria-label': 'Description' } }} />
+                <TextField labelPlacement="top" label="Description" optional value={description} onChange={(e) => setDescription(e.target.value)} fullWidth multiline minRows={1} slotProps={{ htmlInput: { 'aria-label': 'Description' } }} />
               </Grid>
             </Grid>
           </>
@@ -470,12 +477,19 @@ export default function ImportProject(scope: OrgScope): JSX.Element {
       </BusyFields>
 
       <Stack direction="row" gap={2} sx={{ mt: 2 }}>
-        <Button variant="outlined" onClick={() => navigate(orgHomeUrl)} disabled={isImporting}>
+        <Button
+          variant="outlined"
+          color="inherit"
+          onClick={() => {
+            allowLeave();
+            navigate(orgHomeUrl);
+          }}
+          disabled={isImporting}>
           Cancel
         </Button>
         {isWorkspace && (
           <Button variant="contained" onClick={handleImport} disabled={!canSubmit || isImporting} startIcon={isImporting ? <CircularProgress size={16} color="inherit" /> : undefined}>
-            {isImporting ? 'Importing…' : 'Import Project'}
+            {isImporting ? 'Importing…' : 'Import project'}
           </Button>
         )}
       </Stack>

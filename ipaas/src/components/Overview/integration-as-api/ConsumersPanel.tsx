@@ -104,12 +104,12 @@ export default function ConsumersPanel({ componentName, projectName, envName, en
         <Stack direction="row" alignItems="center" gap={1.5}>
           {can(Scopes.ENDPOINT_UPDATE) && (
             <Button variant="text" size="small" startIcon={<ShieldCheck size={14} />} onClick={() => setSecurityOpen(true)} sx={styles.textAction}>
-              Configure Security
+              Configure security
             </Button>
           )}
           {canManageConsumers && (
             <Button variant="contained" size="small" startIcon={count > 0 ? <Plus size={14} /> : undefined} onClick={() => setDialogTarget('new')}>
-              {count > 0 ? 'New Consumer' : 'Consume API'}
+              {count > 0 ? 'New consumer' : 'Consume API'}
             </Button>
           )}
         </Stack>
@@ -149,7 +149,7 @@ export default function ConsumersPanel({ componentName, projectName, envName, en
                     <Button variant="outlined" size="small" onClick={() => setDialogTarget(c)}>
                       Manage
                     </Button>
-                    <Tooltip title="Delete Consumer">
+                    <Tooltip title="Delete consumer">
                       <IconButton size="small" aria-label={`Delete ${c.displayName}`} onClick={() => setPendingDelete(c)} sx={styles.consumerDeleteButton}>
                         <Trash2 size={15} />
                       </IconButton>

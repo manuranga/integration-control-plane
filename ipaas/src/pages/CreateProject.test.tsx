@@ -22,19 +22,16 @@ import CreateProject from './CreateProject';
 import { button, renderWithScopes } from '../test/renderWithScopes';
 import { DEVELOPER, VIEWER } from '../test/roles';
 
-vi.mock('../hooks/useGitRepoSource', () => ({ useGitRepoSource: () => ({ providerSelected: false, showBranchAndSubPath: false, workspaceModules: [], userRepos: [], branches: [] }) }));
-vi.mock('../hooks/useProjectHandler', () => ({ useProjectHandler: () => ({ handler: 'orders', handlerEdited: false, isCheckingAvailability: false, availability: { handlerUnique: true } }) }));
-vi.mock('../hooks/useProjects', () => ({ useCreateProject: () => ({}), useCreateMonoRepoProject: () => ({}) }));
-vi.mock('../hooks/useComponents', () => ({ useCreateComponent: () => ({}) }));
-vi.mock('../hooks/useOrg', () => ({ useOrgs: () => ({ data: [] }), useOrgComponentLimits: () => ({}), useOrgSubscriptions: () => ({}) }));
-vi.mock('../hooks/useOrgUuid', () => ({ useOrgUuid: () => 'acme' }));
+vi.mock('../hooks/useProjectHandler', () => ({ useProjectHandler: () => ({ handler: 'orders', handlerEdited: false, handlerTaken: false, isCheckingAvailability: false, availability: { handlerUnique: true } }) }));
+vi.mock('../hooks/useProjects', () => ({ useCreateProject: () => ({}) }));
 vi.mock('../hooks/useAppNavigate', () => ({ useAppNavigate: () => vi.fn() }));
+vi.mock('../contexts/UnsavedChangesContext', () => ({ useUnsavedChanges: () => () => true }));
 vi.mock('../nav', async (importOriginal) => ({ ...(await importOriginal<typeof import('../nav')>()), resourceUrl: () => '/' }));
 
 let unmount = () => {};
 afterEach(() => unmount());
 
-/** The Create Project button once a name is typed into the form's first field. */
+/** The Create button once a name is typed into the form's first field. */
 async function createProject(scopes: string[]) {
   const r = await renderWithScopes(<CreateProject level="organizations" org="acme" />, scopes);
   unmount = r.unmount;
@@ -43,7 +40,7 @@ async function createProject(scopes: string[]) {
     Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(name, 'Orders');
     name.dispatchEvent(new Event('input', { bubbles: true }));
   });
-  return button(r.container, 'Create Project');
+  return button(r.container, 'Create');
 }
 
 describe('Create Project', () => {

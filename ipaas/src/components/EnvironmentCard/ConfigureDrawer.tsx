@@ -16,9 +16,30 @@
  * under the License.
  */
 
-import { Alert, Box, Button, Chip, CircularProgress, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Drawer, IconButton, MenuItem, Select as MuiSelect, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@wso2/oxygen-ui';
-import TextField from '../common/TextField';
-import { ChevronDown, ChevronUp, Link, Trash2, X } from '@wso2/oxygen-ui-icons-react';
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Collapse,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  DrawerPanel,
+  MenuItem,
+  Select as MuiSelect,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+} from '@wso2/oxygen-ui';
+import { ChevronDown, ChevronUp, Link, Trash2 } from '@wso2/oxygen-ui-icons-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEnvEndpoints } from '../../hooks/useDeployments';
@@ -72,7 +93,18 @@ function CertLinkForm({ availableCerts, onLink, onCancel }: CertLinkFormProps) {
       <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
         Link Certificate
       </Typography>
-      <TextField size="small" fullWidth label="Mount Path" value={mountPath} onChange={(e) => setMountPath(e.target.value)} error={!!mountPathError} helperText={mountPathError || 'Directory where certificate files will be mounted'} sx={{ mb: 1.5 }} />
+      <TextField
+        labelPlacement="top"
+        size="small"
+        fullWidth
+        label="Mount Path"
+        required
+        value={mountPath}
+        onChange={(e) => setMountPath(e.target.value)}
+        error={!!mountPathError}
+        helperText={mountPathError || 'Directory where certificate files will be mounted'}
+        sx={{ mb: 1.5 }}
+      />
       <MuiSelect size="small" fullWidth displayEmpty value={selectedGroupUuid} onChange={(e) => setSelectedGroupUuid(e.target.value as string)} sx={{ mb: 1.5 }}>
         <MenuItem value="" disabled>
           Select a Certificate
@@ -84,7 +116,7 @@ function CertLinkForm({ availableCerts, onLink, onCancel }: CertLinkFormProps) {
         ))}
       </MuiSelect>
       <Stack direction="row" gap={1} justifyContent="flex-end">
-        <Button size="small" onClick={onCancel}>
+        <Button size="small" variant="outlined" color="inherit" onClick={onCancel}>
           Cancel
         </Button>
         <Button size="small" variant="contained" disabled={!canLink} onClick={() => selected && onLink(selected, mountPath)}>
@@ -130,6 +162,7 @@ function LinkedCertCard({ cert, onUnlink, onMountPathChange }: LinkedCertCardPro
       <Collapse in={open}>
         <Box sx={{ px: 1.5, pt: 1, pb: 1.5 }}>
           <TextField
+            labelPlacement="top"
             size="small"
             fullWidth
             label="Mount Path"
@@ -230,7 +263,7 @@ function CertificateMountStep({ projectId, componentId, envId: _envId, deploymen
     <Box>
       <Box sx={{ mb: 1.5 }}>
         <Button variant="outlined" size="small" startIcon={<Link size={14} />} onClick={() => setIsLinking(true)} disabled={isLinking || linkable.length === 0}>
-          Link a Certificate
+          Link a certificate
         </Button>
       </Box>
 
@@ -239,7 +272,7 @@ function CertificateMountStep({ projectId, componentId, envId: _envId, deploymen
       {linkedCerts.length === 0 && !isLinking ? (
         <Box sx={{ py: 3, textAlign: 'center' }}>
           <Typography variant="body2" color="text.secondary">
-            No certificates linked. Click &apos;Link a Certificate&apos; to mount certificates to your component.
+            No certificates linked. Click &apos;Link a certificate&apos; to mount certificates to your integration.
           </Typography>
         </Box>
       ) : (
@@ -252,7 +285,9 @@ function CertificateMountStep({ projectId, componentId, envId: _envId, deploymen
           <Typography variant="body2">Are you sure you want to unlink this certificate? This action cannot be undone.</Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setUnlinkTarget(null)}>Cancel</Button>
+          <Button variant="outlined" color="inherit" onClick={() => setUnlinkTarget(null)}>
+            Cancel
+          </Button>
           <Button color="error" variant="contained" onClick={() => unlinkTarget && handleUnlink(unlinkTarget)}>
             Unlink
           </Button>
@@ -589,11 +624,10 @@ function AutomationConfigureDrawer({ open, onClose, onSaved, projectId, componen
   const nextDisabled = step === 1 ? hasValidationErrors || isLoading : isApplying || hasCertPathErrors;
 
   return (
-    <Drawer anchor="right" open={open} onClose={handleClose} variant="temporary" sx={drawerSx}>
-      {/* Header */}
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ px: 3, py: 2, borderBottom: '1px solid', borderColor: 'divider', flexShrink: 0 }}>
-        <Typography variant="h5">Configurations</Typography>
-        <Stack direction="row" alignItems="center" gap={1}>
+    <DrawerPanel open={open} onClose={handleClose}>
+      <DrawerPanel.Header>
+        <DrawerPanel.Title>Configurations</DrawerPanel.Title>
+        <DrawerPanel.Actions sx={{ gap: 1 }}>
           {hasSchema && step === 1 && (
             <ImportConfigTomlButton
               schema={parsedSchema}
@@ -610,45 +644,30 @@ function AutomationConfigureDrawer({ open, onClose, onSaved, projectId, componen
               onError={(msg) => setSaveError(msg)}
             />
           )}
-          <IconButton size="small" aria-label="close" onClick={handleClose}>
-            <X size={16} />
-          </IconButton>
-        </Stack>
-      </Stack>
+          <DrawerPanel.CloseButton />
+        </DrawerPanel.Actions>
+      </DrawerPanel.Header>
 
       {/* Step indicator */}
       <StepIndicator step={step} steps={AUTOMATION_STEPS} />
 
       {/* Content */}
-      <Box sx={{ flex: 1, overflow: 'auto', px: 2, py: 2 }}>{step === 1 ? renderConfigurations() : renderCertificateMount()}</Box>
+      <DrawerPanel.Body>{step === 1 ? renderConfigurations() : renderCertificateMount()}</DrawerPanel.Body>
 
       {/* Footer */}
       {hasSchema && (
-        <Stack direction="row" justifyContent="flex-end" gap={1} sx={{ px: 2, py: 1.5, borderTop: '1px solid', borderColor: 'divider', flexShrink: 0 }}>
-          <Button onClick={handlePrev}>{prevLabel}</Button>
+        <DrawerPanel.Footer>
+          <Button variant="outlined" color="inherit" onClick={handlePrev}>
+            {prevLabel}
+          </Button>
           <Button variant="contained" onClick={handleNext} disabled={nextDisabled} startIcon={isApplying ? <CircularProgress color="inherit" size={16} /> : undefined}>
             {nextLabel}
           </Button>
-        </Stack>
+        </DrawerPanel.Footer>
       )}
-    </Drawer>
+    </DrawerPanel>
   );
 }
-
-// ── Drawer ────────────────────────────────────────────────────────────────────
-
-const drawerSx = {
-  '& .MuiDrawer-paper': {
-    width: 560,
-    position: 'fixed',
-    top: 64,
-    height: 'calc(100% - 64px)',
-    borderLeft: '1px solid',
-    borderColor: 'divider',
-    display: 'flex',
-    flexDirection: 'column',
-  },
-} as const;
 
 export interface ConfigureDrawerProps {
   open: boolean;
@@ -1102,11 +1121,10 @@ function GenericServiceConfigureDrawer({
 
   return (
     <>
-      <Drawer anchor="right" open={open} onClose={handleClose} variant="temporary" sx={drawerSx}>
-        {/* Header */}
-        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ px: 3, py: 2, borderBottom: '1px solid', borderColor: 'divider', flexShrink: 0 }}>
-          <Typography variant="h5">Configure</Typography>
-          <Stack direction="row" alignItems="center" gap={1}>
+      <DrawerPanel open={open} onClose={handleClose}>
+        <DrawerPanel.Header>
+          <DrawerPanel.Title>Configure</DrawerPanel.Title>
+          <DrawerPanel.Actions sx={{ gap: 1 }}>
             {hasSchema && step === 1 && (
               <ImportConfigTomlButton
                 schema={parsedSchema}
@@ -1123,17 +1141,15 @@ function GenericServiceConfigureDrawer({
                 onError={(msg) => setSaveError(msg)}
               />
             )}
-            <IconButton size="small" aria-label="close" onClick={handleClose}>
-              <X size={16} />
-            </IconButton>
-          </Stack>
-        </Stack>
+            <DrawerPanel.CloseButton />
+          </DrawerPanel.Actions>
+        </DrawerPanel.Header>
 
         {/* Step indicator */}
         <StepIndicator step={step} steps={hideEndpoints ? AUTOMATION_STEPS : SERVICE_STEPS} />
 
         {/* Scrollable content */}
-        <Box sx={{ flex: 1, overflow: 'auto', px: 2, py: 2 }}>{stepContent}</Box>
+        <DrawerPanel.Body>{stepContent}</DrawerPanel.Body>
 
         {/* Footer error (steps 2 and 3 only; step 1 error is inline) */}
         {saveError && step !== 1 && (
@@ -1144,14 +1160,16 @@ function GenericServiceConfigureDrawer({
 
         {/* Footer */}
         {showFooter && (
-          <Stack direction="row" justifyContent="flex-end" gap={1} sx={{ px: 2, py: 1.5, borderTop: '1px solid', borderColor: 'divider', flexShrink: 0 }}>
-            <Button onClick={handlePrev}>{prevLabel}</Button>
+          <DrawerPanel.Footer>
+            <Button variant="outlined" color="inherit" onClick={handlePrev}>
+              {prevLabel}
+            </Button>
             <Button variant="contained" onClick={handleNext} disabled={nextDisabled} startIcon={(step === lastStep && isApplying) || (step === 1 && generateEp.isPending) ? <CircularProgress color="inherit" size={16} /> : undefined}>
               {nextLabel}
             </Button>
-          </Stack>
+          </DrawerPanel.Footer>
         )}
-      </Drawer>
+      </DrawerPanel>
 
       <ApiSettingsDrawer open={manageDrawerOpen} onClose={() => setManageDrawerOpen(false)} componentName={componentId} envName={envId} deploymentTrackId={versionId} endpoints={toEndpointOptions(endpoints)} activeEndpointName={settingsEp?.id} />
     </>
@@ -1193,22 +1211,24 @@ function ReadOnlyConfigureDrawer({ open, onClose, projectId, componentId, envId,
   };
 
   return (
-    <Drawer anchor="right" open={open} onClose={onClose} variant="temporary" sx={drawerSx}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ px: 3, py: 2, borderBottom: '1px solid', borderColor: 'divider', flexShrink: 0 }}>
-        <Typography variant="h5">Configurations</Typography>
-        <IconButton size="small" aria-label="close" onClick={onClose}>
-          <X size={16} />
-        </IconButton>
-      </Stack>
-      <Box sx={{ flex: 1, overflow: 'auto', px: 3, py: 2 }}>
+    <DrawerPanel open={open} onClose={onClose}>
+      <DrawerPanel.Header>
+        <DrawerPanel.Title>Configurations</DrawerPanel.Title>
+        <DrawerPanel.Actions>
+          <DrawerPanel.CloseButton />
+        </DrawerPanel.Actions>
+      </DrawerPanel.Header>
+      <DrawerPanel.Body>
         <Alert severity="info" sx={{ mb: 2 }}>
           Your role can view these configurations but not change them.
         </Alert>
         {renderValues()}
-      </Box>
-      <Stack direction="row" justifyContent="flex-end" sx={{ px: 2, py: 1.5, borderTop: '1px solid', borderColor: 'divider', flexShrink: 0 }}>
-        <Button onClick={onClose}>Close</Button>
-      </Stack>
-    </Drawer>
+      </DrawerPanel.Body>
+      <DrawerPanel.Footer>
+        <Button variant="outlined" color="inherit" onClick={onClose}>
+          Close
+        </Button>
+      </DrawerPanel.Footer>
+    </DrawerPanel>
   );
 }
