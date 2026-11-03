@@ -55,7 +55,7 @@ import {
 } from '@wso2/oxygen-ui';
 import { CARD_TABLE_SX } from '../constants/styles';
 import ProjectHomeSkeleton from '../components/ProjectHomeSkeleton';
-import { Box as BoxIcon, ChevronDown, ChevronUp, Cloud, ExternalLink, FileText, Filter, GitHub, GitBranch, Info, Link2, Pencil, Plus, PlugZap, Search, Trash2 } from '@wso2/oxygen-ui-icons-react';
+import { Box as BoxIcon, ChevronDown, ChevronUp, Cloud, ExternalLink, FileText, Filter, GitHub, GitBranch, Info, Link2, Pencil, Plus, PlugZap, Search } from '@wso2/oxygen-ui-icons-react';
 import CreateIntegrationPanels from '../components/CreateIntegrationPanels';
 import EmptyListing from '../components/EmptyListing';
 import IntegrationTypesCard from '../components/IntegrationTypesCard';
@@ -73,17 +73,19 @@ import { useOrgs, useOrgComponentLimits, useOrgSubscriptions } from '../hooks/us
 import { useChoreoSampleImages, useComponentRepositories } from '../hooks/useRepository';
 import type { Component, ComponentDeletionError, ComponentSubscription, SubscriptionInfo } from '../types/component';
 import { useDeleteComponent } from '../hooks/useComponents';
+import DeleteIntegrationButton from '../components/DeleteIntegrationButton';
 import NotFound from '../components/NotFound';
 import { formatDateTime, formatDistanceToNow } from '../utils/time';
 import { resourceUrl, broaden, newComponentUrl, editProjectUrl, type ProjectScope } from '../nav';
 import { useOrgUuid } from '../hooks/useOrgUuid';
 import { useAuth } from '../auth';
 import { componentOverviewUrl } from '../paths';
-import { Permissions } from '../constants/permissions';
+import { Scopes } from '../constants/permissions';
 import { isSupportedIntegration, getDisplayLabel, getNonIntegrationPlatform } from '../constants/integrations';
 import { identifyIntegration } from '../utils/identifyIntegration';
 import IntegrationIcon from '../components/IntegrationIcon';
 import Authorized from '../components/Authorized';
+import { useCan } from '../hooks/useCan';
 import { useFeaturePreview } from '../contexts/FeaturePreviewContext';
 import { UUID_RE } from '../utils/string';
 import { isExternalRepoIntegration } from '../utils/projectRepo';
@@ -400,7 +402,7 @@ function IntegrationsTable({
             },
           }}
         />
-        <Authorized permissions={Permissions.INTEGRATION_MANAGE}>
+        <Authorized permissions={Scopes.INTEGRATION_CREATE}>
           <Tooltip title={quotaReached ? 'You have exceeded the allocated integration quota. Upgrade your subscription.' : ''} placement="top">
             <span>
               <Button variant="contained" startIcon={<Plus size={16} />} onClick={() => navigate(newComponentUrl(scope))} disabled={quotaReached}>
@@ -510,21 +512,8 @@ function IntegrationsTable({
                             ) : (
                               <Box className="row-swap" sx={lastUpdatedSwapSx}>
                                 <Box className="row-time">{!init && <RelativeTime time={formatDistanceToNow(c.lastBuildDate)} dateTime={c.lastBuildDate} tooltip={formatDateTime(c.lastBuildDate)} />}</Box>
-                                <Authorized permissions={Permissions.INTEGRATION_MANAGE}>
-                                  <Button
-                                    className="row-delete"
-                                    variant="outlined"
-                                    size="small"
-                                    color="error"
-                                    startIcon={<Trash2 size={14} />}
-                                    aria-label={`Delete ${c.displayName}`}
-                                    sx={rowDeleteSx}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setDeleting(c);
-                                    }}>
-                                    Delete
-                                  </Button>
+                                <Authorized permissions={Scopes.INTEGRATION_DELETE}>
+                                  <DeleteIntegrationButton component={c} onClick={() => setDeleting(c)} className="row-delete" sx={rowDeleteSx} />
                                 </Authorized>
                               </Box>
                             )}
@@ -627,6 +616,9 @@ function buildProjectRepoUrl(gitProvider?: string, gitOrganization?: string, rep
 
 export default function Project(scope: ProjectScope): JSX.Element {
   const navigate = useAppNavigate();
+  const can = useCan();
+  const canUpdate = can(Scopes.PROJECT_UPDATE);
+  const canUseEditor = can(Scopes.EDITOR_USE);
   const isUuid = UUID_RE.test(scope.project);
   const { data: projectById, isLoading: loadingById } = useProject(isUuid ? scope.project : '');
   const { data: projectByHandle, isLoading: loadingByHandle } = useProjectByHandler(isUuid ? '' : scope.project);
@@ -807,7 +799,7 @@ export default function Project(scope: ProjectScope): JSX.Element {
                   <Box
                     sx={{ position: 'relative', flex: 1, cursor: 'text', mt: 0.25 }}
                     onClick={() => {
-                      if (!descEditing) {
+                      if (canUpdate && !descEditing) {
                         setDescEditing(true);
                         setTimeout(() => descInputRef.current?.focus(), 0);
                       }
@@ -827,8 +819,8 @@ export default function Project(scope: ProjectScope): JSX.Element {
                         overflow: 'hidden',
                       }}
                       title={!descEditing && descValue ? descValue : undefined}>
-                      {descValue || '+ Add Description'}
-                      {descValue && (
+                      {descValue || (canUpdate && '+ Add Description')}
+                      {descValue && canUpdate && (
                         <Box component="span" sx={{ display: 'inline-flex', verticalAlign: 'middle', ml: 0.5 }}>
                           <Tooltip title="Edit description">
                             <IconButton
@@ -891,22 +883,28 @@ export default function Project(scope: ProjectScope): JSX.Element {
                     </Link>
                   </Stack>
                 ) : (
-                  <Button size="small" variant="text" color="primary" startIcon={<Link2 size={14} />} onClick={() => setLinkRepoOpen(true)} sx={linkRepoButtonSx}>
-                    Link a repository
-                  </Button>
+                  canUpdate && (
+                    <Button size="small" variant="text" color="primary" startIcon={<Link2 size={14} />} onClick={() => setLinkRepoOpen(true)} sx={linkRepoButtonSx}>
+                      Link a repository
+                    </Button>
+                  )
                 )}
               </div>
             </Stack>
           </Stack>
           <Stack direction="row" alignItems="center" gap={1.5} sx={{ flexShrink: 0 }}>
-            <Authorized permissions={[Permissions.PROJECT_MANAGE, Permissions.PROJECT_EDIT]}>
+            <Authorized permissions={Scopes.PROJECT_UPDATE}>
               <Button variant="outlined" size="small" startIcon={<Pencil size={14} />} onClick={() => navigate(editProjectUrl(scope))} sx={{ whiteSpace: 'nowrap' }}>
                 Edit project
               </Button>
             </Authorized>
-            {openInCloudComponent && projectRepoUrl && (
+            {openInCloudComponent && projectRepoUrl && (canUseEditor || openInIntegratorEnabled) && (
               <Box sx={{ position: 'relative', flexShrink: 0 }}>
-                {openInIntegratorEnabled ? (
+                {!canUseEditor ? (
+                  <Button variant="outlined" size="small" startIcon={<IntegratorIcon width={16} height={16} />} onClick={handleOpenInIntegrator} sx={{ whiteSpace: 'nowrap' }}>
+                    Open in Integrator
+                  </Button>
+                ) : openInIntegratorEnabled ? (
                   <>
                     <ButtonGroup variant="outlined" size="small" ref={splitButtonRef}>
                       <Button

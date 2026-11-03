@@ -108,6 +108,7 @@ function toSession(accessToken: string, idClaims: Record<string, unknown> | null
     },
     orgHandle,
     orgUuid,
+    scopes: (stringClaim(access, 'scope') ?? '').split(' ').filter(Boolean),
   };
 }
 
@@ -259,6 +260,7 @@ function CloudSessionProvider({ children }: { children: ReactNode }): JSX.Elemen
       displayName: user.displayName,
       pictureUrl: user.pictureUrl,
       orgHandle: status.kind === 'signedIn' ? status.session.orgHandle : '',
+      scopes: status.kind === 'signedIn' ? status.session.scopes : [],
       loginWithOIDC,
       completeSignIn,
       logout,
