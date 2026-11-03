@@ -22,7 +22,7 @@
 
 export const DEVELOPER = (
   'cloud:organization:view cloud:project:read cloud:project:create cloud:project:update ipaas:environment:read ipaas:data-plane:read ipaas:deployment-pipeline:read ' +
-  'ipaas:repository:read ipaas:integration:read ipaas:integration:create ipaas:integration:update ipaas:integration:build ipaas:integration:deploy ' +
+  'ipaas:repository:read ipaas:repository:connect ipaas:integration:read ipaas:integration:create ipaas:integration:update ipaas:integration:build ipaas:integration:deploy ' +
   'ipaas:integration:execute ipaas:editor:use ipaas:config:read ipaas:endpoint:read ipaas:endpoint:update ipaas:endpoint:expose ipaas:endpoint:test ' +
   'ipaas:application:read ipaas:alert-rule:read ipaas:observability:log-read ipaas:observability:metric-read ' +
   'amp:agent:create amp:agent:read amp:agent:update amp:agent:delete amp:agent:build amp:agent:env-non-production amp:agent:suspend amp:agent:token-manage amp:agent:api-key-manage'
