@@ -112,6 +112,8 @@ import { trackEvent } from '../services/tracking/tracking';
 import { billingUpgradeUrl, componentOverviewUrl, documentationUrl, loginUrl, orgHomeUrl, privacyPolicyUrl, termsOfUseUrl } from '../paths';
 import { formatDocumentTitle, pageTitleFor } from '../utils/documentTitle';
 import { useAccessControl } from '../contexts/AccessControlContext';
+import { useCan } from '../hooks/useCan';
+import { Scopes } from '../constants/permissions';
 import { useLeaveGuard } from '../contexts/UnsavedChangesContext';
 
 // ComplexSelect is content-sized, and at org level there is no card beside the icon to stretch against.
@@ -136,6 +138,7 @@ export default function AppLayout(): JSX.Element {
   const loadedPicture = useLoadedImage(pictureUrl);
   const userAvatar = loadedPicture ?? userInitials(userName);
   const { hasAnyPermission } = useAccessControl();
+  const canReadLogs = useCan()(Scopes.LOG_READ);
   const apiInsightsEnabled = configuredMoesifOrigin() !== null;
 
   // Billing trial indicator shown in the header.
@@ -856,7 +859,7 @@ export default function AppLayout(): JSX.Element {
                               <Sidebar.ItemLabel>Metrics</Sidebar.ItemLabel>
                             </Sidebar.Item>
                             {/* Only agents are instrumented, so no other integration has traces to show. */}
-                            {aiAgentType && (
+                            {aiAgentType && canReadLogs && (
                               <Sidebar.Item id="traces">
                                 <Sidebar.ItemIcon>
                                   <Waypoints size={20} />
