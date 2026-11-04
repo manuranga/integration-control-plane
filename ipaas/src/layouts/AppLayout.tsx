@@ -113,6 +113,8 @@ import { trackEvent } from '../services/tracking/tracking';
 import { billingUpgradeUrl, componentOverviewUrl, documentationUrl, loginUrl, orgHomeUrl, privacyPolicyUrl, termsOfUseUrl } from '../paths';
 import { formatDocumentTitle, pageTitleFor } from '../utils/documentTitle';
 import { useAccessControl } from '../contexts/AccessControlContext';
+import { useCan } from '../hooks/useCan';
+import { Scopes } from '../constants/permissions';
 import { useLeaveGuard } from '../contexts/UnsavedChangesContext';
 
 // ComplexSelect is content-sized, and at org level there is no card beside the icon to stretch against.
@@ -137,6 +139,9 @@ export default function AppLayout(): JSX.Element {
   const loadedPicture = useLoadedImage(pictureUrl);
   const userAvatar = loadedPicture ?? userInitials(userName);
   const { hasAnyPermission } = useAccessControl();
+  const can = useCan();
+  const canReadLogs = can(Scopes.LOG_READ);
+  const canReadServices = can(Scopes.INTEGRATION_READ);
   const apiInsightsEnabled = configuredMoesifOrigin() !== null;
 
   // Billing trial indicator shown in the header.
@@ -749,12 +754,14 @@ export default function AppLayout(): JSX.Element {
 
                     <Sidebar.Category key="org-infra">
                       {/* Managed services integrations connect to: databases today, caches and brokers to come. */}
-                      <Sidebar.Item id="org-platform-services">
-                        <Sidebar.ItemIcon>
-                          <Database size={20} />
-                        </Sidebar.ItemIcon>
-                        <Sidebar.ItemLabel>Platform Services</Sidebar.ItemLabel>
-                      </Sidebar.Item>
+                      {canReadServices && (
+                        <Sidebar.Item id="org-platform-services">
+                          <Sidebar.ItemIcon>
+                            <Database size={20} />
+                          </Sidebar.ItemIcon>
+                          <Sidebar.ItemLabel>Platform Services</Sidebar.ItemLabel>
+                        </Sidebar.Item>
+                      )}
                       {/* Environments come before the pipelines that promote across them. */}
                       <Sidebar.Item id="org-admin">
                         <Sidebar.ItemIcon>
@@ -864,7 +871,7 @@ export default function AppLayout(): JSX.Element {
                               <Sidebar.ItemLabel>Metrics</Sidebar.ItemLabel>
                             </Sidebar.Item>
                             {/* Only agents are instrumented, so no other integration has traces to show. */}
-                            {aiAgentType && (
+                            {aiAgentType && canReadLogs && (
                               <Sidebar.Item id="traces">
                                 <Sidebar.ItemIcon>
                                   <Waypoints size={20} />
@@ -920,12 +927,14 @@ export default function AppLayout(): JSX.Element {
 
                         <Sidebar.Category key="int-infra">
                           {/* Managed services integrations connect to: databases today, caches and brokers to come. */}
-                          <Sidebar.Item id="org-platform-services">
-                            <Sidebar.ItemIcon>
-                              <Database size={20} />
-                            </Sidebar.ItemIcon>
-                            <Sidebar.ItemLabel>Platform Services</Sidebar.ItemLabel>
-                          </Sidebar.Item>
+                          {canReadServices && (
+                            <Sidebar.Item id="org-platform-services">
+                              <Sidebar.ItemIcon>
+                                <Database size={20} />
+                              </Sidebar.ItemIcon>
+                              <Sidebar.ItemLabel>Platform Services</Sidebar.ItemLabel>
+                            </Sidebar.Item>
+                          )}
                           <Sidebar.Item id="admin">
                             <Sidebar.ItemIcon>
                               <Settings2 size={20} />
@@ -1014,12 +1023,14 @@ export default function AppLayout(): JSX.Element {
 
                       <Sidebar.Category key="proj-infra">
                         {/* Managed services integrations connect to: databases today, caches and brokers to come. */}
-                        <Sidebar.Item id="org-platform-services">
-                          <Sidebar.ItemIcon>
-                            <Database size={20} />
-                          </Sidebar.ItemIcon>
-                          <Sidebar.ItemLabel>Platform Services</Sidebar.ItemLabel>
-                        </Sidebar.Item>
+                        {canReadServices && (
+                          <Sidebar.Item id="org-platform-services">
+                            <Sidebar.ItemIcon>
+                              <Database size={20} />
+                            </Sidebar.ItemIcon>
+                            <Sidebar.ItemLabel>Platform Services</Sidebar.ItemLabel>
+                          </Sidebar.Item>
+                        )}
                         {/* Environments link up to the org page; the pipeline is this project's own. */}
                         <Sidebar.Item id="proj-admin">
                           <Sidebar.ItemIcon>

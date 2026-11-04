@@ -20,6 +20,8 @@ import { Alert, Button, IconButton, PageContent, PageTitle, Stack, Tooltip } fro
 import { Plus, RefreshCw } from '@wso2/oxygen-ui-icons-react';
 import type { JSX } from 'react';
 import { useAppNavigate } from '../hooks/useAppNavigate';
+import { Scopes } from '../constants/permissions';
+import { useCan } from '../hooks/useCan';
 import { useDatabaseAvailability, useDatabaseOffering, useDatabaseServers } from '../hooks/useDatabases';
 import { useTemporalOffering, useTemporalServers } from '../hooks/useTemporal';
 import { databaseUrl, newDatabaseUrl, temporalUrl, type OrgScope } from '../nav';
@@ -35,6 +37,7 @@ const NO_TEMPORAL_PLANS: readonly TemporalPlan[] = [];
 
 export default function OrgDatabases(scope: OrgScope): JSX.Element {
   const navigate = useAppNavigate();
+  const canManage = useCan()(Scopes.CONFIG_MANAGE);
   // Every service type is provisioned through the same provider, so one availability answers for all.
   const availability = useDatabaseAvailability();
   const available = availability.data?.available === true;
@@ -77,7 +80,7 @@ export default function OrgDatabases(scope: OrgScope): JSX.Element {
         </Alert>
       );
     if (!available) return <Alert severity="info">Platform services are not available in this environment.</Alert>;
-    if (!rows.length) return <NoDatabaseServersBanner onCreate={create} />;
+    if (!rows.length) return <NoDatabaseServersBanner onCreate={canManage ? create : undefined} />;
     return <PlatformServicesTable rows={rows} databasePlans={databaseOffering.data?.plans ?? NO_DATABASE_PLANS} temporalPlans={temporalOffering.data?.plans ?? NO_TEMPORAL_PLANS} onOpen={open} />;
   };
 
@@ -97,9 +100,11 @@ export default function OrgDatabases(scope: OrgScope): JSX.Element {
                 </IconButton>
               </span>
             </Tooltip>
-            <Button variant="contained" startIcon={<Plus size={20} />} onClick={create} sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
-              Create
-            </Button>
+            {canManage && (
+              <Button variant="contained" startIcon={<Plus size={20} />} onClick={create} sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
+                Create
+              </Button>
+            )}
           </Stack>
         )}
       </Stack>

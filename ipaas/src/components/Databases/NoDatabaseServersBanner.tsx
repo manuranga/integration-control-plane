@@ -23,8 +23,8 @@ import type { JSX } from 'react';
 const bannerSx = { maxWidth: 720, mx: 'auto', pb: 6 } as const;
 const iconSx = { width: 96, height: 96, borderRadius: '50%', bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3, color: 'text.secondary' } as const;
 
-/** Empty state for the Platform Services page. */
-export default function NoDatabaseServersBanner({ onCreate }: { onCreate: () => void }): JSX.Element {
+/** Empty state for the Platform Services page; offers Create when given `onCreate`. */
+export default function NoDatabaseServersBanner({ onCreate }: { onCreate?: () => void }): JSX.Element {
   return (
     <Stack alignItems="center" textAlign="center" sx={bannerSx}>
       <Box sx={iconSx}>
@@ -36,9 +36,11 @@ export default function NoDatabaseServersBanner({ onCreate }: { onCreate: () => 
       <Typography variant="body2" color="text.secondary">
         No services have been created yet. Create one and connect your integrations to it.
       </Typography>
-      <Button variant="contained" startIcon={<Plus size={20} />} onClick={onCreate} sx={{ mt: 3 }}>
-        Create
-      </Button>
+      {onCreate && (
+        <Button variant="contained" startIcon={<Plus size={20} />} onClick={onCreate} sx={{ mt: 3 }}>
+          Create
+        </Button>
+      )}
     </Stack>
   );
 }

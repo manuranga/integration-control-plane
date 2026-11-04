@@ -25,6 +25,8 @@ import PlanCard from '../components/Databases/PlanCard';
 import TemporalPlanCard from '../components/Temporal/TemporalPlanCard';
 import { DatabasePlansSkeleton } from '../components/Databases/DatabaseSkeletons';
 import { useAppNavigate } from '../hooks/useAppNavigate';
+import { Scopes } from '../constants/permissions';
+import { useCan } from '../hooks/useCan';
 import { useCreateDatabaseServer, useDatabaseOffering, useDatabaseServers } from '../hooks/useDatabases';
 import { useCreateTemporalServer, useTemporalOffering, useTemporalServers } from '../hooks/useTemporal';
 import { PLATFORM_SERVICE_TYPES, type PlatformServiceKind } from '../constants/databases';
@@ -57,6 +59,7 @@ export default function CreateDatabaseServer(scope: OrgScope): JSX.Element {
   const temporalOffering = useTemporalOffering(isTemporal);
   const createDatabase = useCreateDatabaseServer();
   const createTemporal = useCreateTemporalServer();
+  const canManage = useCan()(Scopes.CONFIG_MANAGE);
   const create = isTemporal ? createTemporal : createDatabase;
 
   const [name, setName] = useState('');
@@ -80,7 +83,7 @@ export default function CreateDatabaseServer(scope: OrgScope): JSX.Element {
   // Plans stay locked until the name is valid, so a missing name is never left behind a plan that already looks chosen.
   const nameReady = name !== '' && !nameError && takenNames !== null;
   const nameChecking = name !== '' && !nameError && takenNames === null;
-  const canCreate = nameReady && !!planId && !offering.isError && !create.isPending;
+  const canCreate = canManage && nameReady && !!planId && !offering.isError && !create.isPending;
   const createError = create.isError ? (isTemporal ? toCreateTemporalError(create.error) : toCreateDatabaseError(create.error)) : null;
 
   const pickKind = (next: PlatformServiceKind) => {
