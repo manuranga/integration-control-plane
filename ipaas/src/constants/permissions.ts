@@ -44,6 +44,7 @@ export const Permissions = {
   USER_VIEW: 'user_mgt:view',
 } as const;
 
+export const PROJECT_EDIT_PERMISSIONS = [Permissions.PROJECT_MANAGE, Permissions.PROJECT_EDIT];
 export const ALL_ROLE_MODIFY_PERMISSIONS = [Permissions.USER_MANAGE_USERS, Permissions.USER_MANAGE_GROUPS, Permissions.USER_MANAGE_ROLES, Permissions.USER_UPDATE_GROUP_ROLES] as const;
 export const ALL_USER_MGT_PERMISSIONS = [Permissions.USER_MANAGE_USERS, Permissions.USER_UPDATE_USERS, Permissions.USER_MANAGE_GROUPS, Permissions.USER_MANAGE_ROLES, Permissions.USER_UPDATE_GROUP_ROLES, Permissions.USER_VIEW] as const;
 
@@ -70,6 +71,8 @@ export const Scopes = {
   ENVIRONMENT_MANAGE: 'cloud:environment:manage',
   DEPLOYMENT_PIPELINE_MANAGE: 'cloud:deployment-pipeline:manage',
   ENDPOINT_UPDATE: 'ipaas:endpoint:update',
+  ENDPOINT_TEST: 'ipaas:endpoint:test',
+  REPOSITORY_CONNECT: 'ipaas:repository:connect',
   ENDPOINT_EXPOSE: 'ipaas:endpoint:expose',
   ENDPOINT_API_KEY_MANAGE: 'ipaas:endpoint:api-key-manage',
   APPLICATION_MANAGE: 'ipaas:application:manage',
@@ -78,4 +81,5 @@ export const Scopes = {
   AGENT_CREATE: 'amp:agent:create',
   AGENT_UPDATE: 'amp:agent:update',
   AGENT_DELETE: 'amp:agent:delete',
+  AGENT_API_KEY_MANAGE: 'amp:agent:api-key-manage',
 } as const;

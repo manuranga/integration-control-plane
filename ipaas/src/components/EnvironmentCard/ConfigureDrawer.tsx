@@ -60,8 +60,11 @@ import MiConfigureDrawer from './MiConfigureDrawer';
 import { ManageEndpoint, StepIndicator } from './ConfigureSteps';
 import { runtimeFromDisplayType } from '../../utils/identifyIntegration';
 
-const SERVICE_STEPS = ['Configurations', 'Certificate Mount', 'Endpoints'];
-const AUTOMATION_STEPS = ['Configurations', 'Certificate Mount'];
+// Keys the platform sets (a workflow integration's runtime connection), shown read-only.
+const managedConfigKeys = (configurations: SchemaConfigItem[] | undefined): ReadonlySet<string> => new Set((configurations ?? []).filter((c) => c.isManaged).map((c) => c.key));
+
+const SERVICE_STEPS = ['Configurations', 'Certificate mount', 'Endpoints'];
+const AUTOMATION_STEPS = ['Configurations', 'Certificate mount'];
 
 // ── Automation configure drawer ───────────────────────────────────────────────
 
@@ -91,13 +94,13 @@ function CertLinkForm({ availableCerts, onLink, onCancel }: CertLinkFormProps) {
   return (
     <Box sx={{ border: '1px solid', borderColor: 'primary.main', borderRadius: 1, p: 1.5, mb: 1.5 }}>
       <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
-        Link Certificate
+        Link certificate
       </Typography>
       <TextField
         labelPlacement="top"
         size="small"
         fullWidth
-        label="Mount Path"
+        label="Mount path"
         required
         value={mountPath}
         onChange={(e) => setMountPath(e.target.value)}
@@ -107,7 +110,7 @@ function CertLinkForm({ availableCerts, onLink, onCancel }: CertLinkFormProps) {
       />
       <MuiSelect size="small" fullWidth displayEmpty value={selectedGroupUuid} onChange={(e) => setSelectedGroupUuid(e.target.value as string)} sx={{ mb: 1.5 }}>
         <MenuItem value="" disabled>
-          Select a Certificate
+          Select a certificate
         </MenuItem>
         {availableCerts.map((c) => (
           <MenuItem key={c.groupUuid} value={c.groupUuid}>
@@ -165,7 +168,7 @@ function LinkedCertCard({ cert, onUnlink, onMountPathChange }: LinkedCertCardPro
             labelPlacement="top"
             size="small"
             fullWidth
-            label="Mount Path"
+            label="Mount path"
             value={mountPath}
             error={!!mountPathError}
             helperText={mountPathError || 'Directory where certificate files will be mounted'}
@@ -280,7 +283,7 @@ function CertificateMountStep({ projectId, componentId, envId: _envId, deploymen
       )}
 
       <Dialog open={!!unlinkTarget} onClose={() => setUnlinkTarget(null)}>
-        <DialogTitle>Unlink Certificate</DialogTitle>
+        <DialogTitle>Unlink certificate</DialogTitle>
         <DialogContent>
           <Typography variant="body2">Are you sure you want to unlink this certificate? This action cannot be undone.</Typography>
         </DialogContent>
@@ -603,6 +606,7 @@ function AutomationConfigureDrawer({ open, onClose, onSaved, projectId, componen
           configGroups={configGroups}
           handleValueChange={handleValueChange}
           handleValidationChange={handleValidationChange}
+          managedKeys={managedConfigKeys(data?.configurations)}
         />
         {saveError && (
           <Alert severity="error" sx={{ mt: 1 }}>
@@ -793,7 +797,7 @@ function GenericServiceConfigureDrawer({
   const { data, isLoading, isError } = useSchemaConfig(projectId, componentId, schemaEnvId, versionId, commitHash);
   const { data: existingCertMappings } = useCertificateMappings(projectId, componentId, schemaEnvId, versionId, open);
   const { data: configGroups } = useConfigGroups(projectId, componentId, open);
-  const { data: endpoints = [] } = useEnvEndpoints(open && !hideEndpoints ? componentId : '', open && !hideEndpoints ? versionId : '', envId, open && !hideEndpoints && releaseId ? releaseId : '');
+  const { data: endpoints = [] } = useEnvEndpoints(open && !hideEndpoints ? componentId : '', open && !hideEndpoints ? versionId : '', open && !hideEndpoints && releaseId ? releaseId : '');
   const save = useSaveSchemaConfig();
   const saveCertMappings = usePostCertificateMappings();
   const generateEp = useGenerateComponentEndpoints();
@@ -1075,6 +1079,7 @@ function GenericServiceConfigureDrawer({
           configGroups={configGroups}
           handleValueChange={handleValueChange}
           handleValidationChange={handleValidationChange}
+          managedKeys={managedConfigKeys(data?.configurations)}
         />
         {saveError && (
           <Alert severity="error" sx={{ mt: 1 }}>

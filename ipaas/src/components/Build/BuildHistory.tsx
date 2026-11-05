@@ -170,7 +170,7 @@ export default function BuildHistory({ componentId, versionId, envId, branch, bu
 
           <Tooltip title={configRefusal || (isBuilding ? 'A build is already in progress' : 'Build configuration')}>
             <span>
-              <IconButton size="small" aria-label="Build configuration" onClick={handleOpenConfig} disabled={!repository || isBuilding || !can(Scopes.INTEGRATION_UPDATE) || !!configRefusal}>
+              <IconButton aria-label="Build configuration" size="small" onClick={handleOpenConfig} disabled={!repository || isBuilding || !can(Scopes.INTEGRATION_UPDATE) || !!configRefusal}>
                 <Settings size={18} />
               </IconButton>
             </span>
@@ -218,7 +218,7 @@ export default function BuildHistory({ componentId, versionId, envId, branch, bu
                     </Typography>
                     {build.isTriggeredAtCreation ? (
                       <Chip
-                        label="Initial Build"
+                        label="Initial build"
                         size="small"
                         variant="outlined"
                         color="default"

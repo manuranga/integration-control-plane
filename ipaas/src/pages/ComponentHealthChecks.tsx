@@ -54,7 +54,7 @@ export default function ComponentHealthChecks({ org, project, component }: Compo
 
   const { data: deployment, isLoading: loadingDeployment } = useComponentDeployment(org, orgUuid ?? '', comp?.id ?? '', trackId, envId);
   const releaseId = deployment?.releaseId ?? '';
-  const { data: release, isLoading: loadingRelease } = useRelease(projectId, comp?.id, envId, releaseId, trackId);
+  const { data: release, isLoading: loadingRelease } = useRelease(projectId, comp?.id, releaseId, trackId);
   const containers = useMemo(() => release?.containers ?? [], [release]);
   const mainC = useMemo(() => mainContainer(containers), [containers]);
 
@@ -82,7 +82,7 @@ export default function ComponentHealthChecks({ org, project, component }: Compo
       {tracks.length > 0 && <DeploymentTrackBar component={comp} extra={envSelect} />}
       <PageContent fullWidth>
         <PageTitle>
-          <PageTitle.Header>Health Checks</PageTitle.Header>
+          <PageTitle.Header>Health checks</PageTitle.Header>
           {showCreate && (
             <PageTitle.Actions>
               <Button variant="contained" startIcon={<Plus size={16} />} onClick={() => setCreating(true)}>
@@ -132,7 +132,7 @@ export default function ComponentHealthChecks({ org, project, component }: Compo
         ) : healthChecks.length === 0 ? (
           <EmptyListing
             icon={<Activity size={48} />}
-            title="No Health Checks have been configured in this Environment."
+            title="No health checks have been configured in this environment."
             description="Configuring health checks will allow unhealthy replicas to self-heal and also ensures increased availability for your services."
           />
         ) : (

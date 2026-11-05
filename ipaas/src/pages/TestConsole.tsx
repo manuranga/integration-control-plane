@@ -80,7 +80,7 @@ export default function TestConsole(scope: ComponentScope): JSX.Element {
   const releaseId = deployment?.releaseId ?? '';
 
   // Endpoints for the selected env + track
-  const { data: endpoints = [], isLoading: loadingEndpoints } = useEnvEndpoints(component?.id ?? '', selectedTrackId, selectedEnvId, releaseId);
+  const { data: endpoints = [], isLoading: loadingEndpoints } = useEnvEndpoints(component?.id ?? '', selectedTrackId, releaseId);
 
   // Selected endpoint — derived rather than synced via an effect, since useApimSwagger below
   // keys off selectedEndpoint and an effect+render round trip would delay it becoming enabled.
@@ -98,7 +98,7 @@ export default function TestConsole(scope: ComponentScope): JSX.Element {
   );
   // Mint the initial test key when the console resolves an api-key-secured endpoint;
   // the button below explicitly refreshes it on demand after that.
-  const access = useEndpointTestAccess(testKeyEndpointRef, !!testKeyEndpointRef, selectedEndpoint?.publicUrl || '');
+  const access = useEndpointTestAccess(testKeyEndpointRef, { enabled: !!testKeyEndpointRef, gatewayUrlFallback: selectedEndpoint?.publicUrl || '' });
   // Try-it-out runs in the browser, so the gateway must return CORS headers for this origin.
   const { data: endpointPolicies } = useEndpointPolicies(testKeyEndpointRef, !!testKeyEndpointRef);
   const testKeyHeader = access.authHeader;
@@ -198,7 +198,7 @@ export default function TestConsole(scope: ComponentScope): JSX.Element {
 
       <PageContent fullWidth>
         <Typography variant="h1" sx={{ mb: 3 }}>
-          Test Console
+          Test console
         </Typography>
 
         {/* Nothing deployed to call — explain rather than render an empty endpoint picker. */}
@@ -270,6 +270,7 @@ export default function TestConsole(scope: ComponentScope): JSX.Element {
                         <InputAdornment position="end">
                           <Tooltip title={urlCopied ? 'Copied!' : 'Copy to clipboard'}>
                             <IconButton
+                              aria-label="Copy invoke URL"
                               size="small"
                               onClick={() => {
                                 navigator.clipboard.writeText(invokeUrl);
@@ -289,7 +290,7 @@ export default function TestConsole(scope: ComponentScope): JSX.Element {
                 {testable && (
                   <Stack direction="row" alignItems="flex-start" gap={2}>
                     <Typography variant="body2" sx={{ minWidth: 140, fontWeight: 500, color: 'text.secondary', pt: 1 }}>
-                      Security Header
+                      Security header
                       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 400 }}>
                         {testKeyHeader}
                       </Typography>
@@ -306,12 +307,13 @@ export default function TestConsole(scope: ComponentScope): JSX.Element {
                           endAdornment={
                             <InputAdornment position="end">
                               <Tooltip title={showKey ? 'Hide' : 'Show'}>
-                                <IconButton size="small" onClick={() => setShowKey((s) => !s)}>
+                                <IconButton aria-label={showKey ? 'Hide key' : 'Show key'} size="small" onClick={() => setShowKey((s) => !s)}>
                                   {showKey ? <EyeOff size={16} /> : <Eye size={16} />}
                                 </IconButton>
                               </Tooltip>
                               <Tooltip title={keyCopied ? 'Copied!' : 'Copy'}>
                                 <IconButton
+                                  aria-label="Copy key"
                                   size="small"
                                   disabled={!securityHeader}
                                   onClick={() => {
@@ -325,15 +327,17 @@ export default function TestConsole(scope: ComponentScope): JSX.Element {
                             </InputAdornment>
                           }
                         />
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          startIcon={fetchingKey ? <CircularProgress size={14} color="inherit" /> : <Key size={14} />}
-                          disabled={fetchingKey || !canGetTestKey}
-                          onClick={handleGetTestKey}
-                          sx={{ whiteSpace: 'nowrap', textTransform: 'none' }}>
-                          Get test key
-                        </Button>
+                        {access.canCreateKey && (
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            startIcon={fetchingKey ? <CircularProgress size={14} color="inherit" /> : <Key size={14} />}
+                            disabled={fetchingKey || !canGetTestKey}
+                            onClick={handleGetTestKey}
+                            sx={{ whiteSpace: 'nowrap', textTransform: 'none' }}>
+                            Get test key
+                          </Button>
+                        )}
                       </Stack>
                       {keyError && (
                         <Typography variant="caption" color="error">

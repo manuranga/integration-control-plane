@@ -31,7 +31,7 @@ vi.mock('./_client', async (importOriginal) => {
   return { ...actual, bff: { ...actual.bff, get, post } };
 });
 
-import { executionLogWindow, fetchExecutionConfigs, fetchExecutionLogs, fetchTaskExecutions, podBelongsToJob, stopSchedule, toExecutionLogEntry } from './executions';
+import { executionLogWindow, fetchExecutionConfigs, fetchExecutionLogs, fetchTaskExecutions, podBelongsToJob, stopSchedule, toExecutionLogEntry, toTaskExecution } from './executions';
 import { formatExecutionLogLine, spansMultipleContainers } from '../utils/logs';
 import { HttpError } from '../types/http';
 import type { ObsLogEntry } from './logs';
@@ -253,6 +253,18 @@ describe('fetchExecutionLogs', () => {
   });
 });
 
+describe('toTaskExecution', () => {
+  it('carries the reason a run failed', () => {
+    const run = toTaskExecution({ jobId: 'job-1', status: 'Failed', failedReason: 'The run exceeded its timeout and was stopped.' });
+    expect(run.failedReason).toBe('The run exceeded its timeout and was stopped.');
+  });
+
+  it('defaults to no reason when the backend sends none', () => {
+    // Older backends omit the field entirely.
+    expect(toTaskExecution({ jobId: 'job-1', status: 'Failed' }).failedReason).toBe('');
+  });
+});
+
 // Each deployment track has its own schedule and runs. The console addresses a
 // scheduled task by its environment card's release, which belongs to one track.
 describe('scheduled tasks by release', () => {
@@ -277,6 +289,6 @@ describe('scheduled tasks by release', () => {
     get.mockResolvedValue({ items: [] });
     await fetchTaskExecutions('hello-next-r1', 'hello', 'development', 'proj');
     await fetchTaskExecutions('', 'hello', 'development', 'proj');
-    expect(get.mock.calls.map(([url]) => (url as string).split('?')[0])).toEqual(['/components/hello/environments/development/releases/hello-next-r1/executions/history', '/components/hello/environments/development/executions/history']);
+    expect(get.mock.calls.map(([url]) => (url as string).split('?')[0])).toEqual(['/releases/hello-next-r1/executions/history', '/components/hello/environments/development/executions/history']);
   });
 });

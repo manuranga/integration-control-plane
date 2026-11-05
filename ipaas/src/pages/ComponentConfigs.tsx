@@ -53,7 +53,7 @@ export default function ComponentConfigs({ org, project, component }: ComponentS
 
   const { data: deployment } = useComponentDeployment(org, orgUuid ?? '', comp?.id ?? '', trackId, envId);
   const releaseId = deployment?.releaseId ?? '';
-  const { data: release } = useRelease(projectId, comp?.id, envId, releaseId, trackId);
+  const { data: release } = useRelease(projectId, comp?.id, releaseId, trackId);
   const containerId = useMemo(() => mainContainer(release?.containers)?.ID ?? '', [release]);
 
   const { data: mounts = [], isLoading: loadingMounts } = useContainerConfigMounts(projectId, comp?.id, releaseId, containerId, trackId);
@@ -113,7 +113,7 @@ export default function ComponentConfigs({ org, project, component }: ComponentS
         {/* The heading stays put through every state — loading, not-deployed, editor — so the
             page never reads as just a floating notice. Only the action is state-dependent. */}
         <PageTitle>
-          <PageTitle.Header>Configs &amp; Secrets</PageTitle.Header>
+          <PageTitle.Header>Configs &amp; secrets</PageTitle.Header>
           {!isLoading && comp && releaseId && containerId && view.kind === 'list' && (
             <PageTitle.Actions>
               <Authorized permissions={Scopes.CONFIG_MANAGE}>
@@ -178,7 +178,7 @@ export default function ComponentConfigs({ org, project, component }: ComponentS
                             {r.isSecret && <Chip label="Secret" size="small" variant="outlined" color="warning" />}
                           </Stack>
                         </ListingTable.Cell>
-                        <ListingTable.Cell>{r.kind === 'fileMount' ? 'File Mount' : 'Environment Variables'}</ListingTable.Cell>
+                        <ListingTable.Cell>{r.kind === 'fileMount' ? 'File mount' : 'Environment variables'}</ListingTable.Cell>
                         <ListingTable.Cell>{r.kind === 'fileMount' ? r.mount.mount_path || '—' : r.keys.join(', ') || '—'}</ListingTable.Cell>
                         <ListingTable.Cell align="right">
                           <Authorized permissions={Scopes.CONFIG_MANAGE}>

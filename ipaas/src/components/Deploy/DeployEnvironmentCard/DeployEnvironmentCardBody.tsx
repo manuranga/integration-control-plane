@@ -160,7 +160,7 @@ export default function DeployEnvironmentCardBody({
             // reference (there is no source commit / build to display).
             <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5 }}>
               <Typography variant="caption" color="text.secondary">
-                Container Image
+                Container image
               </Typography>
               <Typography variant="body2" sx={{ fontFamily: 'monospace', mt: 0.25, wordBreak: 'break-all' }}>
                 {deployment.imageUrl || '—'}
@@ -189,7 +189,7 @@ export default function DeployEnvironmentCardBody({
             {endpointCount !== undefined && endpointCount >= 0 && <Chip size="small" label={endpointCount} sx={{ height: 18, fontSize: '0.65rem', borderRadius: 0.75 }} />}
           </Stack>
           <Tooltip title="View endpoints">
-            <IconButton size="small" onClick={onEndpointsClick}>
+            <IconButton aria-label="View endpoints" size="small" onClick={onEndpointsClick}>
               <Eye size={16} />
             </IconButton>
           </Tooltip>
@@ -204,7 +204,7 @@ export default function DeployEnvironmentCardBody({
         </Stack>
         {onConfigClick && (
           <Tooltip title={configReadOnly ? 'View configuration' : 'Configure environment variables'}>
-            <IconButton size="small" onClick={onConfigClick}>
+            <IconButton aria-label={configReadOnly ? 'View configuration' : 'Configure environment variables'} size="small" onClick={onConfigClick}>
               <Settings size={16} />
             </IconButton>
           </Tooltip>
@@ -215,10 +215,10 @@ export default function DeployEnvironmentCardBody({
       {flags.isAutomation && (
         <Stack gap={0.25}>
           <Stack direction="row" alignItems="center" justifyContent="space-between">
-            <Typography variant="body2">Job Configs</Typography>
+            <Typography variant="body2">Job configs</Typography>
             {onJobConfigClick && (
               <Tooltip title="Configure job schedule">
-                <IconButton size="small" onClick={onJobConfigClick}>
+                <IconButton aria-label="Configure job schedule" size="small" onClick={onJobConfigClick}>
                   <Settings size={16} />
                 </IconButton>
               </Tooltip>
@@ -238,7 +238,7 @@ export default function DeployEnvironmentCardBody({
       {/* Scale to Zero indicator — below Job Configs for automation, below Configurables for services */}
       {scaleToZeroEnabled !== undefined && (
         <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Typography variant="body2">Scale to Zero</Typography>
+          <Typography variant="body2">Scale to zero</Typography>
           <Chip size="small" label={scaleToZeroEnabled ? 'Enabled' : 'Disabled'} color={scaleToZeroEnabled ? 'success' : 'default'} variant="outlined" sx={{ height: 20, fontSize: '0.7rem' }} />
         </Stack>
       )}

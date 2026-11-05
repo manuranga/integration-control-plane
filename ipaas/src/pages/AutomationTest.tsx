@@ -49,7 +49,7 @@ import type { DynamicFormData, DynamicFormFieldValue, DynamicFormValidationError
 import type { ComponentScope } from '../nav';
 
 /**
- * Automation "Test" page — mirrors Devant's "Test Your Automation" console layout:
+ * Automation "Test" page — mirrors Devant's "Test your automation" console layout:
  * a summary header, then a two-panel body with the runtime-arguments form on the
  * left and the live argument preview, run stepper, and execution logs on the right.
  * Form state is held here so the preview and stepper stay in sync with the form.
@@ -220,7 +220,7 @@ export default function AutomationTest({ org, project, component }: ComponentSco
       return;
     }
     try {
-      const { runId } = await trigger.mutateAsync({ orgHandler: org, projectId, componentId: comp?.id ?? '', environmentId: envId, releaseId, args: executionArgs });
+      const { runId } = await trigger.mutateAsync({ orgHandler: org, projectId, componentId: comp?.id ?? '', releaseId, args: executionArgs });
       setCurrentRunId(runId);
       setPolling(true);
       setLogsOpen(true);
@@ -232,7 +232,7 @@ export default function AutomationTest({ org, project, component }: ComponentSco
   const handleDirectRun = () => {
     setAlert(null);
     trigger.mutate(
-      { orgHandler: org, projectId, componentId: comp?.id ?? '', environmentId: envId, releaseId, args: [] },
+      { orgHandler: org, projectId, componentId: comp?.id ?? '', releaseId, args: [] },
       {
         onSuccess: () => {
           setPendingTriggerTime(Date.now());
@@ -261,7 +261,7 @@ export default function AutomationTest({ org, project, component }: ComponentSco
    *  environment selector lives in the sticky track bar below, which shares PageTitle's box. */
   const pageTitle = (
     <PageTitle>
-      <PageTitle.Header>Test Your Automation</PageTitle.Header>
+      <PageTitle.Header>Test your automation</PageTitle.Header>
     </PageTitle>
   );
 
@@ -286,7 +286,7 @@ export default function AutomationTest({ org, project, component }: ComponentSco
             </Box>
             <Box>
               <Typography variant="body2" color="text.secondary">
-                Total Executions{' '}
+                Total executions{' '}
                 <Typography component="span" variant="caption" color="text.secondary">
                   (Last 30 days)
                 </Typography>
@@ -337,7 +337,7 @@ export default function AutomationTest({ org, project, component }: ComponentSco
     </Box>
   );
 
-  // Runtime arguments present → the "Test Your Automation" form view (two panels).
+  // Runtime arguments present → the "Test your automation" form view (two panels).
   const renderFormView = (resolvedTrackId: string): JSX.Element => (
     <Box>
       {pageTitle}
@@ -429,7 +429,7 @@ export default function AutomationTest({ org, project, component }: ComponentSco
       )}
       {/* Plain padded container (not PageContent) so the page uses the single outer scroller — the
           sticky track bar above pins against it, with no nested scroll region. */}
-      <Box sx={{ width: '100%', maxWidth: 1400, mx: 'auto', p: 8 }}>{renderBody()}</Box>
+      <Box sx={{ p: 8 }}>{renderBody()}</Box>
     </>
   );
 }

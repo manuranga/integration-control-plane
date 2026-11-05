@@ -58,22 +58,46 @@ export function isQuotaError(error: unknown): boolean {
   return httpStatusOf(error) === 402;
 }
 
+/**
+ * The sentence to show for a failed API call.
+ *
+ * The BFF writes a user-facing sentence for each outcome it distinguishes, and
+ * `BffError.message` carries it unchanged. Those sentences are the only thing
+ * telling one failure from another — a feature switched off in this deployment,
+ * a missing permission and a wrong component type otherwise read alike.
+ *
+ * Anything without a response behind it — a dropped connection, a gateway page —
+ * has no sentence worth showing, so the caller's own wording stands.
+ */
+export function apiErrorMessage(error: unknown, fallback: string): string {
+  if (Number.isNaN(httpStatusOf(error))) return fallback;
+  const message = messageOf(error).trim();
+  // The shape the client falls back to when the body carried no sentence.
+  return !message || /^HTTP \d{3}:/.test(message) ? fallback : message;
+}
+
 /** ipaas-service refused the call because the user's role lacks a scope (`code: INSUFFICIENT_SCOPE`). */
 export function isPermissionError(error: unknown): boolean {
-  return httpStatusOf(error) === 403 && codeOf(error) === 'INSUFFICIENT_SCOPE';
+  return httpStatusOf(error) === 403 && bodyOf(error).code === 'INSUFFICIENT_SCOPE';
+}
+
+/** The scope a permission refusal names, if any. */
+export function refusedScope(error: unknown): string | undefined {
+  const { scope } = bodyOf(error);
+  return isPermissionError(error) && typeof scope === 'string' ? scope : undefined;
 }
 
 /** A test key was refused because the endpoint doesn't use API-key auth (`code: API_KEY_AUTH_REQUIRED`). */
 export function isApiKeyAuthRequired(error: unknown): boolean {
-  return httpStatusOf(error) === 409 && codeOf(error) === 'API_KEY_AUTH_REQUIRED';
+  return httpStatusOf(error) === 409 && bodyOf(error).code === 'API_KEY_AUTH_REQUIRED';
 }
 
-/** The `code` of an ipaas-service error body. */
-function codeOf(error: unknown): unknown {
-  if (typeof error !== 'object' || error === null || !('body' in error)) return undefined;
+/** The `code` and `scope` of an ipaas-service error body. */
+function bodyOf(error: unknown): { code?: unknown; scope?: unknown } {
+  if (typeof error !== 'object' || error === null || !('body' in error)) return {};
   try {
-    return (JSON.parse(String(error.body)) as { code?: unknown }).code;
+    return (JSON.parse(String(error.body)) as { code?: unknown; scope?: unknown } | null) ?? {};
   } catch {
-    return undefined;
+    return {};
   }
 }

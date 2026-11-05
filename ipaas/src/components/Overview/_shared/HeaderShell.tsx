@@ -297,6 +297,7 @@ export default function ComponentHeader({ component, repository, latestCommit, o
                   !nameEditing && (
                     <Tooltip title="Edit name">
                       <IconButton
+                        aria-label="Edit name"
                         className="pencil-btn"
                         size="small"
                         sx={{ p: 0.25, opacity: 0 }}
@@ -319,8 +320,8 @@ export default function ComponentHeader({ component, repository, latestCommit, o
                     <Tooltip title={isExternal ? 'External' : 'Internal'}>
                       <Stack direction="row" alignItems="center" gap={0.25} sx={{ color: 'text.secondary' }}>
                         {isExternal ? <Globe size={12} /> : <Lock size={12} />}
-                        <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'capitalize' }}>
-                          {component.serviceAccessMode}
+                        <Typography variant="caption" color="text.secondary">
+                          {isExternal ? 'External' : 'Internal'}
                         </Typography>
                       </Stack>
                     </Tooltip>
@@ -358,6 +359,7 @@ export default function ComponentHeader({ component, repository, latestCommit, o
                         <Box component="span" sx={{ display: 'inline-flex', verticalAlign: 'middle', ml: 0.5 }}>
                           <Tooltip title="Edit description">
                             <IconButton
+                              aria-label="Edit description"
                               size="small"
                               sx={{ p: 0.25, opacity: descHovered ? 1 : 0, transition: 'opacity 0.15s' }}
                               onClick={(e) => {
@@ -442,6 +444,7 @@ export default function ComponentHeader({ component, repository, latestCommit, o
                         {canEdit && (
                           <Tooltip title="Edit labels">
                             <IconButton
+                              aria-label="Edit labels"
                               className="pencil-btn"
                               size="small"
                               sx={{ p: 0.25, opacity: 0 }}
@@ -475,7 +478,7 @@ export default function ComponentHeader({ component, repository, latestCommit, o
                       {repoPathOf(repoUrl)}
                     </Typography>
                     <Tooltip title={copied ? 'Copied!' : 'Copy URL'}>
-                      <IconButton size="small" onClick={() => handleCopyRepoUrl(repoUrl)} sx={{ p: 0.25 }}>
+                      <IconButton aria-label="Copy URL" size="small" onClick={() => handleCopyRepoUrl(repoUrl)} sx={{ p: 0.25 }}>
                         {copied ? <Check size={12} /> : <Copy size={12} />}
                       </IconButton>
                     </Tooltip>
@@ -487,7 +490,7 @@ export default function ComponentHeader({ component, repository, latestCommit, o
               <Stack direction="row" flexWrap="wrap" alignItems="center" gap={1}>
                 <Stack direction="row" alignItems="center" gap={1}>
                   <Typography variant="body2" color="text.secondary">
-                    Latest Commit:
+                    Latest commit:
                   </Typography>
                   {latestCommit && (
                     <>

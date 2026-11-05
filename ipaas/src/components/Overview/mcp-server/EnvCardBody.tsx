@@ -44,7 +44,7 @@ export default function EnvCardBody({ component, env, projectId, versionId, rele
   // in-progress deployment has no reachable `/mcp` endpoint yet, and a degraded one
   // (crash-looping, or never rendered) never will.
   const isDeploymentReady = hasDeployment && isDeploymentHealthy(deploymentStatusV2);
-  const { data: endpoints = [] } = useEnvEndpoints(component.id, versionId, env.id, releaseId);
+  const { data: endpoints = [] } = useEnvEndpoints(component.id, versionId, releaseId);
 
   // Default to the MCP-capable endpoint (tools are listed at `${baseUrl}/mcp`). The
   // user can still switch endpoints in the panel.
@@ -61,7 +61,7 @@ export default function EnvCardBody({ component, env, projectId, versionId, rele
     () => (activeEndpoint ? { projectName: projectId, componentName: component.id, environmentName: env.id, endpointName: activeEndpoint.id, deploymentTrackId: versionId } : null),
     [projectId, component.id, env.id, activeEndpoint, versionId],
   );
-  const access = useEndpointTestAccess(accessRef, !!accessRef && isDeploymentReady);
+  const access = useEndpointTestAccess(accessRef, { enabled: !!accessRef && isDeploymentReady });
 
   // Tools are listed through the apip gateway and nothing else. The raw external
   // route is open (no policy engine in its path), so falling back to it would hand

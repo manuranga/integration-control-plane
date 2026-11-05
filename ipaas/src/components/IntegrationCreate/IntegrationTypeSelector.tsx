@@ -24,16 +24,25 @@ import { INTEGRATION_TYPES } from '../../constants/import';
 import { Scopes } from '../../constants/permissions';
 import { useAgentRefusal } from '../../hooks/useCan';
 
+// Three cards a row from lg, each as wide as one column of a four-column grid with 16px gaps.
+const GRID_SX = {
+  display: 'grid',
+  gap: 2,
+  gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', lg: 'repeat(3, minmax(0, 1fr))' },
+  maxWidth: { lg: 'calc(75% - 4px)' },
+} as const;
+
 interface IntegrationTypeSelectorProps {
   selected: IntegrationType | null;
   onSelect: (type: IntegrationType) => void;
-  excludedTypes?: IntegrationType[];
+  /** Types this create cannot offer, such as one the chosen source or technology does not support. */
+  excludedTypes?: readonly IntegrationType[];
 }
 
 export default function IntegrationTypeSelector({ selected, onSelect, excludedTypes = [] }: IntegrationTypeSelectorProps): JSX.Element {
   const agentRefusal = useAgentRefusal()(Scopes.AGENT_CREATE);
   return (
-    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+    <Box sx={GRID_SX}>
       {INTEGRATION_TYPES.filter((opt) => !excludedTypes.includes(opt.id)).map((opt) => {
         const isActive = selected === opt.id;
         const refusal = opt.id === 'ai-agent' ? agentRefusal : '';
@@ -53,8 +62,6 @@ export default function IntegrationTypeSelector({ selected, onSelect, excludedTy
                 }
               }}
               sx={{
-                width: '25%',
-                minWidth: 180,
                 border: 2,
                 borderColor: isActive ? 'primary.main' : 'divider',
                 bgcolor: isActive ? 'primary.50' : 'background.paper',
@@ -69,18 +76,20 @@ export default function IntegrationTypeSelector({ selected, onSelect, excludedTy
                   <Typography variant="body2" fontWeight={600} sx={{ color: isActive ? 'primary.main' : 'text.primary' }}>
                     {opt.title}
                   </Typography>
-                  <Tooltip title="View documentation" placement="top">
-                    <Box
-                      component="a"
-                      href={opt.docLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={`View documentation for ${opt.title}`}
-                      onClick={(e: MouseEvent) => e.stopPropagation()}
-                      sx={{ display: 'flex', color: 'text.disabled', '&:hover': { color: 'text.secondary' }, ml: 0.5, flexShrink: 0 }}>
-                      <ExternalLink size={13} />
-                    </Box>
-                  </Tooltip>
+                  {opt.docLink && (
+                    <Tooltip title="View documentation" placement="top">
+                      <Box
+                        component="a"
+                        href={opt.docLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`View documentation for ${opt.title}`}
+                        onClick={(e: MouseEvent) => e.stopPropagation()}
+                        sx={{ display: 'flex', color: 'text.disabled', '&:hover': { color: 'text.secondary' }, ml: 0.5, flexShrink: 0 }}>
+                        <ExternalLink size={13} />
+                      </Box>
+                    </Tooltip>
+                  )}
                 </Box>
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5, lineHeight: 1.4, flex: 1 }}>
                   {opt.description}

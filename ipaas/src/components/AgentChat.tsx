@@ -53,7 +53,7 @@ function formatTime(ts: number): string {
 }
 
 export default function AgentChat({ projectId, componentId, versionId, releaseId, environmentName, envCritical, waitForConfig = false, variant = 'card', onConnectionChange }: AgentChatProps): ReactNode {
-  const { data: endpoints = [] } = useEnvEndpoints(componentId, versionId, environmentName ?? '', releaseId);
+  const { data: endpoints = [] } = useEnvEndpoints(componentId, versionId, releaseId);
 
   // Candidate chat endpoint: the first reachable one. (The `/chat` operation is
   // confirmed below only as a hint; the endpoint is still used when its operations
@@ -66,7 +66,7 @@ export default function AgentChat({ projectId, componentId, versionId, releaseId
     () => (candidate && environmentName ? { projectName: projectId, componentName: componentId, environmentName, endpointName: candidate.id, deploymentTrackId: versionId } : null),
     [projectId, componentId, environmentName, candidate, versionId],
   );
-  const access = useEndpointTestAccess(accessRef, !!accessRef);
+  const access = useEndpointTestAccess(accessRef, { enabled: !!accessRef, agent: true });
 
   // The endpoint's base64 OpenAPI arrives in `apimRevisionId`, so the operations come from the spec.
   const { data: chatSpec } = useApiDefinition(candidate?.apimRevisionId);
@@ -184,7 +184,7 @@ export default function AgentChat({ projectId, componentId, versionId, releaseId
   const notExposed = !!candidate && access.isUnavailable;
   const noEndpoint = endpoints.length > 0 && !chatUrl && !notExposed;
   // Passes the gateway's own reason through rather than replacing it with a generic line.
-  const authNotice = `Chat can’t authenticate with this agent: issuing a test key failed.${access.keyError ? ` ${access.keyError}` : ''}`;
+  const authNotice = `Chat can’t authenticate with this agent. ${access.keyError}`;
   const isPage = variant === 'page';
 
   return (

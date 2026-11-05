@@ -54,7 +54,7 @@ const tab = (scopes: string[]) => visibleComponentSettingsSections(identifyInteg
 
 describe('Deployment Tracks', () => {
   it('lists the tracks to a Viewer, with nothing to change', async () => {
-    expect(tab(VIEWER)).toContain('Deployment Tracks');
+    expect(tab(VIEWER)).toContain('Deployment tracks');
     const c = await page(VIEWER);
     expect(c.textContent).toContain('next');
     for (const name of controls) expect(button(c, name)).toBeUndefined();
@@ -66,7 +66,7 @@ describe('Deployment Tracks', () => {
   });
 
   it('lets a Developer, who may update but not delete integrations, create and edit a track, not delete it', async () => {
-    expect(tab(DEVELOPER)).toContain('Deployment Tracks');
+    expect(tab(DEVELOPER)).toContain('Deployment tracks');
     const c = await page(DEVELOPER);
     expect(button(c, 'Create deployment track')?.disabled).toBe(false);
     expect(button(c, 'Edit next')?.disabled).toBe(false);

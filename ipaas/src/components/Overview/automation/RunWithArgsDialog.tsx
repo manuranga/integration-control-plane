@@ -20,6 +20,7 @@ import { Alert, Box, Button, CircularProgress, DrawerPanel, IconButton, Link, St
 import { Plus, Trash2 } from '@wso2/oxygen-ui-icons-react';
 import { useState } from 'react';
 import { useTriggerComponent } from '../../../hooks/useExecutions';
+import { useLeaveGuard, useUnsavedChanges } from '../../../contexts/UnsavedChangesContext';
 
 export interface RunWithArgsDialogProps {
   open: boolean;
@@ -29,11 +30,10 @@ export interface RunWithArgsDialogProps {
   orgHandler: string;
   projectId: string;
   componentId: string;
-  environmentId: string;
   releaseId: string;
 }
 
-export default function RunWithArgsDialog({ open, onClose, onRunSuccess, orgHandler, projectId, componentId, environmentId, releaseId }: RunWithArgsDialogProps) {
+export default function RunWithArgsDialog({ open, onClose, onRunSuccess, orgHandler, projectId, componentId, releaseId }: RunWithArgsDialogProps) {
   const [args, setArgs] = useState<string[]>(['']);
   const [runError, setRunError] = useState<string | null>(null);
   const trigger = useTriggerComponent();
@@ -51,7 +51,7 @@ export default function RunWithArgsDialog({ open, onClose, onRunSuccess, orgHand
     const execArgs = args.filter((a) => a.trim() !== '').map((a) => ({ argument_name: '', argument_value: a }));
 
     trigger.mutate(
-      { orgHandler, projectId, componentId, environmentId, releaseId, args: execArgs },
+      { orgHandler, projectId, componentId, releaseId, args: execArgs },
       {
         onSuccess: () => {
           const resolvedArgs = args.filter((a) => a.trim() !== '');
@@ -70,12 +70,16 @@ export default function RunWithArgsDialog({ open, onClose, onRunSuccess, orgHand
     onClose();
   };
 
+  useUnsavedChanges(open && args.some((a) => a.trim() !== ''));
+  const guardNavigation = useLeaveGuard();
+  const requestClose = () => guardNavigation(handleClose);
+
   const previewJson = JSON.stringify(args);
 
   return (
-    <DrawerPanel open={open} onClose={handleClose} width={440}>
+    <DrawerPanel open={open} onClose={requestClose} width={440}>
       <DrawerPanel.Header>
-        <DrawerPanel.Title>Runtime Arguments</DrawerPanel.Title>
+        <DrawerPanel.Title>Runtime arguments</DrawerPanel.Title>
         <DrawerPanel.Actions>
           <DrawerPanel.CloseButton />
         </DrawerPanel.Actions>
@@ -86,7 +90,7 @@ export default function RunWithArgsDialog({ open, onClose, onRunSuccess, orgHand
           <Typography variant="body2">
             To learn more about runtime arguments, see the{' '}
             <Link href="https://wso2.com/ballerina/icp/docs/" target="_blank" rel="noopener noreferrer" variant="body2">
-              WSO2 Integration Platform Documentation
+              WSO2 Integration Platform documentation
             </Link>
             .
           </Typography>
@@ -127,7 +131,7 @@ export default function RunWithArgsDialog({ open, onClose, onRunSuccess, orgHand
       </DrawerPanel.Body>
 
       <DrawerPanel.Footer>
-        <Button variant="outlined" color="inherit" onClick={handleClose}>
+        <Button variant="outlined" color="inherit" onClick={requestClose}>
           Cancel
         </Button>
         <Button variant="contained" onClick={handleRun} disabled={trigger.isPending || !releaseId} startIcon={trigger.isPending ? <CircularProgress color="inherit" size={16} /> : undefined}>

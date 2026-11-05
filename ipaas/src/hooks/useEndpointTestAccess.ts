@@ -16,12 +16,14 @@
  * under the License.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DEFAULT_API_KEY_HEADER } from '../constants/apiConsumption';
 import { useCreateEndpointTestKey, useEnableEndpointApiKeyAuth, useEndpointSecurity } from './useConsumers';
 import type { EndpointRef, SecurityMode } from '../types/consumers';
 import { friendlyApiError } from '../utils/apiSecurity';
-import { isApiKeyAuthRequired } from '../utils/apiErrors';
+import { isApiKeyAuthRequired, isPermissionError } from '../utils/apiErrors';
+import { Scopes } from '../constants/permissions';
+import { useCan } from './useCan';
 
 export interface EndpointTestAccess {
   /**
@@ -43,10 +45,17 @@ export interface EndpointTestAccess {
   isAuthorized: boolean;
   /** A key is being minted right now. */
   isMinting: boolean;
-  /** Minting failed, as a message the user can act on. */
+  /** The role may create test keys. Without it, no test-key request is sent. */
+  canCreateKey: boolean;
+  /** Minting failed, or the role can't mint for an endpoint that needs a key, as a message the user can act on. */
   keyError: string | null;
   /** The endpoint uses another auth mode (jwt, or a refused test key says so), so it takes no test key until switched to API-key auth. */
   needsApiKeyAuth: boolean;
+  /**
+   * The role may switch the endpoint to API-key auth. Never for an AI agent: its security comes from Agent Manager,
+   * while the switch edits the API Platform's API.
+   */
+  canSwitch: boolean;
   /** The endpoint is being switched to API-key auth. */
   isSwitching: boolean;
   /** Switch the endpoint to API-key auth, then mint. Resolves to the plaintext, or `null` on failure. */
@@ -67,6 +76,7 @@ export interface EndpointTestAccess {
 }
 
 const MINT_FAILED = 'Could not mint a test key.';
+const MINT_REFUSED = "Your role can't create test keys.";
 
 /** Identity of the endpoint a minted key belongs to, so a key can never leak across endpoints. */
 const keyOf = (ref: EndpointRef | null | undefined): string => `${ref?.componentName ?? ''}|${ref?.environmentName ?? ''}|${ref?.endpointName ?? ''}|${ref?.deploymentTrackId ?? ''}`;
@@ -85,47 +95,62 @@ const keyOf = (ref: EndpointRef | null | undefined): string => `${ref?.component
  * (`needsApiKeyAuth`) until the caller switches the endpoint with `switchToApiKey()`,
  * which changes how every caller of the API authenticates.
  */
-export function useEndpointTestAccess(ref: EndpointRef | null | undefined, enabled = true, gatewayUrlFallback = ''): EndpointTestAccess {
-  const { data: security, isError: isSecurityError, error: securityError } = useEndpointSecurity(ref, enabled);
-  const createTestKey = useCreateEndpointTestKey(ref);
-  const enableApiKeyAuth = useEnableEndpointApiKeyAuth(ref);
+interface TestAccessOptions {
+  enabled?: boolean;
+  /** The gateway URL endpoint discovery returned, for when the security read carries none. */
+  gatewayUrlFallback?: string;
+  /** An AI agent's test key comes from Agent Manager, which also checks `amp:agent:api-key-manage`. */
+  agent?: boolean;
+}
 
-  // The minted key and any failure are stored against the endpoint they belong
-  // to, so a response that lands after the selection moved on is ignored by
-  // construction — no cancellation bookkeeping needed.
+export function useEndpointTestAccess(ref: EndpointRef | null | undefined, { enabled = true, gatewayUrlFallback = '', agent = false }: TestAccessOptions = {}): EndpointTestAccess {
+  const { data: security, isError: isSecurityError, error: securityError } = useEndpointSecurity(ref, enabled);
+  const can = useCan();
+  const canCreateKey = can(Scopes.ENDPOINT_TEST) && (!agent || can(Scopes.AGENT_API_KEY_MANAGE));
+  const canSwitch = canCreateKey && !agent && can(Scopes.ENDPOINT_UPDATE);
+  const createTestKey = useCreateEndpointTestKey();
+  const enableApiKeyAuth = useEnableEndpointApiKeyAuth();
+
+  // Each request goes to the endpoint it was started for, and its result is stored against that
+  // endpoint, so a response that lands after the selection moved on is ignored by construction.
   const refKey = keyOf(ref);
+  // The endpoint by identity: a caller's new object for the same endpoint must not re-run the auto-mint.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const endpoint = useMemo(() => ref, [refKey]);
   const [minted, setMinted] = useState<{ refKey: string; key: string | null } | null>(null);
   const [failure, setFailure] = useState<{ refKey: string; message: string } | null>(null);
   const [apiKeyRequiredFor, setApiKeyRequiredFor] = useState<string | null>(null);
 
   const mode = security?.mode ?? null;
   const apiKey = minted?.refKey === refKey ? minted.key : null;
-  const keyError = failure?.refKey === refKey ? failure.message : null;
+  const needsKey = mode === 'api-key' || mode === 'jwt';
+  const keyError = !canCreateKey && needsKey ? MINT_REFUSED : failure?.refKey === refKey ? failure.message : null;
 
-  const mintKey = useCallback(
-    async (): Promise<string | null> => {
-      if (!ref) return null;
+  const { mutateAsync: createKeyFor } = createTestKey;
+  const mintFor = useCallback(
+    async (target: EndpointRef): Promise<string | null> => {
+      if (!canCreateKey) return null;
+      const targetKey = keyOf(target);
       setFailure(null);
       try {
-        const key = (await createTestKey.mutateAsync())?.apiKey ?? null;
-        setMinted({ refKey, key });
-        if (!key) setFailure({ refKey, message: MINT_FAILED });
+        const key = (await createKeyFor(target))?.apiKey ?? null;
+        setMinted({ refKey: targetKey, key });
+        if (!key) setFailure({ refKey: targetKey, message: MINT_FAILED });
         return key;
       } catch (err) {
-        if (isApiKeyAuthRequired(err)) setApiKeyRequiredFor(refKey);
-        else setFailure({ refKey, message: friendlyApiError(err, MINT_FAILED) });
+        if (isApiKeyAuthRequired(err)) setApiKeyRequiredFor(targetKey);
+        else if (!isPermissionError(err)) setFailure({ refKey: targetKey, message: friendlyApiError(err, MINT_FAILED) });
         return null;
       }
     },
-    // createTestKey is a stable mutation object; the endpoint identity drives it.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [refKey],
+    [canCreateKey, createKeyFor],
   );
+  const mintKey = useCallback(async () => (endpoint ? mintFor(endpoint) : null), [endpoint, mintFor]);
 
   // Auto-mint for an api-key-secured endpoint only: for another mode the test-key route answers 409.
   const mintingFor = useRef<string | null>(null);
   useEffect(() => {
-    if (!enabled || mode !== 'api-key') return;
+    if (!enabled || !canCreateKey || mode !== 'api-key') return;
     // Holding a key already is enough: this effect re-runs whenever the endpoint's queries
     // refetch, and minting again there would reap the key the surfaces are using.
     if (minted?.refKey === refKey && minted.key) return;
@@ -135,36 +160,38 @@ export function useEndpointTestAccess(ref: EndpointRef | null | undefined, enabl
     void mintKey().finally(() => {
       if (mintingFor.current === refKey) mintingFor.current = null;
     });
-  }, [enabled, mode, mintKey, minted, refKey]);
+  }, [enabled, canCreateKey, mode, mintKey, minted, refKey]);
 
   // One re-mint per endpoint: a fresh key 401s the same way when the cause is not the key,
   // so retrying per credential would mint without end.
   const retriedFor = useRef<string | null>(null);
   const retryUnauthorized = useCallback(() => {
     // An open endpoint's 401 is not a stale key, and minting would switch it to api-key auth.
-    if (mode !== 'api-key') return;
+    if (!canCreateKey || mode !== 'api-key') return;
     if (retriedFor.current === refKey) return;
     retriedFor.current = refKey;
     void mintKey();
-  }, [mode, refKey, mintKey]);
+  }, [canCreateKey, mode, refKey, mintKey]);
 
+  const { mutateAsync: enableApiKeyAuthFor } = enableApiKeyAuth;
   const switchToApiKey = useCallback(async (): Promise<string | null> => {
+    if (!endpoint || !canSwitch) return null;
+    const target = endpoint;
+    const targetKey = keyOf(target);
     setFailure(null);
     // This mints itself; the auto-mint must not mint a second key when the mode refetches as api-key.
-    mintingFor.current = refKey;
+    mintingFor.current = targetKey;
     try {
-      await enableApiKeyAuth.mutateAsync();
-      setApiKeyRequiredFor(null);
-      return await mintKey();
+      await enableApiKeyAuthFor(target);
+      setApiKeyRequiredFor((current) => (current === targetKey ? null : current));
+      return await mintFor(target);
     } catch (err) {
-      setFailure({ refKey, message: friendlyApiError(err, 'Could not switch the endpoint to API key.') });
+      if (!isPermissionError(err)) setFailure({ refKey: targetKey, message: friendlyApiError(err, 'Could not switch the endpoint to API key.') });
       return null;
     } finally {
-      mintingFor.current = null;
+      if (mintingFor.current === targetKey) mintingFor.current = null;
     }
-    // enableApiKeyAuth is a stable mutation object; the endpoint identity drives it.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refKey, mintKey]);
+  }, [endpoint, canSwitch, enableApiKeyAuthFor, mintFor]);
 
   // Endpoint security describes enforcement and may not carry an invoke URL. Release-scoped
   // endpoint discovery already returns the APIP Public URL, so callers that have it can provide
@@ -179,10 +206,12 @@ export function useEndpointTestAccess(ref: EndpointRef | null | undefined, enabl
     apiKey,
     // An open (mode `none`) endpoint needs no credential; anything else does.
     isAuthorized: mode === 'none' || !!apiKey,
-    isMinting: createTestKey.isPending,
+    isMinting: createTestKey.isPending && keyOf(createTestKey.variables) === refKey,
+    canCreateKey,
     keyError,
-    needsApiKeyAuth: (mode === 'jwt' && !apiKey) || apiKeyRequiredFor === refKey,
-    isSwitching: enableApiKeyAuth.isPending,
+    needsApiKeyAuth: canCreateKey && ((mode === 'jwt' && !apiKey) || apiKeyRequiredFor === refKey),
+    canSwitch,
+    isSwitching: enableApiKeyAuth.isPending && keyOf(enableApiKeyAuth.variables) === refKey,
     switchToApiKey,
     // A disabled/incomplete ref leaves both terms false, so an idle hook never
     // reports unavailable — only a real answer does.

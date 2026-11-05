@@ -31,6 +31,7 @@ import { hasMissingRequiredConfigs } from './configStatus';
 // Transitional: legacy ConfigureDrawer (defaults to the generic-service form
 // when `isAutomation` is absent) until its genericisation in phase 4.5.
 import ConfigureDrawer from '../../EnvironmentCard/ConfigureDrawer';
+import { capitalize } from '../../../utils/string';
 
 /**
  * Shared header for the two runtime-logs integration types — **file-integration**
@@ -57,6 +58,7 @@ export default function FileEventHeader({
   requestPoll,
   isRefreshing,
   onRefresh,
+  deployAction,
 }: CustomHeaderProps): ReactNode {
   const [configureOpen, setConfigureOpen] = useState(false);
   const can = useCan();
@@ -92,7 +94,7 @@ export default function FileEventHeader({
 
   const handleRedeploy = () => {
     redeployMutation.mutate(
-      { orgHandler, componentId: component.id, environmentId: env.id, releaseId, type: 'service', releaseMgtReleaseId, releaseMgtDeploymentId },
+      { orgHandler, componentId: component.id, releaseId, type: 'service', releaseMgtReleaseId, releaseMgtDeploymentId },
       {
         onSuccess: () => {
           requestPoll();
@@ -107,8 +109,8 @@ export default function FileEventHeader({
     <Stack direction="row" alignItems="center" justifyContent="space-between" flexWrap="wrap">
       {/* Left: env name + commit + status dot + Critical chip + Configure */}
       <Stack direction="row" alignItems="center" gap={1.5} sx={{ minWidth: 0 }}>
-        <Typography variant="h5" component="h2" sx={{ fontWeight: 600, textTransform: 'capitalize', flexShrink: 0 }}>
-          {env.name}
+        <Typography variant="h5" component="h2" sx={{ fontWeight: 600, flexShrink: 0 }}>
+          {capitalize(env.name)}
         </Typography>
 
         {hasDeployment && deployedCommit?.sha && (
@@ -160,7 +162,7 @@ export default function FileEventHeader({
         )}
       </Stack>
 
-      {/* Right: Stop / Start + Refresh */}
+      {/* Right: Stop / Start / Deploy + Refresh */}
       <Stack direction="row" alignItems="center" gap={1} sx={{ flexShrink: 0 }}>
         {(canStop || isInProgress) && (
           <Tooltip title="Stop deployment">
@@ -189,6 +191,7 @@ export default function FileEventHeader({
             </span>
           </Tooltip>
         )}
+        {deployAction}
         <Tooltip title="Refresh">
           <IconButton size="small" disabled={isRefreshing} aria-label="Refresh" onClick={onRefresh}>
             <RefreshCw size={16} style={{ animation: isRefreshing ? 'spin 1s linear infinite' : 'none', transformOrigin: 'center' }} />
