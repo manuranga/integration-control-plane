@@ -76,8 +76,8 @@ describe('schemaConfigValues', () => {
     expect(schemaConfigValues(data)).toEqual([
       { key: 'acme.hello.token', label: 'token', value: '', secret: true, section: 'Required', module: 'acme.hello' },
       { key: 'ballerina.log.accessLog.console', label: 'accessLog / console', value: '', secret: false, optional: true, section: 'Optional', module: 'ballerina.log' },
-      { key: 'ballerina.log.keyValues', label: 'keyValues', value: '{"icp.runtimeId":"r1","key":"••••••••"}', secret: false, optional: true, section: 'Optional', module: 'ballerina.log' },
-      { key: 'ballerina.log.paths', label: 'paths', value: '["/a","/b"]', secret: false, optional: true, section: 'Optional', module: 'ballerina.log' },
+      { key: 'ballerina.log.keyValues', label: 'keyValues', value: '{"icp.runtimeId": "r1", "key": "••••••••"}', secret: false, optional: true, section: 'Optional', module: 'ballerina.log' },
+      { key: 'ballerina.log.paths', label: 'paths', value: '["/a", "/b"]', secret: false, optional: true, section: 'Optional', module: 'ballerina.log' },
     ]);
   });
 
@@ -89,7 +89,8 @@ describe('schemaConfigValues', () => {
 
 describe('miConfigValues', () => {
   it('lists the variables, then the secrets without values', () => {
-    expect(miConfigValues({ envVars: [{ key: 'A', value: '1' }], secrets: ['S'] })).toEqual([
+    const none = { legacySecrets: [], shadowedLegacySecrets: [], envVarsGroupIsSecret: false, secretsGroupIsPlain: false, otherGroupKeys: {}, otherPlainGroupKeys: {}, otherSecretGroupKeys: {} };
+    expect(miConfigValues({ envVars: [{ key: 'A', value: '1' }], secrets: ['S'], ...none })).toEqual([
       { key: 'A', value: '1', secret: false },
       { key: 'S', value: '', secret: true },
     ]);

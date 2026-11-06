@@ -188,7 +188,7 @@ describe('updateEndpoint visibility reconciliation', () => {
       displayName: 'HTTP',
       networkVisibilities: ['Project', 'Public'],
     });
-    expect(put).toHaveBeenCalledWith('/components/orders/environments/development/endpoints/http/visibility?projectName=project-a&deploymentTrackId=v1', {
+    expect(put).toHaveBeenCalledWith('/components/orders/environments/development/endpoints/http/visibility?deploymentTrackId=v1', {
       visibility: ['project', 'public'],
       displayProjectUrl: true,
     });
@@ -206,7 +206,7 @@ describe('updateEndpoint visibility reconciliation', () => {
       displayName: 'HTTP',
       networkVisibilities: ['Public'],
     });
-    expect(put).toHaveBeenCalledWith('/components/orders/environments/development/endpoints/http/visibility?projectName=project-a&deploymentTrackId=v1', {
+    expect(put).toHaveBeenCalledWith('/components/orders/environments/development/endpoints/http/visibility?deploymentTrackId=v1', {
       visibility: ['project', 'public'],
       displayProjectUrl: false,
     });
