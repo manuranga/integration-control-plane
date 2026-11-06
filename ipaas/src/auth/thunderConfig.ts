@@ -40,6 +40,8 @@ export function thunderConfig(): ThunderIDProviderProps {
   return {
     instanceId: THUNDER_INSTANCE_ID,
     baseUrl: authBaseUrl,
+    // Stack-only (rbac): this stack's platform-idp issues tokens as "platform-idp", not its URL; the SDK reads endpoints.issuer, which its types omit.
+    endpoints: { issuer: 'platform-idp' } as ThunderIDProviderProps['endpoints'],
     clientId: asgardeoClientId,
     scopes: asgardeoScope,
     afterSignInUrl: asgardeoSignInRedirectUrl,
