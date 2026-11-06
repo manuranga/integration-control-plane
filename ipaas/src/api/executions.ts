@@ -81,6 +81,8 @@ export function toTaskExecution(e: BffExecution): TaskExecution {
 // environment. Mapped onto ExecutionConfigs so the schedule UI (button state,
 // next-run countdown, dialog prefill) reads it unchanged.
 //
+// Previously we used to send `projectName` param, now removed because it's not used in ipaas-service.
+//
 // An empty cronExpression means no schedule: the BFF owns the never-fires expression in both directions.
 // releaseId names the deployment track: the schedule read is that of the track the release is deployed on.
 export const fetchExecutionConfigs = (componentId: string, releaseId: string, envId = ''): Promise<ExecutionConfigs | null> => {
@@ -102,7 +104,7 @@ export const fetchExecutionConfigs = (componentId: string, releaseId: string, en
 };
 
 // GET /components/{name}/environments/{envId}/executions/history — the CronJob's
-// job runs (newest-first), keyed by component + env.
+// job runs (newest-first), keyed by component + env (+ project).
 //
 // Reconstructed from OpenChoreo Observer Kubernetes event logs (~30 days),
 // replacing the resource-tree source which only saw the Jobs still live
@@ -120,15 +122,15 @@ interface BffExecutionHistoryPage {
 }
 
 // A release belongs to one deployment track, so reading by release lists that track's runs only.
-export const fetchTaskExecutions = async (releaseId: string, componentId = '', envId = '', _projectId = ''): Promise<TaskExecution[]> => {
+export const fetchTaskExecutions = async (releaseId: string, componentId = '', envId = '', projectId = ''): Promise<TaskExecution[]> => {
   if (!componentId || !envId) return [];
-  const base = `/components/${seg(componentId)}/environments/${seg(envId)}${releaseId ? `/releases/${seg(releaseId)}` : ''}/executions/history`;
+  const base = releaseId ? `/releases/${seg(releaseId)}/executions/history` : `/components/${seg(componentId)}/environments/${seg(envId)}/executions/history`;
 
   const all: TaskExecution[] = [];
   let before: string | undefined;
   try {
     for (let page = 0; page < HISTORY_MAX_PAGES; page++) {
-      const res = await bff.get<BffExecutionHistoryPage>(`${base}${q({ limit: HISTORY_PAGE_LIMIT, before })}`);
+      const res = await bff.get<BffExecutionHistoryPage>(`${base}${q({ projectName: projectId, limit: HISTORY_PAGE_LIMIT, before })}`);
       all.push(...(res?.items ?? []).map(toTaskExecution));
       before = res?.nextCursor || undefined;
       if (!before) break;
@@ -304,12 +306,12 @@ export const stopSchedule = (input: StopScheduleInput): Promise<void> => bff.pos
 export const triggerTask = (_input: TriggerTaskInput): Promise<{ status: string; message: string; successCount: number; failedCount: number; details: string[] }> =>
   Promise.resolve({ status: 'skipped', message: 'Task triggering is not supported in this build.', successCount: 0, failedCount: 0, details: [] });
 
-// POST /components/{name}/environments/{env}/releases/{releaseId}/executions.
+// POST /components/{name}/releases/{releaseId}/executions — BFF resolves the env.
 // The BFF takes positional string args; map the name/value pairs to their values.
 // OpenChoreo does not return a run id from this endpoint, so runId is null.
 export const triggerComponentRun = (input: TriggerComponentInput): Promise<TriggerRunResult> =>
   bff
-    .post(`/components/${seg(input.componentId)}/environments/${seg(input.environmentId)}/releases/${seg(input.releaseId)}/executions`, {
+    .post(`/components/${seg(input.componentId)}/releases/${seg(input.releaseId)}/executions`, {
       args: (input.args ?? []).map((a) => a.argument_value),
     })
     .then(() => ({ runId: null }));

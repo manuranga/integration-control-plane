@@ -350,7 +350,6 @@ export default function AutomationExecutions({
         componentHandler={componentHandler}
         projectId={projectId}
         componentId={componentId}
-        environmentId={environmentId}
         releaseId={releaseId}
       />
 

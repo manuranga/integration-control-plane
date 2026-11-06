@@ -30,11 +30,10 @@ export interface RunWithArgsDialogProps {
   orgHandler: string;
   projectId: string;
   componentId: string;
-  environmentId: string;
   releaseId: string;
 }
 
-export default function RunWithArgsDialog({ open, onClose, onRunSuccess, orgHandler, projectId, componentId, environmentId, releaseId }: RunWithArgsDialogProps) {
+export default function RunWithArgsDialog({ open, onClose, onRunSuccess, orgHandler, projectId, componentId, releaseId }: RunWithArgsDialogProps) {
   const [args, setArgs] = useState<string[]>(['']);
   const [runError, setRunError] = useState<string | null>(null);
   const trigger = useTriggerComponent();
@@ -52,7 +51,7 @@ export default function RunWithArgsDialog({ open, onClose, onRunSuccess, orgHand
     const execArgs = args.filter((a) => a.trim() !== '').map((a) => ({ argument_name: '', argument_value: a }));
 
     trigger.mutate(
-      { orgHandler, projectId, componentId, environmentId, releaseId, args: execArgs },
+      { orgHandler, projectId, componentId, releaseId, args: execArgs },
       {
         onSuccess: () => {
           const resolvedArgs = args.filter((a) => a.trim() !== '');
