@@ -24,7 +24,8 @@ import { useIntegrationLinks, useLinkWrite } from './useConfiguration';
 import type { IntegrationLinks, LinkWrite } from '../types/configuration';
 
 // What ipaas-service answers: the stored link, and what development's release uses, which OpenChoreo changes after the write.
-const server = vi.hoisted(() => ({ linked: false, inRelease: false, workload: 'updated' as LinkWrite['workload'], reads: 0 }));
+// `stale`: reads that still answer the links from before the last write.
+const server = vi.hoisted(() => ({ linked: false, inRelease: false, workload: 'updated' as LinkWrite['workload'], reads: 0, stale: 0, before: false }));
 const target = 'acme/sfdemo:sfSalesBaseUrl';
 const ref = { ref: 'salesforce-sales', key: 'SALESFORCE_BASE_URL' };
 const links = (): IntegrationLinks => ({
@@ -33,7 +34,7 @@ const links = (): IntegrationLinks => ({
   used: {},
   usedByOrphaned: {},
   connections: [],
-  fieldLinks: server.linked ? { [target]: ref } : {},
+  fieldLinks: (server.stale > 0 ? server.before : server.linked) ? { [target]: ref } : {},
   orphaned: [],
   env: {},
   environments: [{ name: 'development', deployed: true, resources: [], valuesChanged: false, linksNeedDeploy: server.linked !== server.inRelease, connections: {}, configurables: server.inRelease ? { [target]: ref } : {}, env: {} }],
@@ -41,9 +42,12 @@ const links = (): IntegrationLinks => ({
 vi.mock('../api/configuration', () => ({
   fetchIntegrationLinks: async () => {
     server.reads++;
-    return links();
+    const answer = links();
+    server.stale = Math.max(0, server.stale - 1);
+    return answer;
   },
   writeLink: async ({ target: t }: { target: { ref?: string } }) => {
+    server.before = server.linked;
     server.linked = !!t.ref;
     return { workload: server.workload };
   },
@@ -56,19 +60,25 @@ let write: ReturnType<typeof useLinkWrite>;
 function Form() {
   const { data } = useIntegrationLinks('default', 'sfdemo', true);
   write = useLinkWrite();
-  return <span>{Object.keys(data?.environments[0].configurables ?? {}).join()}</span>;
+  return (
+    <>
+      <span id="release">{Object.keys(data?.environments[0].configurables ?? {}).join()}</span>
+      <span id="stored">{Object.keys(data?.fieldLinks ?? {}).join()}</span>
+    </>
+  );
 }
 
 const link = () => act(() => write.mutateAsync({ projectId: 'default', componentId: 'sfdemo', target: { configurable: target, ...ref } }));
 const unlink = () => act(() => write.mutateAsync({ projectId: 'default', componentId: 'sfdemo', target: { configurable: target } }));
 const wait = (ms: number) => act(() => vi.advanceTimersByTimeAsync(ms));
-const linkedFields = () => container.textContent;
+const linkedFields = () => container.querySelector('#release')!.textContent;
+const storedLinks = () => container.querySelector('#stored')!.textContent;
 
 beforeEach(async () => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
   vi.useFakeTimers();
   focusManager.setFocused(true);
-  Object.assign(server, { linked: false, inRelease: false, workload: 'updated', reads: 0 });
+  Object.assign(server, { linked: false, inRelease: false, workload: 'updated', reads: 0, stale: 0, before: false });
   container = document.createElement('div');
   root = createRoot(container);
 });
@@ -131,6 +141,33 @@ describe('an open Configure form', () => {
     server.inRelease = false;
     await wait(4000);
     expect(linkedFields()).toBe('');
+  });
+
+  it('reads the links again until they show an unlink, when the read right after it still answers the link', async () => {
+    Object.assign(server, { linked: true, inRelease: true, workload: 'next_deploy' });
+    await open();
+    server.stale = 1;
+    await unlink();
+    await wait(0);
+    expect(storedLinks()).toBe(target);
+
+    await wait(4000);
+    expect(storedLinks()).toBe('');
+    const reads = server.reads;
+    await wait(30_000);
+    expect(server.reads).toBe(reads);
+  });
+
+  it('reads the links again until they show a link', async () => {
+    server.workload = 'next_deploy';
+    await open();
+    server.stale = 1;
+    await link();
+    await wait(0);
+    expect(storedLinks()).toBe('');
+
+    await wait(4000);
+    expect(storedLinks()).toBe(target);
   });
 
   it("doesn't wait for a release when the write leaves development's Workload as it is", async () => {

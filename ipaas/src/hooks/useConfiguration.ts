@@ -20,7 +20,7 @@ import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tansta
 import { fetchCertificateGroups, fetchConfigGroups, fetchCertificateMappings, fetchSchemaConfig, fetchConfigMgt, saveSchemaConfig, postConfigMgt, postCertificateMappings, fetchIntegrationLinks, writeLink } from '../api/configuration';
 import type { CertMapping, SchemaConfigItem, SaveSchemaConfigInput, PostConfigMgtInput, IntegrationLinks, LinkWrite, LinkWriteInput } from '../types/configuration';
 import type { PromoteInput } from '../types/deployment';
-import { sameLinks } from '../utils/integrationLinks';
+import { sameLinks, showsWrite, targetOf } from '../utils/integrationLinks';
 
 export function useCertificateGroups(projectId: string, componentId: string, enabled: boolean) {
   return useQuery({
@@ -130,17 +130,25 @@ const ROLLOUT_POLL_MS = 3000;
 const ROLLOUT_WINDOW_MS = 120_000;
 
 // OpenChoreo changes a release after the write: development's after a link write that updates the Workload, the
-// target's after a promote. The links follow until the release has it.
-const rollingOut = (qc: QueryClient, links: IntegrationLinks, projectId: string, componentId: string, now = Date.now()) =>
-  qc
+// target's after a promote. The links follow until the release has it. A read right after a write can still answer the
+// links from before it, so they also follow until they show the write, unless a later write to its target replaced it.
+const rollingOut = (qc: QueryClient, links: IntegrationLinks, projectId: string, componentId: string, now = Date.now()) => {
+  const recent = qc
     .getMutationCache()
     .findAll({ status: 'success', predicate: (m) => ['linkWrite', 'promote'].includes(m.options.mutationKey?.[0] as string) })
-    .some((m) => {
-      if (now >= m.state.submittedAt + ROLLOUT_WINDOW_MS) return false;
-      if (m.options.mutationKey?.[0] === 'promote') {
-        const p = m.state.variables as PromoteInput;
-        return p.componentId === componentId && !sameLinks(links, p.sourceEnvironmentId, p.targetEnvironmentId);
-      }
-      const vars = m.state.variables as LinkWriteInput;
-      return vars.projectId === projectId && vars.componentId === componentId && (m.state.data as LinkWrite).workload === 'updated' && !!links.environments[0]?.linksNeedDeploy;
-    });
+    .filter((m) => now < m.state.submittedAt + ROLLOUT_WINDOW_MS);
+  const writes = recent.filter((m) => m.options.mutationKey?.[0] === 'linkWrite');
+  const replaced = (w: (typeof writes)[number]) => {
+    const { componentId: c, target } = w.state.variables as LinkWriteInput;
+    return writes.some((l) => l.state.submittedAt > w.state.submittedAt && (l.state.variables as LinkWriteInput).componentId === c && targetOf((l.state.variables as LinkWriteInput).target) === targetOf(target));
+  };
+  return recent.some((m) => {
+    if (m.options.mutationKey?.[0] === 'promote') {
+      const p = m.state.variables as PromoteInput;
+      return p.componentId === componentId && !sameLinks(links, p.sourceEnvironmentId, p.targetEnvironmentId);
+    }
+    const vars = m.state.variables as LinkWriteInput;
+    if (vars.projectId !== projectId || vars.componentId !== componentId) return false;
+    return (!replaced(m) && !showsWrite(links, vars.target)) || ((m.state.data as LinkWrite).workload === 'updated' && !!links.environments[0]?.linksNeedDeploy);
+  });
+};
